@@ -1,0 +1,1 @@
+colormap(-gray+1)
