@@ -29,7 +29,7 @@ bSave = savecheck(sess_trialset);
 if bSave
     % load sessionfile and keep subset of trials
     nuts = load(sess);
-    nuts.meg.data = nuts.meg.data(trialvec,:,:);
+    nuts.meg.data = nuts.meg.data(:,:,trialvec);
     % update sessionfile name
     nuts.sessionfile = sessname;
     
