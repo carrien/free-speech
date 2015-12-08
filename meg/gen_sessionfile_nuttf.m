@@ -29,7 +29,7 @@ end
 sessname_1hemi = sprintf('%s_%s%s',filename,hemi,ext);
 sess_1hemi = fullfile(filepath,sessname_1hemi);
 if ~exist(sess_1hemi,'file')
-    gen_1hemi_sessionfile(sess,hemi);
+    gen_sessionfile_1hemi(sess,hemi);
 else
     fprintf('Single-hemi sessionfile found. Using %s...\n',sess_1hemi)
 end
