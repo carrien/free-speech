@@ -37,7 +37,7 @@ for b = 1:length(toBin)
     catOverBins = cat(1,normavg.(toBin{b}));
     for i = 1:length(toPlot)
         allSubj.(toBin{b}).(toPlot{i}) = cat(1,catOverBins.(toPlot{i}));
-        allSubjNorm.(toBin{b}).(toPlot{i}) = nanmean(allSubj.(toBin{b}).(toPlot{i}));
+        allSubjNorm.(toBin{b}).(toPlot{i}) = nanmean(allSubj.(toBin{b}).(toPlot{i}),1);
     end
 end
 
