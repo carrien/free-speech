@@ -1,4 +1,4 @@
-function [] = gen_fdata(exptName,snum,condtype,dataValsStr,subdirname,bGoodTrialsOnly)
+function [] = gen_fdata(exptName,snum,condtype,dataValsStr,subdirname)
 %GEN_FDATA  Calculate formant averages on a dataVals object.
 %   GEN_FDATA(EXPTNAME,SNUM,CONDTYPE,DATAVALSSTR,SUBDIRNAME) loads a
 %   subject (SNUM)'s expt and dataVals objects and calls CALC_FDATA to
@@ -16,13 +16,12 @@ elseif nargin < 5 && strcmp(exptName,'cat')
 elseif nargin < 5
     subdirname = [];
 end
-if nargin < 6 || isempty(bGoodTrialsOnly), bGoodTrialsOnly = 0; end
 
 dataPath = getAcoustSubjPath(exptName,snum,subdirname);
 load(fullfile(dataPath,'expt.mat'));
 load(fullfile(dataPath,dataValsStr));
 
-[fmtdata,f0data,ampldata,durdata,trialinds] = calc_fdata(expt,dataVals,condtype); %#ok<ASGLU,NASGU>
+[fmtdata,f0data,ampldata,durdata,trialinds] = calc_fdata(expt,dataVals,condtype); %#ok<ASGLU>
 
 savefile = fullfile(dataPath,sprintf('fdata_%s%s.mat',condtype,dataValsStr(9:end)));
 bSave = savecheck(savefile);

@@ -1,10 +1,7 @@
 function [fmtdata,f0data,ampldata,durdata,trialinds] = calc_fdata(expt,dataVals,condtype)
 % CALC_FDATA  Calculate formant, pitch, and ampl data from dataVals object.
 
-if strcmp(expt.name, 'multivowel')
-    expt.name = 'mvSIS';
-end
-
+%% exclude bad trials
 if isfield(dataVals,'bExcl')
     exclInds = find([dataVals.bExcl]);
 else
@@ -12,6 +9,7 @@ else
 end
 goodTrials = setdiff(1:length(dataVals),exclInds);
 
+%% get sampling rate and set time axes
 % if isfield(expt,'fs_f0')
 %     fs_f0 = expt.fs_f0;
 %     fs_fmt = expt.fs_fmt;
@@ -43,6 +41,7 @@ end
 % fs will change based on the scale of each attribute (fmt vs. pitch)
 
 % fmtdata/f0data/ampdata: top level variable
+%% set up subfields
 freqscale = {'hz', 'mels'};     % f: frequency scales
 switch condtype
     case 'vowel', conds = expt.vowels; %cond = 'word';
@@ -53,7 +52,7 @@ end
 avgfn = {'mid50p', 'first50ms', 'mid50p_NaN', 'mid50ms'};  % av: averging functions
 formant = {'f1' 'f2'};
 
-% initialize empty data structure
+%% initialize empty data structure
 for cnd=1:length(conds)
     c = conds{cnd};
     for fqs=1:length(freqscale)
@@ -70,7 +69,7 @@ for cnd=1:length(conds)
     trialinds.(c) = [];
 end
 
-% build up matrix of formant, pitch, and amplitude tracks
+%% build up matrix of formant, pitch, and amplitude tracks
 for i=goodTrials
     c = conds{dataVals(i).(condtype)}; % condition of this trial
     % formant
@@ -105,7 +104,7 @@ for i=goodTrials
     end
 end
 
-% calculate single-trial averages
+%% calculate single-trial averages
 for cnd=1:length(conds)
     c = conds{cnd};
     for fqs=1:length(freqscale)
@@ -155,7 +154,7 @@ for cnd=1:length(conds)
     end
 end
 
-% calculate median
+%% calculate median
 for cnd=1:length(conds)
     c = conds{cnd};
     for avg=1:length(avgfn)
@@ -177,7 +176,7 @@ for cnd=1:length(conds)
     end
 end
 
-% calculate distances, center, and periphery
+%% calculate radial distances, center, and periphery
 for cnd=1:length(conds)
     c = conds{cnd};
     for avg=1:length(avgfn)
@@ -191,7 +190,9 @@ for cnd=1:length(conds)
                 f1dist = fmtdata.(fr).(c).(av).rawavg.f1 - fmtdata.(fr).(c).(av).med.f1;
                 f2dist = fmtdata.(fr).(c).(av).rawavg.f2 - fmtdata.(fr).(c).(av).med.f2;
                 f0dist_int = f0data.(fr).(c).(av).rawavg.f0 - f0data.(fr).(c).(av).med.f0;
-                %f0dist_ext = f0data.(fr).(c).(av).rawavg.f0 - expt.tones(cnd);
+                if isfield(expt,'tones')
+                    f0dist_ext = f0data.(fr).(c).(av).rawavg.f0 - expt.tones(cnd);
+                end
                 fmtdata.(fr).(c).(av).dist = sqrt(f1dist.^2 + f2dist.^2);
                 f0data.(fr).(c).(av).dist = abs(f0dist_int);
                 
@@ -279,5 +280,42 @@ for cnd=1:length(conds)
             ampldata.dB.(c).(av).periph25 = trialinds.(c)(peri25);
         end
         
+    end
+end
+
+%% calculate boundary distances, near, and far
+for cnd=1:length(conds)
+    c = conds{cnd};
+    for avg=1:length(avgfn)
+        av = avgfn{avg};
+        
+        if isfield(fmtdata.(fr).(c),av)
+            for fqs=1:length(freqscale)
+                fr = freqscale{fqs};
+                
+                % calculate fdists
+                f1dist = fmtdata.(fr).(c).(av).rawavg.f1 - fmtdata.(fr).(c).(av).med.f1;
+                f2dist = fmtdata.(fr).(c).(av).rawavg.f2 - fmtdata.(fr).(c).(av).med.f2;
+                f0dist_int = f0data.(fr).(c).(av).rawavg.f0 - f0data.(fr).(c).(av).med.f0;
+                if isfield(expt,'tones')
+                    f0dist_ext = f0data.(fr).(c).(av).rawavg.f0 - expt.tones(cnd);
+                end
+                fmtdata.(fr).(c).(av).dist = sqrt(f1dist.^2 + f2dist.^2);
+                f0data.(fr).(c).(av).dist = abs(f0dist_int);
+                
+                % formants
+                fmtdata.(fr).(c).(av).meddist = nanmedian(fmtdata.(fr).(c).(av).dist);
+                fmtdata.(fr).(c).(av).tertdist = quantile(fmtdata.(fr).(c).(av).dist,2);
+                fmtdata.(fr).(c).(av).quardist = quantile(fmtdata.(fr).(c).(av).dist,3);
+                
+                cent50 = fmtdata.(fr).(c).(av).dist < fmtdata.(fr).(c).(av).meddist;
+                peri50 = fmtdata.(fr).(c).(av).dist >= fmtdata.(fr).(c).(av).meddist;
+%                fmtdata.(fr).(c).(av).center50 = expt.inds.(sprintf('%ss',condtype)).(c)(cent50);
+%                fmtdata.(fr).(c).(av).periph50 = expt.inds.(sprintf('%ss',condtype)).(c)(peri50);
+                fmtdata.(fr).(c).(av).center50 = trialinds.(c)(cent50);
+                fmtdata.(fr).(c).(av).periph50 = trialinds.(c)(peri50);
+                
+            end
+        end
     end
 end
