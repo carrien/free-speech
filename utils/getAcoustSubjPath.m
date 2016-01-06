@@ -9,4 +9,4 @@ elseif ~ischar(sid)
     error('Subject ID must be a number or character string.')
 end
 
-subjPath = fullfile(get_exptPath(exptName),'acousticdata',sid,varargin{:});
+subjPath = get_exptPath(exptName,'acousticdata',sid,varargin{:});
