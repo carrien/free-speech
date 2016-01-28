@@ -1,5 +1,9 @@
 function [] = waverunner(dataPath,trialinds,buffertype,bSaveCheck,params2overwrite)
 %WAVERUNNER  Calls wave_proc on each trial in an experiment.
+%   WAVERUNNER(DATAPATH,TRIALINDS,BUFFERTYPE,BSAVECHECK,PARAMS2OVERWRITE)
+%   loads experiment data from DATAPATH and calls wave_proc on trials given
+%   in TRIALINDS (default: all trials). BUFFERTYPE determines which field
+%   to use from the data struct (default: signalIn).
 
 %% setup
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
@@ -23,7 +27,8 @@ if strcmp(buffertype,'signalIn'), trialfolder = 'trials';
 else trialfolder = sprintf('trials_%s',buffertype);
 end
 if ~exist(fullfile(dataPath,trialfolder),'dir')
-    mkdir(fullfile(dataPath,trialfolder))
+    fprintf('Creating trial directory: %s\n',fullfile(dataPath,trialfolder));
+    mkdir(fullfile(dataPath,trialfolder));
 end
 
 % set sigproc params
@@ -63,7 +68,10 @@ for itrial = trials2track
     % now overwrite default/previous sigproc_params at will
     % e.g.
     % new_sigproc_params.pitchlimits = [50 300];
+    %new_sigproc_params.preemph = 1.95;
+    %new_sigproc_params.nlpc = 11;
     % etc.
+
     if exist('new_sigproc_params','var') && isstruct(new_sigproc_params)
         fields2overwrite = fieldnames(new_sigproc_params);
     else fields2overwrite = [];

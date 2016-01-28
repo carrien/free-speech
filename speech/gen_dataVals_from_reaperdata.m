@@ -1,10 +1,6 @@
-function [ ] = gen_dataVals_from_reaperdata(exptName,snum,subdir)
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+function [ ] = gen_dataVals_from_reaperdata(dataPath)
+%GEN_DATAVALS_FROM_REAPERDATA  Add pitch track from Google REAPER algorithm.
 
-if nargin < 3, subdir = []; end
-
-dataPath = getAcoustSubjPath(exptName,snum,subdir);
 load(fullfile(dataPath,'dataVals.mat'),'dataVals');
 load(fullfile(dataPath,'reaperdata.mat'),'reaperdata');
 

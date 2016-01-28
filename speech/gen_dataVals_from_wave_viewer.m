@@ -1,15 +1,13 @@
-function [shortTracks] = gen_dataVals_from_wave_viewer(exptName,snum,subdirname,trialdir)
+function [shortTracks] = gen_dataVals_from_wave_viewer(dataPath,trialdir)
 %GEN_DATAVALS  Scrape subject trial files for data and save.
-%   GEN_DATAVALS(EXPTNAME,SUBDIRNAME,SNUM,TRIALDIR) scrapes the files of a
-%   single subject (SNUM) from that subject's TRIALDIR directory and
-%   collects formant data into a single mat file.
+%   GEN_DATAVALS(DATAPATH,TRIALDIR) scrapes the files from a subject's
+%   DATAPATH/TRIALDIR directory and collects formant data into a single mat
+%   file saved as DATAVALS.
 %
 %CN 3/2010
 
-if nargin < 3, subdirname = []; end
-if nargin < 4 || isempty(trialdir), trialdir = 'trials'; end
+if nargin < 2 || isempty(trialdir), trialdir = 'trials'; end
 
-dataPath = getAcoustSubjPath(exptName,snum,subdirname);
 savefile = fullfile(dataPath,sprintf('dataVals%s.mat',trialdir(7:end)));
 bSave = savecheck(savefile);
 if ~bSave, return; end
