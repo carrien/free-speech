@@ -4,7 +4,7 @@ function [alldat] = plot_ecog_avgByChan(neuralY,chnums,trialgroups)
 if nargin < 3, trialgroups.all = 1:length(neuralY); end
 
 %pos = [1434 187 560 1042];
-pos = [27          39        1212         732];
+pos = [27 39 1212 732];
 colors = {[.4 1 .4],[1 .4 .4],[.4 .4 1]};
 
 if iscell(trialgroups)

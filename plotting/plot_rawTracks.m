@@ -1,15 +1,13 @@
-function [shorts,outs] = plot_rawTracks(dataVals,whichtracks,split)
+function [outs] = plot_rawTracks(dataVals,whichtracks,split)
 %PLOT_RAWTRACKS  Plot formant tracks from dataVals object.
 %   PLOT_RAWTRACKS(DATAVALS,WHICHTRACKS,SPLIT) plots the specified
 %   pitch or formant tracks from each trial in DATAVALS against an optional
 %   time axis TAXIS.  SPLIT defines the field in DATAVALS by which data should
 %   be grouped; e.g. SPLIT = 'vowel' will create a separate plot for each
-%   vowel.  The function returns BSHORT, a vector of trials less than 30
-%   elements long.
+%   vowel.  The function returns OUTS, a vector of outliers.
 
 if nargin < 2, whichtracks = [0 1 1]; end
 if nargin < 3, split = 'vowel'; end
-bShort = zeros(1,length(dataVals));
 
 tracknames = {'f0' 'f1' 'f2'};
 %axis2use = {'pitch_taxis' 'ftrack_taxis' 'ftrack_taxis'};
@@ -21,10 +19,6 @@ for j=unique([dataVals.(split)])
         if dataVals(i).(split) == j && (~isfield(dataVals,'bExcl') || ~dataVals(i).bExcl)
             for k=1:length(whichtracks)
                 if whichtracks(k)
-                    len = length(dataVals(i).(tracknames{k}));
-                    if len < 30
-                        bShort(i) = 1;
-                    end
                     %taxis_itvl = mode(diff(dataVals(1).(axis2use{k})));
                     %plot(taxis_itvl.*(0:len-1),dataVals(i).(tracknames{k}),'Color',colors(k,:));
                     plot(dataVals(i).(tracknames{k}),'Color',colors(k,:));
@@ -59,4 +53,3 @@ for o=outs
         end
     end
 end
-shorts = find(bShort);

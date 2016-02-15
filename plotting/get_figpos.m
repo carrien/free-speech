@@ -1,12 +1,12 @@
-function [figpos] = get_figpos(screenconfig)
-%UNTITLED4 Summary of this function goes here
-%   Detailed explanation goes here
+function [figpos] = get_figpos(screentype)
+%GET_FIGPOS  Shortcut to desired full-window figure position on various machines.
+%   e.g. get_figpos('carbo')
 
-if nargin < 1, screenconfig = 'laptop'; end
+if nargin < 1, screentype = 'carbo'; end
 
-switch screenconfig
-    case 'laptop'
-        figpos = [10 39 1262 705];
+switch screentype
+    case 'carbo'
+        figpos = [10 44 2542 1302];
     case 'lab'
         figpos = [1290 185 1902 988];
     otherwise

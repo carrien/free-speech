@@ -8,11 +8,11 @@ if nargin < 2, nplots_per_fig = 100; end
 load(fullfile(dataPath,'data.mat'));
 for h=0:nplots_per_fig:length(data)-1
     figure;
-    for i=1:nplots_per_fig
+    for i=1:min(nplots_per_fig,length(data)-h)
         subplot(ceil(sqrt(nplots_per_fig)),ceil(sqrt(nplots_per_fig)),i)
         plot(data(h+i).signalIn)
         set(gca,'XTick',[]);
         set(gca,'YTick',[]);
+        axis tight;
     end
 end
-
