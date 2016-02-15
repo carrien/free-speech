@@ -26,3 +26,4 @@ load(fullfile(dataPath,dataValsStr));
 savefile = fullfile(dataPath,sprintf('fdata_%s%s.mat',condtype,dataValsStr(9:end)));
 bSave = savecheck(savefile);
 if bSave, save(savefile,'fmtdata','f0data','ampldata','durdata','trialinds'); end
+fprintf('fdata saved to %s.\n',savefile)

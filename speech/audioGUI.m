@@ -48,7 +48,12 @@ end
 for itrial = trials2track
     %% prepare inputs
     y = data(itrial).(buffertype);
-    fs = data(itrial).params.sr;
+    if isfield([data.params],'fs')
+        fs = data(itrial).params.fs;
+    else
+        warning('No "fs" field found; looking for sampling rate in field "sr".');
+        fs = data(itrial).params.sr;
+    end
     
     % if trial data exists, load event params and overwrite default params
     savefile = fullfile(dataPath,trialfolder,sprintf('%d.mat',itrial));

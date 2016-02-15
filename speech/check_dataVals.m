@@ -17,7 +17,7 @@ if nargin < 2 || isempty(yesCalc), yesCalc = 0; end
 
 %if yesCalc == 1, generate dataVals
 if yesCalc
-    gen_dataVals_from_wave_viewer(dataPath)
+    gen_dataVals_from_wave_viewer(dataPath);
 end
 
 load(fullfile(dataPath,'dataVals'))
@@ -39,23 +39,23 @@ goodTrials = [];
 
 for i = 1:length(dataVals)
     if dataVals(i).bExcl
-        badTrials = [badTrials i];
+        badTrials = [badTrials dataVals(i).token];
     elseif dataVals(i).dur < shortThresh %check for too short trials
-        shortTrials = [shortTrials i];
+        shortTrials = [shortTrials dataVals(i).token];
     elseif dataVals(i).dur > longThresh %check for too long trials
-        longTrials = [longTrials i];
+        longTrials = [longTrials dataVals(i).token];
     elseif find(isnan(dataVals(i).f1(2:end))) %check if there are NaN values in formant tracks, excepting 1st sample
-        nanFTrials = [nanFTrials i];
+        nanFTrials = [nanFTrials dataVals(i).token];
     elseif max(abs(diff(dataVals(i).f1)))>jumpThresh || max(abs(diff(dataVals(i).f2)))>jumpThresh %check for trials with F1/F2 jumps
         if max(abs(diff(dataVals(i).f1)))>jumpThresh %check for trials with F1 jumps
-            jumpF1Trials = [jumpF1Trials i];
+            jumpF1Trials = [jumpF1Trials dataVals(i).token];
         elseif max(abs(diff(dataVals(i).f2)))>jumpThresh %check for trials with F2 jumps
-            jumpF2Trials = [jumpF2Trials i];
+            jumpF2Trials = [jumpF2Trials dataVals(i).token];
         end
     elseif any(dataVals(i).f1 < wrongFThresh(1)) || any(dataVals(i).f1 > wrongFThresh(2)) %check if wrong formant is being tracked for F1
-        wrongFTrials = [wrongFTrials i];
+        wrongFTrials = [wrongFTrials dataVals(i).token];
     else
-        goodTrials = [goodTrials i];
+        goodTrials = [goodTrials dataVals(i).token];
     end
 end
 
