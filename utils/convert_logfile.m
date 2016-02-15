@@ -1,23 +1,21 @@
-function [ ] = convert_logfile(dataPath)
+function [ ] = convert_logfile(dataPath,infilename,outfilename)
 %CONVERT_LOGFILE  Convert JSON logfile to Matlab struct array.
 %   CONVERT_LOGFILE(DATAPATH) loads a JSON object found in DATAPATH
 %   containing experiment stimulus and timing information and converts it
 %   to a matfile, saving it as exptlog.mat in the same DATAPATH.
 
-%M = loadjson(fullfile(dataPath,'exptlog.txt'));
-M = loadjson(fullfile(dataPath,'exptlog.json'));
+if nargin < 1 || isempty(dataPath), dataPath = cd; end
+if nargin < 2 || isempty(infilename), infilename = 'exptlog'; end
+if nargin < 3 || isempty(outfilename), outfilename = infilename; end
 
-fieldns = fieldnames(M);
-trialfield = fieldns{2};
+jsonfile = sprintf('%s.json',infilename);
+M = loadjson(fullfile(dataPath,jsonfile));
 
-for tr=1:length(M.(trialfield))
-    trialinfo = M.(trialfield){tr};
-    if ~isfield(trialinfo,'uttStartTime'), trialinfo.uttStartTime = []; end
-    if ~isfield(trialinfo,'duration'), trialinfo.duration = []; end
-    exptlog(tr) = trialinfo;
+for tr=1:length(M)
+    exptlog(tr) = M{tr}; %#ok<AGROW,NASGU>
 end
 
-savefile = fullfile(dataPath,'exptlog.mat');
+savefile = fullfile(dataPath,sprintf('%s.mat',outfilename));
 save(savefile,'exptlog')
 fprintf('Saved %s\n',savefile)
 
