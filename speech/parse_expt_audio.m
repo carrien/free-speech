@@ -3,6 +3,7 @@ function [data] = parse_expt_audio(dataPath,subjPrefix,sampleOffset)
 %   PARSE_EXPT_AUDIO(DATAPATH) uses the logfile found in DATAPATH to parse
 %   individual trials from a whole-experiment audio file and save them
 
+if nargin < 1 || isempty(dataPath), dataPath = cd; end
 if nargin < 2 || isempty(subjPrefix)
     if exist(fullfile(dataPath,'subjInfo.mat'),'file')
         load(fullfile(dataPath,'subjInfo.mat'))
@@ -16,9 +17,8 @@ wavfile = fullfile(dataPath,sprintf('%sexpt.wav',subjPrefix));
 savefile = fullfile(dataPath,'data.mat');
 logfile = fullfile(dataPath,'exptlog.mat');
 if ~exist(logfile,'file')
-    fprintf('Converting logfile from JSON to mat... ')
+    fprintf('Converting logfile from JSON to mat...\n')
     convert_logfile(dataPath);
-    fprintf('Done.\n')
 end
 fprintf('Loading logfile... ')
 load(logfile);
@@ -41,7 +41,6 @@ preUttBuffer_samp = ceil(preUttBuffer_ms*fs/1000);           % in samples
 postUttBuffer_ms = 500;
 postUttBuffer_samp = ceil(postUttBuffer_ms*fs/1000);           % in samples
 
-
 if isempty(sampleOffset) % find it programmatically here
 %     % build filter to convolve
 %     for i=1:length(exptlog)
@@ -60,21 +59,24 @@ if isempty(sampleOffset) % find it programmatically here
 end
 
 % plot to check wav-logfile alignment
+dsfact = 500; % downsample factor
+y_ksamps = downsample(y,dsfact);
+hksamps2plot = 10000;
 figure;
-plot(y(1:5000000)); hold on;
-ss = find(utt_samp+dur_samp+sampleOffset<5000000);
+plot(y_ksamps(1:hksamps2plot)); hold on;
+ss = find(utt_samp/dsfact+dur_samp/dsfact+sampleOffset/dsfact<hksamps2plot);
 if isempty(ss)
-    ss = find(stim_samp+sampleOffset<5000000);
+    ss = find(stim_samp/dsfact+sampleOffset/dsfact<hksamps2plot);
 end
 ss = ss(end)+1;
 for s=1:ss
     if ~isempty(utt_samp)
-        thisUtt = utt_samp(s)+sampleOffset:utt_samp(s)+dur_samp(s)+sampleOffset;
-        plot_filled_err(thisUtt,zeros(1,length(thisUtt)),max(abs(y(1:5000000))),[],.2);
-        thisUttPlus = utt_samp(s)+sampleOffset-preUttBuffer_samp:utt_samp(s)+dur_samp(s)+sampleOffset+postUttBuffer_samp;
-        plot_filled_err(thisUttPlus,zeros(1,length(thisUttPlus)),max(abs(y(1:5000000))),[],.2);
+        thisUtt = utt_samp(s)/dsfact+sampleOffset/dsfact:utt_samp(s)/dsfact+dur_samp(s)/dsfact+sampleOffset/dsfact;
+        plot_filled_err(thisUtt,zeros(1,length(thisUtt)),max(abs(y_ksamps(1:hksamps2plot))),[],.2);
+        thisUttPlus = utt_samp(s)/dsfact+sampleOffset/dsfact-preUttBuffer_samp/dsfact:utt_samp(s)/dsfact+dur_samp(s)/dsfact+sampleOffset/dsfact+postUttBuffer_samp/dsfact;
+        plot_filled_err(thisUttPlus,zeros(1,length(thisUttPlus)),max(abs(y_ksamps(1:hksamps2plot))),[],.2);
     else
-        vline(stim_samp(s)-preUttBuffer_samp+sampleOffset,'r');
+        vline(stim_samp(s)/dsfact-preUttBuffer_samp/dsfact+sampleOffset/dsfact,'r');
     end
 end
 
