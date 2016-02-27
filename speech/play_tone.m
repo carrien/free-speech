@@ -9,11 +9,10 @@ if nargin < 4 || isempty(fs), fs = 11025; end
 if nargin < 5 || isempty(bRamp), bRamp = 0; end
 if nargin < 6, bComplex = 0; end
 
-t = 0:1/fs:dur;
 if ~bComplex
-    y = amp*sin(2*pi*w*t); 
+    y = amp*get_sine(w,dur,fs); 
 else
-    y = amp*( sin(2*pi*w*t) + sin(2*pi*w*2*t) + sin(2*pi*w*3*t));
+    y = amp*( get_sine(w,dur,fs) + get_sine(2*w,dur,fs) + get_sine(3*w,dur,fs));
 end
 
 if bRamp
