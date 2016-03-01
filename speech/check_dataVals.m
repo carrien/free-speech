@@ -6,6 +6,8 @@ function errors = check_dataVals(dataPath,yesCalc)
 %             * tracking obviously wrong F1
 %             * durations under 100 ms
 %             * durations over 1 s
+%             * early trials (first sample is above threshold)
+%             * late trials (last sample is above threshold)
 % inputs: dataPath: path where data to check is located [snum/subdir].
 %           Function reads from current directory if not specified
 %         yesCalc:  option to calculate dataVals using
@@ -35,6 +37,8 @@ nanFTrials = [];
 jumpF1Trials = [];
 jumpF2Trials = [];
 wrongFTrials = [];
+earlyTrials = [];
+lateTrials = [];
 goodTrials = [];
 
 for i = 1:length(dataVals)
@@ -54,6 +58,10 @@ for i = 1:length(dataVals)
         end
     elseif any(dataVals(i).f1 < wrongFThresh(1)) || any(dataVals(i).f1 > wrongFThresh(2)) %check if wrong formant is being tracked for F1
         wrongFTrials = [wrongFTrials dataVals(i).token];
+    elseif dataVals(i).ampl_taxis(1) < .0001
+        earlyTrials = [earlyTrials dataVals(i).token];
+    elseif dataVals(i).ampl_taxis(end) > 1.5
+        lateTrials = [lateTrials dataVals(i).token];
     else
         goodTrials = [goodTrials dataVals(i).token];
     end
@@ -66,5 +74,7 @@ errors.nanFTrials = nanFTrials;
 errors.jumpF1Trials = jumpF1Trials;
 errors.jumpF2Trials = jumpF2Trials;
 errors.wrongFTrials = wrongFTrials;
+errors.earlyTrials = earlyTrials;
+errors.lateTrials = lateTrials;
 errors.goodTrials = goodTrials;
     

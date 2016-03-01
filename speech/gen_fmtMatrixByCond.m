@@ -15,6 +15,8 @@ if strcmp(exptName,'cat')
     subdirname = 'pert/formant_analysis';
 elseif strcmp(exptName,'mvSIS') || strcmp(exptName,'mpSIS')
     subdirname = 'speak';
+elseif strcmp(exptName,'vin')
+    subdirname = 'all';
 else
     subdirname = [];
 end
@@ -142,7 +144,7 @@ for c = 1:length(indShift) % for each condition to plot
 end
 
 %% save data
-filename = sprintf('fmtMatrix_%s_%s_new.mat',[indShift.name],basename);
+filename = sprintf('fmtMatrix_%s_%s.mat',[indShift.name],basename);
 if length(filename) > 100
     filename = 'fmtMatrix_singletrial_25closest';
     fprintf('Warning: Changing filename to %s.mat!\n',filename)

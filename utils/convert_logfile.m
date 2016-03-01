@@ -17,6 +17,6 @@ end
 
 savefile = fullfile(dataPath,sprintf('%s.mat',outfilename));
 save(savefile,'exptlog')
-fprintf('Saved %s\n',savefile)
+fprintf('Saved logfile as %s\n',savefile)
 
 end

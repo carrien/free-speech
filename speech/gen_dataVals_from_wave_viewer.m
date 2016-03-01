@@ -1,11 +1,12 @@
-function [shortTracks] = gen_dataVals_from_wave_viewer(dataPath,trialdir)
+function [] = gen_dataVals_from_wave_viewer(dataPath,trialdir)
 %GEN_DATAVALS  Scrape subject trial files for data and save.
 %   GEN_DATAVALS(DATAPATH,TRIALDIR) scrapes the files from a subject's
-%   DATAPATH/TRIALDIR directory and collects formant data into a single mat
-%   file saved as DATAVALS.
+%   DATAPATH/TRIALDIR directory and collects formant data into the single
+%   file DATAVALS.mat.
 %
 %CN 3/2010
 
+if nargin < 1 || isempty(dataPath), dataPath = cd; end
 if nargin < 2 || isempty(trialdir), trialdir = 'trials'; end
 
 savefile = fullfile(dataPath,sprintf('dataVals%s.mat',trialdir(7:end)));
@@ -110,12 +111,12 @@ for i = 1:length(sortedfiles)
     
     % warn about short tracks
     if ~dataVals(i).bExcl && sum(~isnan(dataVals(i).f0)) < 20,
-        shortTracks = [shortTracks i];
-        warning('Short pitch track: trial %d',i);
+        shortTracks = [shortTracks dataVals(i).token];
+        warning('Short pitch track: trial %d',dataVals(i).token);
     end
     if ~dataVals(i).bExcl && sum(~isnan(dataVals(i).f1)) < 20,
-        shortTracks = [shortTracks i];
-        warning('Short formant track: trial %d',i);
+        shortTracks = [shortTracks dataVals(i).token];
+        warning('Short formant track: trial %d',dataVals(i).token);
     end
 
 end

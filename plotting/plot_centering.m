@@ -1,4 +1,4 @@
-function [] = plot_centering(exptName,svec,subdirname,condtype,condinds,plotinds,ntile)
+function [] = plot_centering(dataPaths,condtype,condinds,plotinds,ntile)
 %PLOT_CENTERING  Plot vowel centering in center and peripheral trials.
 %   PLOT_CENTERING reads formants from a subject's fdata file and plots
 %   them with respect to the median at both the beginning (first50ms) and
@@ -8,23 +8,20 @@ function [] = plot_centering(exptName,svec,subdirname,condtype,condinds,plotinds
 %
 %CN 8/2013
 
-if nargin < 3, subdirname = []; end
-if nargin < 4 || isempty(condtype), condtype = 'vowel'; end
-if nargin < 5 || isempty(condinds), condinds = [1 2 3]; end
-if nargin < 6 || isempty(plotinds), plotinds = [1 2]; end
-if nargin < 7 || isempty(ntile), ntile = 5; end
+if ischar(dataPaths), dataPaths = {dataPaths}; end
+if nargin < 2 || isempty(condtype), condtype = 'vowel'; end
+if nargin < 3 || isempty(condinds), condinds = [1 2 3]; end
+if nargin < 4 || isempty(plotinds), plotinds = [1 2]; end
+if nargin < 5 || isempty(ntile), ntile = 5; end
 
-for s=1:length(svec)
-    if iscell(svec), snum = svec{s};
-    elseif isvector(svec), snum = svec(s);
-    else error('plot_centering takes an array of subject IDs.')
-    end
-    load(fullfile(getAcoustSubjPath(exptName,snum,subdirname),sprintf('fdata_%s.mat',condtype)));
+for s=1:length(dataPaths)
+    load(fullfile(dataPaths{s},sprintf('fdata_%s.mat',condtype)));
     conds = fieldnames(fmtdata.mels);
     
-    for v = condinds
-        first = fmtdata.mels.(conds{v}).first50ms;
-        mid = fmtdata.mels.(conds{v}).mid50p;
+    for cnd = condinds
+        c = conds{cnd}; % current condition name
+        first = fmtdata.mels.(c).first50ms;
+        mid = fmtdata.mels.(c).mid50p;
         
         if ntile < 3
             ntiles = median(first.dist);
@@ -59,28 +56,28 @@ for s=1:length(svec)
             % simple: just store init and final dists (subtract to get
             % centering, and also use them to check for changes in
             % dispersion)
-            dists_init.(conds{v}).pph = sqrt(initf1norm(pph).^2 + initf2norm(pph).^2);
-            dists_mid.(conds{v}).pph = sqrt(midf1norm(pph).^2 + midf2norm(pph).^2);
-            dists_init.(conds{v}).cen = sqrt(initf1norm(cen).^2 + initf2norm(cen).^2);
-            dists_mid.(conds{v}).cen = sqrt(midf1norm(cen).^2 + midf2norm(cen).^2);
-            dists_init.(conds{v}).midd = sqrt(initf1norm(midd).^2 + initf2norm(midd).^2);
-            dists_mid.(conds{v}).midd = sqrt(midf1norm(midd).^2 + midf2norm(midd).^2);
+            dists_init.(c).pph = sqrt(initf1norm(pph).^2 + initf2norm(pph).^2);
+            dists_mid.(c).pph = sqrt(midf1norm(pph).^2 + midf2norm(pph).^2);
+            dists_init.(c).cen = sqrt(initf1norm(cen).^2 + initf2norm(cen).^2);
+            dists_mid.(c).cen = sqrt(midf1norm(cen).^2 + midf2norm(cen).^2);
+            dists_init.(c).midd = sqrt(initf1norm(midd).^2 + initf2norm(midd).^2);
+            dists_mid.(c).midd = sqrt(midf1norm(midd).^2 + midf2norm(midd).^2);
             % store centering values
-            centering_mean.(conds{v}).pph = dinit.pph - dmid.pph;
-            centering_mean.(conds{v}).cen = dinit.cen - dmid.cen;
-            centering_mean.(conds{v}).midd = dinit.midd - dmid.midd;
-            centering.(conds{v}).pph = sqrt(initf1norm(pph).^2 + initf2norm(pph).^2) - sqrt(midf1norm(pph).^2 + midf2norm(pph).^2);
-            centering.(conds{v}).cen = sqrt(initf1norm(cen).^2 + initf2norm(cen).^2) - sqrt(midf1norm(cen).^2 + midf2norm(cen).^2);
-            centering.(conds{v}).midd = sqrt(initf1norm(midd).^2 + initf2norm(midd).^2) - sqrt(midf1norm(midd).^2 + midf2norm(midd).^2);
+            centering_mean.(c).pph = dinit.pph - dmid.pph;
+            centering_mean.(c).cen = dinit.cen - dmid.cen;
+            centering_mean.(c).midd = dinit.midd - dmid.midd;
+            centering.(c).pph = sqrt(initf1norm(pph).^2 + initf2norm(pph).^2) - sqrt(midf1norm(pph).^2 + midf2norm(pph).^2);
+            centering.(c).cen = sqrt(initf1norm(cen).^2 + initf2norm(cen).^2) - sqrt(midf1norm(cen).^2 + midf2norm(cen).^2);
+            centering.(c).midd = sqrt(initf1norm(midd).^2 + initf2norm(midd).^2) - sqrt(midf1norm(midd).^2 + midf2norm(midd).^2);
             % store duration values (periph only)
-            dur.(conds{v}).pph = durdata.s.(conds{v})(pph);
-            dur.(conds{v}).cen = durdata.s.(conds{v})(cen);
-            dur.(conds{v}).midd = durdata.s.(conds{v})(midd);
+            dur.(c).pph = durdata.s.(c)(pph);
+            dur.(c).cen = durdata.s.(c)(cen);
+            dur.(c).midd = durdata.s.(c)(midd);
             % formant movement in euclidean space
             euclmove = sqrt((mid.rawavg.f1-first.rawavg.f1).^2 + (mid.rawavg.f2-first.rawavg.f2).^2);
-            eucl.(conds{v}).pph = euclmove(pph);
-            eucl.(conds{v}).cen = euclmove(cen);
-            eucl.(conds{v}).midd = euclmove(midd);
+            eucl.(c).pph = euclmove(pph);
+            eucl.(c).cen = euclmove(cen);
+            eucl.(c).midd = euclmove(midd);
                         
             plot(0,0,'ko')
             hold on;
@@ -116,7 +113,7 @@ for s=1:length(svec)
             axis square
             axis(ax);
             
-            set(gcf,'Position',[265 355 820 299],'Name',sprintf('subj %d %s %d (%s)',snum,condtype,v,conds{v}))
+            set(gcf,'Position',[265 355 820 299],'Name',sprintf('subjind %d %s %d (%s)',s,condtype,cnd,c))
         end
         
         %% init to mid, non-normalized
@@ -182,7 +179,7 @@ for s=1:length(svec)
             axis square
             axis(ax);
             
-            set(gcf,'Position',[265 355 820 299],'Name',sprintf('subj %d %s %d (%s)',snum,condtype,v,conds{v}))
+            set(gcf,'Position',[265 355 820 299],'Name',sprintf('subjind %d %s %d (%s)',s,condtype,cnd,c))
         end
         
         %% periph to median
@@ -243,8 +240,11 @@ for s=1:length(svec)
     end
     
     % save centering info per subject
-    centfilename = fullfile(getAcoustSubjPath(exptName,snum,subdirname),sprintf('centering_cvp_%dtile.mat',ntile));
-    save(centfilename,'centering','centering_mean','dists_init','dists_mid','dur','eucl');
+    centfilename = fullfile(dataPaths{s},sprintf('centering_cvp_%dtile.mat',ntile));
+    bSave = savecheck(centfilename);
+    if bSave
+        save(centfilename,'centering','centering_mean','dists_init','dists_mid','dur','eucl');
+    end
     
 end
 

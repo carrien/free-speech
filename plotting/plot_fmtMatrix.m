@@ -13,9 +13,10 @@ if nargin < 4 || isempty(toPlot), toPlot = 'rawf1'; end
 if nargin < 5, errtype = 'se'; end
 
 if snum==0
-    dataPath = fullfile(get_exptPath(exptName),'acousticdata');
+    dataPath = get_exptPath(exptName,'acousticdata');
 else
     if strcmp(exptName,'cat'), dataPath = getAcoustSubjPath(exptName,snum,'pert','formant_analysis');
+    elseif strcmp(exptName,'vin'), dataPath = getAcoustSubjPath(exptName,snum,'all');
     else dataPath = getAcoustSubjPath(exptName,snum);
     end
 end
