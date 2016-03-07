@@ -1,4 +1,4 @@
-function [] = plot_fmtdata_vowels(exptName,snum,freqscale,avgfn,subdirname)
+function [] = plot_fmtdata_vowels(exptName,snum,freqscale,avgfn,subdirname,condtype)
 %PLOT_FMTDATA_VOWELS  Plot vowel production space.
 %   PLOT_FMTDATA_VOWELS(EXPTNAME,SNUM,FREQSCALE,AVGFN,SUBDIRNAME) plots the
 %   vowel production space from subject SNUM's fdata_vowels file.
@@ -16,7 +16,7 @@ elseif nargin < 5 && strcmp(exptName,'cat')
 end
 
 dataPath = getAcoustSubjPath(exptName,snum,subdirname);
-load(fullfile(dataPath,'fdata_vowel.mat'));
+load(fullfile(dataPath,sprintf('fdata_%s.mat',condtype)));
 colors = setcolors;
 
 for f=1:length(freqscale)

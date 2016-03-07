@@ -63,13 +63,13 @@ facealpha = .25;
 xlab = 'time (s)';
 % account for short mean traces by decreasing stop point
 for c=1:length(conds) 
-    if length(rfx_mean.percproj.(conds{c})) < stop(c)
-        stop(c) = length(rfx_mean.percproj.(conds{c}));
+    if length(rfx_mean.diff2d.(conds{c})) < stop(c)
+        stop(c) = length(rfx_mean.diff2d.(conds{c}));
     end    
 end
 
 % plot
-fields2plot = {'diff1' 'diff2' 'diff2d' 'proj'}; %{'percproj' 'effproj'};
+fields2plot = {'diff1' 'diff2' 'diff2d'}; % 'proj'}; %{'percproj' 'effproj'};
 titles = fields2plot;
 ylabs = fields2plot;
 for f=1:length(fx)
