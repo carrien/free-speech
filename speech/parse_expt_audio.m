@@ -41,21 +41,25 @@ preUttBuffer_samp = ceil(preUttBuffer_ms*fs/1000);           % in samples
 postUttBuffer_ms = 500;
 postUttBuffer_samp = ceil(postUttBuffer_ms*fs/1000);           % in samples
 
-if isempty(sampleOffset) % find it programmatically here
-%     % build filter to convolve
-%     for i=1:length(exptlog)
-%         uttStartSamp = ceil(exptlog(i).uttStartTime*fs/1000);
-%         uttDurSamp = ceil(exptlog(i).uttDuration*fs/1000);
-%         uttFilt(uttStartSamp:uttStartSamp+uttDurSamp) = 1;
-%     end
-%     % downsample to make conv tractable
-%     y_ds = downsample(y,16);
-%     uttFilt_ds = downsample(uttFilt,16);
-%     % find the max of the convolution with amplitude
-%     y_rms = get_sig_ampl(y_ds,fs);
-%     C = conv(uttFilt_ds,y_rms);
-%     [~,sampleOffset] = max(C);
-    sampleOffset = 0;
+if isempty(sampleOffset) % if no offset given, find it programmatically
+    if isempty(exptlog(1).uttStartTime)
+        sampleOffset = -1*stim_samp(1)+1;
+    else
+%         % build filter to convolve
+%         for i=1:length(exptlog)
+%             uttStartSamp = ceil(exptlog(i).uttStartTime*fs/1000);
+%             uttDurSamp = ceil(exptlog(i).uttDuration*fs/1000);
+%             uttFilt(uttStartSamp:uttStartSamp+uttDurSamp) = 1;
+%         end
+%         % downsample to make conv tractable
+%         y_ds = downsample(y,16);
+%         uttFilt_ds = downsample(uttFilt,16);
+%         % find the max of the convolution with amplitude
+%         y_rms = get_sig_ampl(y_ds,fs);
+%         C = conv(uttFilt_ds,y_rms);
+%         [~,sampleOffset] = max(C);
+        sampleOffset = 0;
+    end
 end
 
 % plot to check wav-logfile alignment
@@ -68,7 +72,7 @@ ss = find(utt_samp/dsfact+dur_samp/dsfact+sampleOffset/dsfact<hksamps2plot);
 if isempty(ss)
     ss = find(stim_samp/dsfact+sampleOffset/dsfact<hksamps2plot);
 end
-ss = ss(end)+1;
+ss = ss(end); %+1;
 for s=1:ss
     if ~isempty(utt_samp)
         thisUtt = utt_samp(s)/dsfact+sampleOffset/dsfact:utt_samp(s)/dsfact+dur_samp(s)/dsfact+sampleOffset/dsfact;
@@ -76,7 +80,7 @@ for s=1:ss
         thisUttPlus = utt_samp(s)/dsfact+sampleOffset/dsfact-preUttBuffer_samp/dsfact:utt_samp(s)/dsfact+dur_samp(s)/dsfact+sampleOffset/dsfact+postUttBuffer_samp/dsfact;
         plot_filled_err(thisUttPlus,zeros(1,length(thisUttPlus)),max(abs(y_ksamps(1:hksamps2plot))),[],.2);
     else
-        vline(stim_samp(s)/dsfact-preUttBuffer_samp/dsfact+sampleOffset/dsfact,'r');
+        vline(stim_samp(s)/dsfact+sampleOffset/dsfact,'r');
     end
 end
 
@@ -93,7 +97,7 @@ end
 data = struct([]);
 for itrial=1:ntrials
     fprintf('')
-    if ~isempty(utt_samp)
+    if ~isempty(utt_samp) && length(utt_samp)>=itrial
         startSamp = utt_samp(itrial) - preUttBuffer_samp;
         endSamp = utt_samp(itrial) + dur_samp(itrial) + postUttBuffer_samp;
     else
@@ -111,7 +115,8 @@ for itrial=1:ntrials
     data(itrial).params.fs = new_fs;
 end
 
-fprintf('Parsed and downsampled %d trials to %s\n',length(data),savefile)
-save(savefile,'data')
-
+bSave = savecheck(savefile);
+if bSave
+    save(savefile,'data')
+    fprintf('Parsed and downsampled %d trials to %s\n',length(data),savefile)
 end
