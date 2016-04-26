@@ -1,16 +1,16 @@
 function [] = merge_fmtMatrices_crossSubj(exptName,plotfile,conds2merge,mergednames)
-%MERGEFMTTRACES Merges conditions within a plotfile.
-%   MERGEFMTTRACES_CROSSSUBJ(EXPTNAME,PLOTFILE,CONDS2MERGE,MERGEDNAMES)
+%MERGEFMTTRACES  Merges conditions within a plotfile.
+%   MERGE_FMTTRACES_CROSSSUBJ(EXPTNAME,PLOTFILE,CONDS2MERGE,MERGEDNAMES)
 %   combines conditions in a plotfile to be plotted as one condition.
-%   CONDS2MERGE is an array of cells, each consisting of a pair of
+%   CONDS2MERGE is an array of cell arrays, each consisting of a pair of
 %   condition names (strings). MERGEDNAMES is an array of new condition
 %   names for each pair.
 
-dataPath = fullfile(getExptPath,exptName,'acousticdata');
+dataPath = fullfile(get_exptPath,exptName,'acousticdata');
 load(fullfile(dataPath,plotfile)) % e.g. fmtTraces_3subj.mat
 analyses = fieldnames(ffx); %#ok<NODEF>
 
-for a = 1:length(fns)
+for a = 1:length(analyses)
     anl = analyses{a};
     for c2m = 1:length(conds2merge)
         oldcnd1 = conds2merge{c2m}{1};
