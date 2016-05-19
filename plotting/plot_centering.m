@@ -66,9 +66,9 @@ for s=1:length(dataPaths)
             centering_mean.(c).pph = dinit.pph - dmid.pph;
             centering_mean.(c).cen = dinit.cen - dmid.cen;
             centering_mean.(c).midd = dinit.midd - dmid.midd;
-            centering.(c).pph = sqrt(initf1norm(pph).^2 + initf2norm(pph).^2) - sqrt(midf1norm(pph).^2 + midf2norm(pph).^2);
-            centering.(c).cen = sqrt(initf1norm(cen).^2 + initf2norm(cen).^2) - sqrt(midf1norm(cen).^2 + midf2norm(cen).^2);
-            centering.(c).midd = sqrt(initf1norm(midd).^2 + initf2norm(midd).^2) - sqrt(midf1norm(midd).^2 + midf2norm(midd).^2);
+            centering.(c).pph = dists_init.(c).pph - dists_mid.(c).pph;
+            centering.(c).cen = dists_init.(c).cen - dists_mid.(c).cen;
+            centering.(c).midd = dists_init.(c).midd - dists_mid.(c).midd;
             % store duration values (periph only)
             dur.(c).pph = durdata.s.(c)(pph);
             dur.(c).cen = durdata.s.(c)(cen);
