@@ -1,6 +1,6 @@
 function [ ] = gen_fmtMatrix_crossSubj(exptName,svec,fmtMatrixFile,bSaveCheck)
 %GEN_FMTMATRIX_CROSSSUBJ  Generate a plottable fmt matrix across subjects.
-%   GEN_FMTMATRIX_CROSSSUBJ(EXPTNAME,SVEC,TRACEFILE) concatenates
+%   GEN_FMTMATRIX_CROSSSUBJ(EXPTNAME,SVEC,FMTMATRIXFILE) concatenates
 %   formant matrix data from FMTMATRIXFILE for all the subjects in SVEC.
 %
 % cn 11/2014
@@ -17,7 +17,10 @@ if nargin < 4 || isempty(bSaveCheck)
 end
 
 basedir = fullfile(get_exptPath,exptName,'acousticdata');
-if strcmp(exptName,'cat'), subdirname = 'pert/formant_analysis'; else subdirname = []; end
+if strcmp(exptName,'cat'), subdirname = 'pert/formant_analysis';
+elseif strcmp(exptName,'vin'), subdirname = 'all';
+else subdirname = [];
+end
 ffx = []; rfx = [];
 
 %% concatenate matrices

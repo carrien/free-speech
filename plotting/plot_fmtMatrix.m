@@ -12,7 +12,7 @@ function [] = plot_fmtMatrix(exptName,snum,plotfile,toPlot,errtype)
 if nargin < 4 || isempty(toPlot), toPlot = 'rawf1'; end
 if nargin < 5, errtype = 'se'; end
 
-if snum==0
+if isempty(snum)
     dataPath = get_exptPath(exptName,'acousticdata');
 else
     if strcmp(exptName,'cat'), dataPath = getAcoustSubjPath(exptName,snum,'pert','formant_analysis');

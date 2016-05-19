@@ -1,6 +1,6 @@
-function [rawf1,rawf2] = gen_fmtMatrix(dataVals,inds,bMels,bFilt)
-%GEN_FMTMATRIX  Generate matrix of formant tracks from a dataVals object.
-%   GEN_FMTMATRIX(DATAVALS,INDS,BMELS,BFILT) extracts only the trials INDS
+function [rawf1,rawf2] = get_fmtMatrix(dataVals,inds,bMels,bFilt)
+%GET_FMTMATRIX  Generate matrix of formant tracks from a dataVals object.
+%   GET_FMTMATRIX(DATAVALS,INDS,BMELS,BFILT) extracts only the trials INDS
 %   from DATAVALS and concatenates their formant tracks into the matrices
 %   RAWF1 and RAWF2. BMELS and BFILT are binary variables that determine
 %   whether the formant tracks are converted to mels and filtered,

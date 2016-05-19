@@ -43,11 +43,11 @@ load(fullfile(dataPath,dataValsStr));
 display(sprintf('Subject %.0f',snum));
 for c = 1:length(indShift) % for each condition to plot
     %% generate array of baseline traces (each column is a trial)
-    if indBase(c).inds == 0 % if no baseline
+    if indBase(c).inds == 0 % if no baseline -- not well-tested
         rawf1.(baseconds{c}) = 0;
         rawf2.(baseconds{c}) = 0;
     else % generate matrix for THIS (cond-specific) baseline
-        [rawf1.(baseconds{c}),rawf2.(baseconds{c})] = gen_fmtMatrix(dataVals,indBase(c).inds,bMels,bFilt);
+        [rawf1.(baseconds{c}),rawf2.(baseconds{c})] = get_fmtMatrix(dataVals,indBase(c).inds,bMels,bFilt);
     end
     % get mean baseline
     rawf1_mean.(baseconds{c}) = nanmean(rawf1.(baseconds{c}),2); % mean formants for shift-specific baseline
@@ -56,7 +56,7 @@ for c = 1:length(indShift) % for each condition to plot
     %% generate array of shifted traces
     if indShift(c).inds
         % generate matrix for this cond
-        [rawf1.(conds{c}),rawf2.(conds{c})] = gen_fmtMatrix(dataVals,indShift(c).inds,bMels,bFilt);
+        [rawf1.(conds{c}),rawf2.(conds{c})] = get_fmtMatrix(dataVals,indShift(c).inds,bMels,bFilt);
         % get mean of this cond
         rawf1_mean.(conds{c}) = nanmean(rawf1.(conds{c}),2);
         rawf2_mean.(conds{c}) = nanmean(rawf2.(conds{c}),2);
@@ -143,6 +143,8 @@ for c = 1:length(indShift) % for each condition to plot
     end
 end
 
+tstep = unique(diff(dataVals(1).ftrack_taxis)); %#ok<NASGU>
+
 %% save data
 filename = sprintf('fmtMatrix_%s_%s.mat',[indShift.name],basename);
 if length(filename) > 100
@@ -173,6 +175,6 @@ else
     bSave = 1;
 end
 if bSave
-    save(savefile,'fmtMatrix','fmtMeans','hashalf','hasthird','hasquart','bMels','bFilt')
+    save(savefile,'fmtMatrix','fmtMeans','hashalf','hasthird','hasquart','tstep','bMels','bFilt')
     fprintf('%s created.\n',filename);
 end

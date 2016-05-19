@@ -69,7 +69,7 @@ for c=1:length(conds)
 end
 
 % plot
-fields2plot = {'diff1' 'diff2' 'diff2d'}; % 'proj'}; %{'percproj' 'effproj'};
+fields2plot = {'diff1' 'diff2' 'diff2d' 'proj' 'effproj' 'effdist'}; %{'percproj' 'effproj'};
 titles = fields2plot;
 ylabs = fields2plot;
 for f=1:length(fx)
