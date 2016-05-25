@@ -1,9 +1,7 @@
 function [inds] = get_exptInds(expt,elements)
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+%GET_EXPTINDS  Calculate indices of trial types for an expt object.
+%   GET_EXPTINDS(EXPT,ELEMENTS)
 
-%indall = {'conds', 'words', 'vowels'};
-%indlist = {'allConds', 'allWords', 'allVowels'};
 allElements = cell(1,length(elements));
 for ie=1:length(elements)
     allElements{ie} = sprintf('all%s%s',upper(elements{ie}(1)),elements{ie}(2:end));

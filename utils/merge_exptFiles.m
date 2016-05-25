@@ -34,12 +34,12 @@ for i=1:length(dataPaths)
         expt.ntrials = expt.ntrials + exptpart.ntrials;
         expt.nblocks = expt.nblocks + exptpart.nblocks;
         % merge all remaining fields (except inds)
-        exptpart = rmfield(exptpart,{'name','snum','ntrials','nblocks'});
+        exptpart = rmfield(exptpart,{'name','snum','dataPath','ntrials','nblocks','nbtrials','inds'});
         exptpart = rmfield(exptpart,elements);
         fns = fieldnames(exptpart);
         for fn=1:length(fns)
             data2add = exptpart.(fns{fn});
-            expt.(fns{fn})(end+1:end+length(data2add)) = data2add;
+            expt.(fns{fn}) = horzcat(expt.(fns{fn}),data2add);
         end
     end
 end
@@ -47,16 +47,14 @@ end
 % recalculate indices
 expt.inds = get_exptInds(expt,elements);
 
-% recalculate lists
-
 % update dataPath
 expt.dataPath = savePath;
 
 if ~exist(savePath,'dir')
     mkdir(savePath)
 end
-savefile = fullfile(savePath,'data.mat');
+savefile = fullfile(savePath,'expt.mat');
 bSave = savecheck(savefile);
 if bSave
-    save(savefile, 'data');
+    save(savefile, 'expt');
 end
