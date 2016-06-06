@@ -1,14 +1,29 @@
 function [ipa] = txt2ipa(txt)
 %TXT2IPA   Converts text string to IPA equivalent.
 
-if ~ischar(txt), error('Input must be a text string.')
-elseif strcmp(txt,'ah'), ipa = 'a';
-elseif sum(strcmp(txt,{'ae' 'add' 'ad' 'rad'})), ipa = 'ae';
-elseif sum(strcmp(txt,{'eh' 'Ed' 'head' 'red' 'glen' 'blend'})), ipa = 'E';
-elseif sum(strcmp(txt,{'grain'})), ipa = 'eI';
-elseif sum(strcmp(txt,{'ih' 'I' 'rid' 'grin'})), ipa = 'I';
-elseif sum(strcmp(txt,{'ee' 'eat' 'reed' 'green' 'bleed'})), ipa = 'i';
-elseif sum(strcmp(txt,{'oh' 'blow'})), ipa = 'o';
-elseif sum(strcmp(txt,{'oo' 'rude' 'groom' 'blue'})), ipa = 'u';
-elseif sum(strcmp(txt,{'er' 'blur'})), ipa = 'er';
-end
+if iscellstr(txt), txtcell = txt;
+elseif ischar(txt), txtcell = {txt}; % if string, convert to cell array
+else error('Input must be a text string or cell array of strings.')
+end 
+
+    vowels = {'a' 'ae' 'E' 'eI' 'I' 'i' 'o' 'u' 'er'};
+    
+    a = ismember(txtcell,'ah');
+    ae = ismember(txtcell,{'ae' 'add' 'ad' 'rad'});
+    E = ismember(txtcell,{'eh' 'Ed' 'head' 'red' 'glen' 'blend'});
+    eI = ismember(txtcell,{'grain'});
+    I = ismember(txtcell,{'ih' 'I' 'rid' 'grin'});
+    i = ismember(txtcell,{'ee' 'eat' 'reed' 'green' 'bleed'});
+    o = ismember(txtcell,{'oh' 'blow'});
+    u = ismember(txtcell,{'oo' 'rude' 'groom' 'blue'});
+    er = ismember(txtcell,{'er' 'blur'});
+    
+    vowelinds = [a; ae; E; eI; I; i; o; u; er];
+    vowelinds = sum(vowelinds .* repmat([1:size(vowelinds,1)]',1,size(vowelinds,2)),1);
+    if any(~vowelinds)
+        notfound = unique(txtcell(~vowelinds));
+        error('Text ''%s'' not found in IPA conversion table. ',notfound{:});
+    end
+    ipa = vowels(vowelinds);
+
+if ischar(txt), ipa = ipa{1}; end % if input was string, convert back
