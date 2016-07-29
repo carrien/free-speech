@@ -70,9 +70,13 @@ for s=1:length(dataPaths)
             centering.(c).cen = dists_init.(c).cen - dists_mid.(c).cen;
             centering.(c).midd = dists_init.(c).midd - dists_mid.(c).midd;
             % store duration values (periph only)
-            dur.(c).pph = durdata.s.(c)(pph);
-            dur.(c).cen = durdata.s.(c)(cen);
-            dur.(c).midd = durdata.s.(c)(midd);
+            if exist('durdata','var')
+                dur.(c).pph = durdata.s.(c)(pph);
+                dur.(c).cen = durdata.s.(c)(cen);
+                dur.(c).midd = durdata.s.(c)(midd);
+            else
+                dur = [];
+            end
             % formant movement in euclidean space
             euclmove = sqrt((mid.rawavg.f1-first.rawavg.f1).^2 + (mid.rawavg.f2-first.rawavg.f2).^2);
             eucl.(c).pph = euclmove(pph);

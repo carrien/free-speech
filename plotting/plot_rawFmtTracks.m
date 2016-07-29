@@ -26,4 +26,20 @@ for j=unique([dataVals.(split)])
             end
         end;
     end;
+    
+    % plot ends
+    for i=trialset
+        if dataVals(i).(split) == j && (~isfield(dataVals,'bExcl') || ~dataVals(i).bExcl)
+            len = length(dataVals(i).f1);
+            if taxis
+                plot(.003*(len-1),dataVals(i).f1(end),'co');
+                plot(.003*(len-1),dataVals(i).f2(end),'mo');
+            else
+                plot(len,dataVals(i).f1(end),'co');
+                plot(len,dataVals(i).f2(end),'mo');
+            end
+            
+        end
+    end
+    
 end

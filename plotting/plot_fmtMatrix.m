@@ -16,7 +16,8 @@ load(fullfile(dataPath,plotfile));
 conds = fieldnames(fmtMatrix.(toPlot));
 
 load(fullfile(dataPath,'dataVals.mat'),'dataVals');
-tstep = mean(diff(dataVals(1).ftrack_taxis));
+goodtrials = find(~[dataVals.bExcl]);
+tstep = mean(diff(dataVals(goodtrials(1)).ftrack_taxis));
 %if strcmp(exptName,'cat'), tstep = .004; else tstep = .003; end
 alltime = 0:tstep:1.5;
 
