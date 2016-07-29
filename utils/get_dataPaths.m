@@ -4,8 +4,7 @@ function [dataPaths] = get_dataPaths(exptName,svec,varargin)
 
 dataPaths = cell(1,length(svec));
 for s=1:length(svec)
-    sid = sprintf('s%02d',svec(s));
-    dataPaths{s} = getAcoustSubjPath(exptName,sid,varargin{:});
+    dataPaths{s} = getAcoustSubjPath(exptName,svec(s),varargin{:});
 end
 
 % if single subject, return string instead of cell array
