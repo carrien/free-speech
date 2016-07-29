@@ -1,25 +1,16 @@
-function [] = gen_fmtMatrixByCond(exptName,snum,indBase,indShift,dataValsStr,bMels,bFilt,bSaveCheck)
+function [] = gen_fmtMatrixByCond(dataPath,indBase,indShift,dataValsStr,bMels,bFilt,bSaveCheck)
 %GEN_FMTMATRIXBYCOND  Generate a plottable formant matrix from a davaVals object.
-%   GEN_FMTMATRIXBYCOND(EXPTNAME,SNUM,DATAVALS,INDBASE,INDSHIFT,BFILT)
-%   Generates a fmtMatrix suitable for plotting by, e.g. plotFmtTraces_x.
+%   GEN_FMTMATRIXBYCOND(DATAPATH,INDBASE,INDSHIFT,DATAVALSSTR,BMELS,BFILT)
+%   Generates a fmtMatrix suitable for plotting by, e.g. plotFmtMatrix_[].
 %   INDBASE and INDSHIFT are cell arrays containing the indices of the
 %   baseline and shift for each condition.  (If the baseline indices are
 %   the same for all conditions, INDBASE may be a cell array of length 1
 %   with a single copy of these indices.)
 
-if nargin < 5 || isempty(dataValsStr), dataValsStr = 'dataVals.mat'; end
-if nargin < 6 || isempty(bMels), bMels = 1; end % binary variable: convert to mels or don't
-if nargin < 7 || isempty(bFilt), bFilt = 1; end % binary variable: filt on or off
-if nargin < 8 || isempty(bSaveCheck), bSaveCheck = 1; end
-if strcmp(exptName,'cat')
-    subdirname = 'pert/formant_analysis';
-elseif strcmp(exptName,'mvSIS') || strcmp(exptName,'mpSIS')
-    subdirname = 'speak';
-elseif strcmp(exptName,'vin')
-    subdirname = 'all';
-else
-    subdirname = [];
-end
+if nargin < 4 || isempty(dataValsStr), dataValsStr = 'dataVals.mat'; end
+if nargin < 5 || isempty(bMels), bMels = 1; end % binary variable: convert to mels or don't
+if nargin < 6 || isempty(bFilt), bFilt = 1; end % binary variable: filt on or off
+if nargin < 7 || isempty(bSaveCheck), bSaveCheck = 1; end
 
 % match baselines to number of conditions
 conds = {indShift.name};
@@ -35,12 +26,11 @@ else basename = [indBase.name];
 end
 baseconds = {indBase.name};
 
-dataPath = getAcoustSubjPath(exptName,snum,subdirname);
 load(fullfile(dataPath,'expt.mat'));
 load(fullfile(dataPath,dataValsStr));
 
 %% generate traces (each with its own baseline)
-display(sprintf('Subject %.0f',snum));
+display(sprintf('Subject directory: %s',dataPath));
 for c = 1:length(indShift) % for each condition to plot
     %% generate array of baseline traces (each column is a trial)
     if indBase(c).inds == 0 % if no baseline -- not well-tested
@@ -104,7 +94,17 @@ for c = 1:length(indShift) % for each condition to plot
         if isfield(indShift,'shiftind')
             % get shift vector
             if bMels
-                shiftvec = expt.shifts.mels{indShift(c).shiftind};
+                if isfield(expt.shifts,'mels')
+                    shiftvec = expt.shifts.mels{indShift(c).shiftind};
+                else
+                    shiftvec_hz = expt.shifts.hz{indShift(c).shiftind};
+                    load(fullfile(dataPath,'fdata_cond_nearfar.mat'));
+                    medprod_hz = [fmtdata.hz.noshift.mid50p.med.f1 fmtdata.hz.noshift.mid50p.med.f2];
+                    medprod_mels = [fmtdata.mels.noshift.mid50p.med.f1 fmtdata.mels.noshift.mid50p.med.f2];
+                    shiftedprod_hz = medprod_hz + shiftvec_hz;
+                    shiftedprod_mels = hz2mels(shiftedprod_hz);
+                    shiftvec = shiftedprod_mels - medprod_mels;
+                end
             else
                 if isfield(expt.shifts,'true_hz'),
                     fprintf('Warning: field "true_hz" found; using these values for shiftvec.\n')
@@ -143,10 +143,15 @@ for c = 1:length(indShift) % for each condition to plot
     end
 end
 
-tstep = unique(diff(dataVals(1).ftrack_taxis)); %#ok<NASGU>
+tstep = mean(diff(dataVals(1).ftrack_taxis)); %#ok<NASGU>
 
 %% save data
-filename = sprintf('fmtMatrix_%s_%s.mat',[indShift.name],basename);
+if bMels
+    bMelsStr = '_mels';
+else
+    bMelsStr = [];
+end
+filename = sprintf('fmtMatrix_%s_%s%s.mat',[indShift.name],basename,bMelsStr);
 if length(filename) > 100
     filename = 'fmtMatrix_singletrial_25closest';
     fprintf('Warning: Changing filename to %s.mat!\n',filename)

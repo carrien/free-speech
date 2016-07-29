@@ -16,7 +16,9 @@ if nargin < 4 || isempty(bFilt), bFilt = 1; end
 rawf1 = []; rawf2 = [];
 for trialind = inds  % for each trial in the condition
     dat1 = dataVals(trialind).f1; % assumes Hz
+    dat1 = dat1(~isnan(dat1));
     dat2 = dataVals(trialind).f2;
+    dat2 = dat2(~isnan(dat2));
     
     if bFilt % try filtering
         hb = hamming(8)/sum(hamming(8));
