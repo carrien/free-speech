@@ -8,7 +8,7 @@ end
 
 vowels = {'a' 'ae' 'E' 'eI' 'I' 'i' 'o' 'u' 'er'};
 
-a = ismember(txtcell,'ah');
+a = ismember(txtcell,{'aa' 'ah'});
 ae = ismember(txtcell,{'ae' 'add' 'ad' 'rad'});
 E = ismember(txtcell,{'eh' 'Ed' 'head' 'red' 'glen' 'blend'});
 eI = ismember(txtcell,{'grain'});
