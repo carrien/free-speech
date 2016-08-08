@@ -8,6 +8,7 @@ function [] = plot_centering(dataPaths,condtype,condinds,plotinds,ntile)
 %
 %CN 8/2013
 
+if nargin < 1 || isempty(dataPaths), dataPaths = cd; end
 if ischar(dataPaths), dataPaths = {dataPaths}; end
 if nargin < 2 || isempty(condtype), condtype = 'vowel'; end
 if nargin < 3 || isempty(condinds), condinds = [1 2 3]; end
