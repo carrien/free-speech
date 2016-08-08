@@ -25,10 +25,10 @@ end
 load(fullfile(dataPath,'dataVals'))
 
 %set thresholds for errors
-shortThresh = .125; %(<200 ms)
+shortThresh = .1; %(<200 ms)
 longThresh = 1; %(> 1 s)
-jumpThresh = 300; %in Hz, upper limit for sample-to-sample change to detect jumpTrials in F1 trajectory
-wrongFThresh = [300 1000]; %acceptable range of possible F1 values
+jumpThresh = 200; %in Hz, upper limit for sample-to-sample change to detect jumpTrials in F1 trajectory
+wrongFThresh = [200 1000]; %acceptable range of possible F1 values
 
 badTrials = [];
 shortTrials = [];

@@ -1,4 +1,4 @@
-function [] = audioGUI(dataPath,trialinds,buffertype,figpos,pitchlimits,bSaveCheck)
+function [] = audioGUI(dataPath,trialinds,buffertype,figpos,pitchlimits,bSaveCheck,bFilt)
 %AUDIOGUI  Wrapper for wave_viewer.
 %   AUDIOGUI(DATAPATH,TRIALINDS,BUFFERTYPE,FIGPOS,PITCHLIMITS,BSAVECHECK)
 %   sends audio data found in DATAPATH to the wave_viewer analysis program.
@@ -16,6 +16,7 @@ if nargin < 3 || isempty(buffertype), buffertype = 'signalIn'; end
 if nargin < 4, figpos = []; end
 if nargin < 5, pitchlimits = [50 300]; end
 if nargin < 6, bSaveCheck = 1; end
+if nargin < 7, bFilt = 0; end
 
 % load data
 load(fullfile(dataPath,'data.mat'),'data');
@@ -48,6 +49,15 @@ end
 for itrial = trials2track
     %% prepare inputs
     y = data(itrial).(buffertype);
+
+    if bFilt
+        a = [.25 1 .5 0];
+        f = [0 1950/(11025/2) 2200/(11025/2) .9];
+        n = 17;
+        b = firpm(n,f,a);
+        y = filter(b,1,y);
+    end
+
     if isfield([data.params],'fs')
         fs = data(itrial).params.fs;
     else
