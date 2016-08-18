@@ -1,21 +1,17 @@
-function [events] = match_events(expt,allevents,newEventInfo)
+function [ ] = match_events(expt,allevents,newEventInfo)
 %MATCH_EVENTS  Match experiment trials with MEG events.
-%   MATCH_EVENTS(EXPT,EVENTS)
+%   MATCH_EVENTS(EXPT,EVENTS,NEWEVENTINFO)
 
 nwords = length(expt.words);
 eventnames = {allevents.label};
 
+% find speak and listen event indices
 speak_inds = zeros(1,nwords);
 listen_inds = zeros(1,nwords);
 for w=1:nwords
-    %speakstim_inds(w) = find(strcmp(eventnames,num2str(w)));
-    %listenstim_inds(w) = find(strcmp(eventnames,num2str(w+nwords)));
     speak_inds(w) = find(strcmp(eventnames,sprintf('speak%d',w)));
     listen_inds(w) = find(strcmp(eventnames,sprintf('listen%d',w)));
 end
-
-%speakstim_events = events(speakstim_inds);
-%listenstim_events = events(listenstim_inds);
 speak_events = allevents(speak_inds);
 listen_events = allevents(listen_inds);
 
@@ -61,7 +57,7 @@ else
 end
 
 % create new event structs
-for f = 3:length(unique([speak_fileinds listen_fileinds])); % for each file to write
+for f = 1:length(unique([speak_fileinds listen_fileinds])); % for each file to write
     events = struct;
     for e = 1:length(newEventInfo)                          % for each condition
         events(e).label = newEventInfo(e).name;
@@ -90,6 +86,7 @@ for f = 3:length(unique([speak_fileinds listen_fileinds])); % for each file to w
         end
     end
     
+    % save each event file
     dataPath = getMegSubjPath(expt.name,expt.snum);
     savefile = fullfile(dataPath,['events_' newEventInfo.name '_' num2str(f-1) '.mat']);
     bSave = savecheck(savefile);
