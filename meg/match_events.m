@@ -7,7 +7,7 @@ eventnames = {events.label};
 
 for w=1:nwords
     speakstim_inds(w) = find(strcmp(eventnames,num2str(w)));
-    listenstiminds(w) = find(strcmp(eventnames,num2str(w+nwords)));
+    listenstim_inds(w) = find(strcmp(eventnames,num2str(w+nwords)));
     speak_inds(w) = find(strcmp(eventnames,sprintf('speak%d',w)));
     listen_inds(w) = find(strcmp(eventnames,sprintf('listen%d',w)));
 end
@@ -20,10 +20,10 @@ listen_events = events(listen_inds);
 allWords = expt.allWords;
 
 for w=1:nwords
-    if ~length(speakstim_events(w).times) == length(speak_events(w).times)
+    if length(speakstim_events(w).times) ~= length(speak_events(w).times)
         warning('Speak event mismatch')
     end
-    if ~length(listenstim_events(w).times) == length(listen_events(w).times)
-        warning('Listen event mismatch')
+    if length(listenstim_events(w).times) ~= length(listen_events(w).times)
+        warning('Listen event mismatch (%s)',listen_events(w).label)
     end
 end
