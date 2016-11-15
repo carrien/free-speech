@@ -21,6 +21,11 @@ for s=1:length(dataPaths)
     
     for cnd = condinds
         c = conds{cnd}; % current condition name
+        
+        if ~isfield(fmtdata.mels.(c),'first50ms')
+            continue % skip if vowel data doesn't exist
+        end
+        
         first = fmtdata.mels.(c).first50ms;
         mid = fmtdata.mels.(c).mid50p;
         
@@ -99,6 +104,8 @@ for s=1:length(dataPaths)
             ylabel('norm F2 (mels)')
             box off
             axis square
+            axmax = max(abs(axis));
+            axis([-axmax axmax -axmax axmax])
             ax = axis;
             
             subplot(1,2,2)
