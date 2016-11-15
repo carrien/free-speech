@@ -16,6 +16,7 @@ for a = 1:length(analyses)
         oldcnd1 = conds2merge{c2m}{1};
         oldcnd2 = conds2merge{c2m}{2};
         newcnd = mergednames{c2m};
+        
         %ffx
         merge1 = ffx.(anl).(oldcnd1);
         merge2 = ffx.(anl).(oldcnd2);

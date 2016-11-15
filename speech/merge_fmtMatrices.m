@@ -10,14 +10,15 @@ dataPath = getAcoustSubjPath(exptName,snum);
 load(fullfile(dataPath,plotfile),'fmtMatrix','fmtMeans','tstep','bMels','bFilt') % e.g. fmtTraces_3subj.mat
 analyses = fieldnames(fmtMeans); %#ok<NODEF>
 
-for a = 1:length(analyses)
-    anl = analyses{a};
-    for c2m = 1:length(conds2merge)
-        oldcnd1 = conds2merge{c2m}{1};
-        oldcnd2 = conds2merge{c2m}{2};
-        newcnd = mergednames{c2m};
+for c2m = 1:length(conds2merge)
+    oldcnd1 = conds2merge{c2m}{1};
+    oldcnd2 = conds2merge{c2m}{2};
+    newcnd = mergednames{c2m};
+    
+    for a = 1:length(analyses)
+        anl = analyses{a};
         
-        %ffx
+        % fmtMatrix (all trials: ffx)
         merge1 = fmtMatrix.(anl).(oldcnd1);
         merge2 = fmtMatrix.(anl).(oldcnd2);
         if size(merge1,1) == size(merge2,1)
@@ -31,7 +32,7 @@ for a = 1:length(analyses)
         fmtMatrix.(anl) = rmfield(fmtMatrix.(anl),oldcnd1);
         fmtMatrix.(anl) = rmfield(fmtMatrix.(anl),oldcnd2);
         
-        %rfx
+        % fmtMeans (one average trial: rfx)
         merge1 = fmtMeans.(anl).(oldcnd1);
         merge2 = fmtMeans.(anl).(oldcnd2);
         if size(merge1,1) == size(merge2,1)
@@ -44,14 +45,17 @@ for a = 1:length(analyses)
         end
         fmtMeans.(anl) = rmfield(fmtMeans.(anl),oldcnd1);
         fmtMeans.(anl) = rmfield(fmtMeans.(anl),oldcnd2);
-        
-        %hasNpercent
-        hashalf.(newcnd)
     end
+    
+    % hasNpercent
+    hashalf.(newcnd) = has_nperc(fmtMatrix.diff1.(newcnd),50);
+    hasthird.(newcnd) = has_nperc(fmtMatrix.diff1.(newcnd),33.3333);
+    hasquart.(newcnd) = has_nperc(fmtMatrix.diff1.(newcnd),25);
 end
 
 %% save data
-savefile = fullfile(dataPath,sprintf('%s_merged.mat',plotfile));
+if bMels, bMelsStr = '_mels'; else bMelsStr = []; end
+savefile = fullfile(dataPath,sprintf('fmtMatrix_%s_merged%s.mat',cell2mat(mergednames),bMelsStr));
 bSave = savecheck(savefile);
 if bSave,
     save(savefile,'fmtMatrix','fmtMeans','hashalf','hasthird','hasquart','tstep','bMels','bFilt')
