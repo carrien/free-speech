@@ -31,8 +31,13 @@ end
 %% plot
 
 % set line colors
-if nargin < 5 || isempty(linecolors)
+if ~exist('linecolors','var') || isempty(linecolors)
     linecolors = get_colors(length(conds));
+elseif isstruct(linecolors)
+    colors2use = zeros(length(conds),3);
+    for c=1:length(conds)
+        colors2use(c,:) = linecolors.(conds{c});
+    end
 end
 errcolors = linecolors + (1-linecolors)./3;
 
