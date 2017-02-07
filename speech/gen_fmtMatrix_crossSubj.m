@@ -8,6 +8,9 @@ function [ ] = gen_fmtMatrix_crossSubj(exptName,svec,fmtMatrixFile,bSaveCheck)
 if nargin < 2 || isempty(svec)
     exptInfo = get_exptInfo(exptName);
     svec = exptInfo.snums;
+    if isfield(exptInfo,'basedir')
+        basedir = exptInfo.basedir;
+    end
 end
 if nargin < 3 || isempty(fmtMatrixFile)
     fmtMatrixFile = 'fmtMatrix_EtoIEtoAE_noshift';
@@ -16,9 +19,12 @@ if nargin < 4 || isempty(bSaveCheck)
     bSaveCheck = 1;
 end
 
-basedir = fullfile(get_exptPath,exptName,'acousticdata');
+if ~exist('basedir','var')
+    basedir = getAcoustSubjPath(exptName);
+end
 if strcmp(exptName,'cat'), subdirname = 'pert/formant_analysis';
 elseif strcmp(exptName,'vin'), subdirname = 'all';
+elseif strcmp(exptName,'stroop'), subdirname = 'Stroop';
 else subdirname = [];
 end
 ffx = []; rfx = [];
@@ -60,7 +66,9 @@ for s=1:length(svec) % for each subject
 end
 
 %% save
-filename = sprintf('fmtMatrix_%s_%ds.mat',fmtMatrixFile(11:end),length(svec));
+filesuffix = fmtMatrixFile(11:end);
+[~,filesuffix] = fileparts(filesuffix);
+filename = sprintf('fmtMatrix_%s_%ds.mat',filesuffix,length(svec));
 savefile = fullfile(basedir,filename);
 if bSaveCheck
     bSave = savecheck(savefile);

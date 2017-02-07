@@ -1,24 +1,28 @@
-function [] = plot_fmtMatrix_crossSubj(exptName,plotfile,errtype,bflipsig,bsigbar,fx)
+function [] = plot_fmtMatrix_crossSubj(dataPath,plotfile,toPlot,errtype,bflipsig,bsigbar,fx)
 %PLOT_FMTMATRIX_CROSSSUBJ  Plot magnitude of compensation across subjects.
 %   PLOT_FMTMATRIX_CROSSSUBJ(EXPTNAME,PLOTFILE,ERRTYPE,BFLIPSIG,BSIGBAR)
 %   plots formant tracks per condition across multiple subjects.
 %
 % cn 11/2014
 
-if nargin < 3 || isempty(errtype), errtype = 'se'; end
-if nargin < 4 || isempty(bflipsig), bflipsig = 0; end
-if nargin < 5 || isempty(bsigbar), bsigbar = 0; end
-if nargin < 6 || isempty(fx)
+if nargin < 1 || isempty(dataPath), dataPath = cd; end
+if nargin < 3 || isempty(toPlot), toPlot = 'diff1'; end
+if nargin < 4 || isempty(errtype), errtype = 'se'; end
+if nargin < 5 || isempty(bflipsig), bflipsig = 0; end
+if nargin < 6 || isempty(bsigbar), bsigbar = 0; end
+if nargin < 7 || isempty(fx)
     fx = {'ffx'}; % fx = {'ffx','rfx'}; end
 elseif ~iscell(fx)
     fx = {fx};
 end
 
-dataPath = getAcoustSubjPath(exptName);
 load(fullfile(dataPath,plotfile)) % e.g. fmtTraces_3subj.mat
 analyses = fieldnames(ffx);
 conds = fieldnames(ffx.(analyses{1}));
-if strcmp(exptName,'cat'), tstep = .004; else tstep = .003; end
+
+%%%%if strcmp(exptName,'cat'), tstep = .004; else tstep = .003; end
+tstep = .003;
+
 alltime = 0:tstep:1;
 stop = 105*ones(1,length(conds)); % crop axis to here
 
@@ -57,9 +61,19 @@ end
 %% plot
 
 % plot setup
-linecolors = {[.9 0 0] [0 .3 .95] 'g' 'k'};
-sdcolors = {[.9 0 0] [0 .3 .95] 'y' 'k'};
-facealpha = .25;
+
+% set line colors
+if ~exist('linecolors','var') || isempty(linecolors)
+    linecolors = get_colors(length(conds));
+elseif isstruct(linecolors)
+    colors2use = zeros(length(conds),3);
+    for c=1:length(conds)
+        colors2use(c,:) = linecolors.(conds{c});
+    end
+end
+errcolors = linecolors + (1-linecolors)./3;
+
+facealpha = .5;
 xlab = 'time (s)';
 % account for short mean traces by decreasing stop point
 for c=1:length(conds) 
@@ -69,29 +83,31 @@ for c=1:length(conds)
 end
 
 % plot
-fields2plot = {'diff1' 'diff2' 'diff2d' 'proj' 'effproj' 'effdist'}; %{'percproj' 'effproj'};
-titles = fields2plot;
-ylabs = fields2plot;
+if ischar(toPlot), toPlot = {toPlot}; end
+titles = toPlot;
+ylabs = toPlot;
 for f=1:length(fx)
-    for fn=1:length(fields2plot)
+    for fn=1:length(toPlot)
         figure; %axes('Visible','off');
         % plot only means (for legend)
         for c = 1:length(conds)
-            sig = data_mean.(fx{f}).(fields2plot{fn}).(conds{c})(1:stop(c));
+            sig = data_mean.(fx{f}).(toPlot{fn}).(conds{c})(1:stop(c));
             if bflipsig && c == 1, sig = -sig; end
-            plot(alltime(1:length(sig)), sig', 'LineWidth', 3, 'Color', linecolors{c}); hold on;
+            plot(alltime(1:length(sig)), sig', 'LineWidth', 3, 'Color', linecolors(c,:)); hold on;
         end
         legend(conds,'Location','NorthWest'); legend boxoff;
         % plot error
         for c = 1:length(conds)
-            sig = data_mean.(fx{f}).(fields2plot{fn}).(conds{c})(1:stop(c));
-            err = data_err.(fx{f}).(fields2plot{fn}).(conds{c})(1:stop(c));
+            sig = data_mean.(fx{f}).(toPlot{fn}).(conds{c})(1:stop(c));
+            err = data_err.(fx{f}).(toPlot{fn}).(conds{c})(1:stop(c));
             t = alltime(~isnan(err));
             sig = sig(~isnan(err));
             err = err(~isnan(err));
             if bflipsig && c == 1, sig = -sig; end
-            plot_filled_err(t,sig',err',sdcolors{c},facealpha);
+            plot_filled_err(t,sig',err',errcolors(c,:),facealpha);
         end
+        hline(0,'k');
+
 %        plot([0 alltime(length(sig))],[0 0],'k');
 
 %         title(sprintf('%s (%s)',titles{fn},fx{f}), 'FontWeight', 'bold', 'FontSize', 11);
@@ -108,19 +124,19 @@ for f=1:length(fx)
         axis([alltime(1) alltime(stop(c)) ax(3) ax(4)])
         
         if bsigbar
-            [h_fdr,p_fdr] = fdr(p.(fx{f}).(fields2plot{fn}),0.05);
+            [h_fdr,p_fdr] = fdr(p.(fx{f}).(toPlot{fn}),0.05);
             h_fdr(h_fdr==0) = NaN;
 
-            [h_fdr10,p_fdr10] = fdr(p.(fx{f}).(fields2plot{fn}),0.10);
+            [h_fdr10,p_fdr10] = fdr(p.(fx{f}).(toPlot{fn}),0.10);
             h_fdr10(h_fdr10==0) = NaN;
 
-            h.(fx{f}).(fields2plot{fn})(h.(fx{f}).(fields2plot{fn})==0) = NaN;
-            h1.(fx{f}).(fields2plot{fn})(h1.(fx{f}).(fields2plot{fn})==0) = NaN;
-            h2.(fx{f}).(fields2plot{fn})(h2.(fx{f}).(fields2plot{fn})==0) = NaN;
+            h.(fx{f}).(toPlot{fn})(h.(fx{f}).(toPlot{fn})==0) = NaN;
+            h1.(fx{f}).(toPlot{fn})(h1.(fx{f}).(toPlot{fn})==0) = NaN;
+            h2.(fx{f}).(toPlot{fn})(h2.(fx{f}).(toPlot{fn})==0) = NaN;
             
-            plot(t,h.(fx{f}).(fields2plot{fn})*(yax(2)-2),'g')
-            plot(t,h1.(fx{f}).(fields2plot{fn})*(yax(2)-1.5),'Color',linecolors{1})
-            plot(t,h2.(fx{f}).(fields2plot{fn})*(yax(2)-1),'Color',linecolors{2})
+            plot(t,h.(fx{f}).(toPlot{fn})*(yax(2)-2),'g')
+            plot(t,h1.(fx{f}).(toPlot{fn})*(yax(2)-1.5),'Color',linecolors(1,:))
+            plot(t,h2.(fx{f}).(toPlot{fn})*(yax(2)-1),'Color',linecolors(2,:))
             
             plot(t,h_fdr*(yax(2)-2.2),'m')
             plot(t,h_fdr10*(yax(2)-2.4),'c')
