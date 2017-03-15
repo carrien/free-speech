@@ -36,11 +36,11 @@ for s=1:length(svec) % for each subject
     dataPath = getAcoustSubjPath(exptName,svec(s),subdirname);
     load(fullfile(dataPath,fmtMatrixFile),'fmtMatrix','fmtMeans');
     analyses = fieldnames(fmtMatrix);
-    conds = fieldnames(fmtMatrix.diff1);
     
     fprintf(' %d',svec(s));
     for a=1:length(analyses) % for each type of track (diff1, etc.)
         anl = analyses{a};
+        conds = fieldnames(fmtMatrix.(anl));
         for c=1:length(conds) % for each shift condition
             cnd = conds{c};
 

@@ -32,14 +32,10 @@ end
 
 % set line colors
 if ~exist('linecolors','var') || isempty(linecolors)
-    linecolors = get_colors(length(conds));
-elseif isstruct(linecolors)
-    colors2use = zeros(length(conds),3);
-    for c=1:length(conds)
-        colors2use(c,:) = linecolors.(conds{c});
-    end
+    linecolors = get_color_struct(conds);
+elseif ~isstruct(linecolors)
+    linecolors = get_color_struct(conds,linecolors);
 end
-errcolors = linecolors + (1-linecolors)./3;
 
 % set axis labels and position
 if bMels
@@ -61,19 +57,22 @@ axes('Position',axpos);
 h = zeros(1,length(conds)); % handles to each track
 for c = 1:length(conds)
     cnd = conds{c};
+    linecolor = linecolors.(cnd);
+    errcolor = linecolor + (1-linecolor)./3;
     % plot tracks
     sig = fmtMeans.(toPlot).(cnd);
-    h(c) = plot(alltime(1:length(sig)), sig', 'LineWidth', 3, 'Color', linecolors(c,:)); hold on;
+    h(c) = plot(alltime(1:length(sig)), sig', 'LineWidth', 3, 'Color', linecolor); hold on;
     % plot errorbars
     err = get_errorbars(fmtMatrix.(toPlot).(cnd),errtype,size(fmtMatrix.(toPlot).(cnd),2));
     err = err(~isnan(err));
     sig = sig(~isnan(err));
-    fill([alltime(1:length(sig)) fliplr(alltime(1:length(sig)))], [sig'+err' fliplr(sig'-err')], errcolors(c,:), ...
-        'EdgeColor', errcolors(c,:), 'FaceAlpha', .5, 'EdgeAlpha', 0);
-    hasquart_s(c) = find(hasquart.(cnd), 1, 'last')*tstep; %#ok<AGROW>
+    fill([alltime(1:length(sig)) fliplr(alltime(1:length(sig)))], [sig'+err' fliplr(sig'-err')], errcolor, ...
+        'EdgeColor', errcolor, 'FaceAlpha', .5, 'EdgeAlpha', 0);
+    hashalf_s(c) = find(hashalf.(cnd), 1, 'last')*tstep; %#ok<AGROW>
+    %hasquart_s(c) = find(hasquart.(cnd), 1, 'last')*tstep; %#ok<AGROW>
 end
 hline(0,'k');
-vline(mean(hasquart_s),'k','--');
+vline(mean(hashalf_s),'k','--');
 legend(h, conds, 'Location','SouthEast'); legend boxoff;
 xlabel(xlab, 'FontWeight', 'bold', 'FontSize', 11);
 ylabel(ylab, 'FontWeight', 'bold', 'FontSize', 11);
