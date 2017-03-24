@@ -35,11 +35,12 @@ fprintf('Done.\n');
 data_mean = struct('ffx',ffx_mean,'rfx',rfx_mean);
 data_err = struct('ffx',ffx_err,'rfx',rfx_err);
 
-%%%%if strcmp(exptName,'cat'), tstep = .004; else tstep = .003; end
-tstep = .003;
+%if strcmp(exptName,'cat'), tstep = .004; else tstep = .003; end
+if ~exist('tstep','var'), tstep = .003; end
 alltime = 0:tstep:1;
 conds = fieldnames(ffx.rawf1);
-stop = 105*ones(1,length(conds)); % crop axis to here
+stop_ms = 250;
+stop = ms2samps(stop_ms,1/tstep)*ones(1,length(conds)); % crop axis to here
 
 % calculate significance at each timepoint (assumes 2 conds)
 if bsigbar
@@ -68,6 +69,7 @@ if ~exist('linecolors','var') || isempty(linecolors)
 elseif ~isstruct(linecolors) %ismatrix(linecolors)
     linecolors = get_color_struct(conds,linecolors);
 end
+linestyles = {'-.',':','-','--'};
 
 facealpha = .5;
 xlab = 'time (s)';
@@ -92,9 +94,10 @@ for f=1:length(fx)
             cnd = conds{c};
             linecolor = linecolors.(cnd);
             errcolor = linecolor + (1-linecolor)./3;
+            linestyle = linestyles{mod(c,length(linestyles))+1};
             % plot tracks
             sig = data_mean.(fx{f}).(toPlot).(cnd)(1:stop(c));
-            h(c) = plot(alltime(1:length(sig)), sig', 'LineWidth', 3, 'Color', linecolor); hold on;
+            h(c) = plot(alltime(1:length(sig)), sig', 'LineWidth',3, 'Color',linecolor, 'LineStyle',linestyle); hold on;
             % plot errorbars
             err = data_err.(fx{f}).(toPlot).(cnd)(1:stop(c));
             %err = get_errorbars(fmtMatrix.(toPlot).(cnd),errtype,size(fmtMatrix.(toPlot).(cnd),2));
@@ -113,21 +116,18 @@ for f=1:length(fx)
 
         %vline(mean(hashalf_s),'k','--');
         legend(h, conds, 'Location','NorthEast'); legend boxoff;
-        xlabel(xlab, 'FontWeight', 'bold', 'FontSize', 11);
-        ylabel(ylabs{fn}, 'FontWeight', 'bold', 'FontSize', 11);
-        set(gca, 'FontSize', 10); set(gca, 'TickLength', [0.0 0.0]);
-        title(sprintf('%s (%s)',titles{fn},fx{f}), 'FontWeight', 'bold');
+        xlabel(xlab, 'FontSize', 20);
+        ylabel(ylabs{fn}, 'FontSize', 20);
+        set(gca, 'FontSize', 20);
+        set(gca, 'LineWidth', 1);
+        %title(sprintf('%s (%s)',titles{fn},fx{f}));
+        set(gcf,'Name',sprintf('%s (%s)',titles{fn},fx{f}));
         %title(sprintf('%s %s',slab,toPlot));
-        
-
-%         title(sprintf('%s (%s)',titles{fn},fx{f}), 'FontWeight', 'bold', 'FontSize', 11);
-%         xlabel(xlab, 'FontSize', 14);
-%         ylabel(ylabs{fn}, 'FontSize', 14);
-%         set(gca, 'FontSize', 12);
-%         set(gca,'XTick',(0:.1:alltime(stop(c)))); set(gca, 'TickLength', [0.0 0.0]);
+        %set(gca,'XTick',(0:.1:alltime(stop(c)))); set(gca, 'TickLength', [0.0 0.0]);
 
         ax = axis;
         axis([alltime(1) alltime(stop(c)) ax(3) ax(4)])
+        box off;
         
         if bsigbar
             [h_fdr,p_fdr] = fdr(p.(fx{f}).(toPlot),0.05);
