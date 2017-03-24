@@ -29,6 +29,12 @@ baseconds = {indBase.name};
 load(fullfile(dataPath,'expt.mat'));
 load(fullfile(dataPath,dataValsStr));
 
+badtrials = [dataVals(find([dataVals.bExcl])).token];
+for i=1:length(indShift)
+    indShift(i).inds = setdiff(indShift(i).inds,badtrials);
+    indBase(i).inds = setdiff(indBase(i).inds,badtrials);
+end
+
 %% generate traces (each with its own baseline)
 display(sprintf('Subject directory: %s',dataPath));
 for c = 1:length(indShift) % for each condition to plot
