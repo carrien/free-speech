@@ -12,10 +12,11 @@ if nargin < 6, bComplex = 0; end
 if ~bComplex
     y = amp*get_sine(w,dur,fs); 
 else
-    y = amp*( get_sine(w,dur,fs) + get_sine(2*w,dur,fs) + get_sine(3*w,dur,fs));
+    y = amp*(get_sine(w,dur,fs) + get_sine(2*w,dur,fs) + get_sine(3*w,dur,fs));
 end
 
 if bRamp
+    t = 0:1/fs:dur;
     env = sin(pi*t/t(length(t)));
     y = y .* env;
 end
