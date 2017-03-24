@@ -1,4 +1,4 @@
-function errors = check_dataVals(dataPath,yesCalc)
+function errors = check_dataVals(dataPath,yesCalc,toPlot)
 %check formant data for errors and return trial numbers where errors are
 %detected. Types of errors:
 %             * jumpTrials in F1/F2 trajectory
@@ -16,6 +16,7 @@ function errors = check_dataVals(dataPath,yesCalc)
 
 if nargin < 1 || isempty(dataPath), dataPath = pwd; end
 if nargin < 2 || isempty(yesCalc), yesCalc = 0; end
+if nargin < 3 || isempty(toPlot), toPlot = 0; end
 
 %if yesCalc == 1, generate dataVals
 if yesCalc
@@ -23,6 +24,11 @@ if yesCalc
 end
 
 load(fullfile(dataPath,'dataVals'))
+
+%if toPlot, plot raw tracks
+if toPlot
+    plot_rawFmtTracks(dataVals,[],toPlot);
+end
 
 %set thresholds for errors
 shortThresh = .1; %(<200 ms)
