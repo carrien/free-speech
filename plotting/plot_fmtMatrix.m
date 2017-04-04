@@ -17,9 +17,11 @@ load(fullfile(dataPath,plotfile));
 conds = fieldnames(fmtMatrix.(toPlot));
 
 % get time axis
-load(fullfile(dataPath,'dataVals.mat'),'dataVals');
-goodtrials = find(~[dataVals.bExcl]);
-tstep = mean(diff(dataVals(goodtrials(1)).ftrack_taxis));
+if ~exist('tstep','var');
+    load(fullfile(dataPath,'dataVals.mat'),'dataVals');
+    goodtrials = find(~[dataVals.bExcl]);
+    tstep = mean(diff(dataVals(goodtrials(1)).ftrack_taxis));
+end
 alltime = 0:tstep:1.5;
 
 % TODO: special perc upper and lower bounds
