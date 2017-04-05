@@ -1,4 +1,4 @@
-function [] = audioGUI(dataPath,trialinds,buffertype,figpos,pitchlimits,bSaveCheck,bFilt)
+function [] = audioGUI(dataPath,trialinds,buffertype,figpos,bSaveCheck)
 %AUDIOGUI  Wrapper for wave_viewer.
 %   AUDIOGUI(DATAPATH,TRIALINDS,BUFFERTYPE,FIGPOS,PITCHLIMITS,BSAVECHECK)
 %   sends audio data found in DATAPATH to the wave_viewer analysis program.
@@ -6,7 +6,7 @@ function [] = audioGUI(dataPath,trialinds,buffertype,figpos,pitchlimits,bSaveChe
 %   in data(n).[fieldname]. TRIALINDS specifies the trials to analyze (if
 %   empty, all trials are used). BUFFERTYPE names the field in the data.mat
 %   structure to use (e.g. 'signalIn'). FIGPOS overrides the default figure
-%   position; PITCHLIMITS overrides the default pitch limits.
+%   position.
 %
 %CN 2011
 
@@ -14,9 +14,7 @@ if nargin < 1 || isempty(dataPath), dataPath = cd; end
 if nargin < 2, trialinds = []; end
 if nargin < 3 || isempty(buffertype), buffertype = 'signalIn'; end
 if nargin < 4, figpos = []; end
-if nargin < 5, pitchlimits = [50 300]; end
-if nargin < 6, bSaveCheck = 1; end
-if nargin < 7, bFilt = 0; end
+if nargin < 5, bSaveCheck = 1; end
 
 % load data
 load(fullfile(dataPath,'data.mat'),'data');
@@ -49,14 +47,6 @@ end
 for itrial = trials2track
     %% prepare inputs
     y = data(itrial).(buffertype);
-
-    if bFilt
-        a = [.25 1 .5 0];
-        f = [0 1950/(11025/2) 2200/(11025/2) .9];
-        n = 17;
-        b = firpm(n,f,a);
-        y = filter(b,1,y);
-    end
 
     if isfield([data.params],'fs')
         fs = data(itrial).params.fs;
@@ -91,7 +81,7 @@ for itrial = trials2track
     
     %% call wave viewer
     endstate = wave_viewer(y,'fs',fs,'name',sprintf('trial(%d)',itrial), ...
-        'nformants',2,'pitchlimits',pitchlimits,'sigproc_params',sigproc_params, ...
+        'nformants',2,'sigproc_params',sigproc_params, ...
         'plot_params',plot_params,'event_params',event_params);
     
     %% save outputs 

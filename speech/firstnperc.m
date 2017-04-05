@@ -3,6 +3,8 @@ function [firstn] = firstnperc(signal,n,startbuff)
 %   FIRSTNPERC(SIGNAL,N,STARTBUFF) returns the first N% of input signal
 %   SIGNAL, excluding a buffer of STARTBUFF percent.
 
+if nargin < 3 || isempty(startbuff), startbuff = 0; end
+
 if ~(n > startbuff)
     error('Start buffer is greater than or equal to the first %d percent of the signal.',n)
 elseif ~(n > 0) || n > 100

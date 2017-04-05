@@ -29,6 +29,12 @@ baseconds = {indBase.name};
 load(fullfile(dataPath,'expt.mat'));
 load(fullfile(dataPath,dataValsStr));
 
+badtrials = [dataVals(find([dataVals.bExcl])).token];
+for i=1:length(indShift)
+    indShift(i).inds = setdiff(indShift(i).inds,badtrials);
+    indBase(i).inds = setdiff(indBase(i).inds,badtrials);
+end
+
 %% generate traces (each with its own baseline)
 display(sprintf('Subject directory: %s',dataPath));
 for c = 1:length(indShift) % for each condition to plot
@@ -42,6 +48,18 @@ for c = 1:length(indShift) % for each condition to plot
     % get mean baseline
     rawf1_mean.(baseconds{c}) = nanmean(rawf1.(baseconds{c}),2); % mean formants for shift-specific baseline
     rawf2_mean.(baseconds{c}) = nanmean(rawf2.(baseconds{c}),2); %
+    
+    % calculate trial ending points
+    hashalf.(baseconds{c}) = zeros(size(rawf1.(baseconds{c}),1),1); % hashalf = 1 at each timepoint with fewer than half of trials NaN
+    hasthird.(baseconds{c}) = zeros(size(rawf1.(baseconds{c}),1),1);
+    hasquart.(baseconds{c}) = zeros(size(rawf1.(baseconds{c}),1),1);
+    for t = 1:size(rawf1.(baseconds{c}),1) % for each timepoint
+        raf1 = rawf1.(baseconds{c})(t,:); raf1 = raf1(~isnan(raf1)); % remove NaNs
+        if length(raf1)>length(rawf1.(baseconds{c})(t,:))/2,hashalf.(baseconds{c})(t) = 1;end
+        if length(raf1)>length(rawf1.(baseconds{c})(t,:))/3,hasthird.(baseconds{c})(t) = 1;end
+        if length(raf1)>length(rawf1.(baseconds{c})(t,:))/4,hasquart.(baseconds{c})(t) = 1;end
+    end
+
     
     %% generate array of shifted traces
     if indShift(c).inds
@@ -80,15 +98,9 @@ for c = 1:length(indShift) % for each condition to plot
         diff2d_mean.(conds{c}) = sqrt(diff1_mean.(conds{c}).^2 + diff2_mean.(conds{c}).^2);
         
         % calculate trial ending points
-        hashalf.(conds{c}) = zeros(size(diff1.(conds{c}),1),1); % hashalf = 1 at each timepoint with fewer than half of trials NaN
-        hasthird.(conds{c}) = zeros(size(diff1.(conds{c}),1),1);
-        hasquart.(conds{c}) = zeros(size(diff1.(conds{c}),1),1);
-        for t = 1:size(diff1.(conds{c}),1) % for each timepoint
-            dif1 = diff1.(conds{c})(t,:); dif1 = dif1(~isnan(dif1)); % remove NaNs
-            if length(dif1)>length(diff1.(conds{c})(t,:))/2,hashalf.(conds{c})(t) = 1;end
-            if length(dif1)>length(diff1.(conds{c})(t,:))/3,hasthird.(conds{c})(t) = 1;end
-            if length(dif1)>length(diff1.(conds{c})(t,:))/4,hasquart.(conds{c})(t) = 1;end
-        end
+        hashalf.(conds{c}) = has_nperc(diff1.(conds{c}),50);
+        hasthird.(conds{c}) = has_nperc(diff1.(conds{c}),33.3333);
+        hasquart.(conds{c}) = has_nperc(diff1.(conds{c}),25);
         
         %% if a perturbation study
         if isfield(indShift,'shiftind')

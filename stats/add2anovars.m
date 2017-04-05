@@ -5,6 +5,23 @@ function [obs,group] = add2anovars(obs,new_obs,group,varargin)
 %   of anova grouping variables GROUP is extended by a vector the same
 %   length as NEW_OBS containing copies of a single integer stored in
 %   VARARGIN. VARARGIN should be the same length as GROUP.
+%
+% Example:
+%
+% obs = []; group = [];
+% for s = 1:length(subj)
+%     sid = subj{s};
+%     for c = 1:length(conds)
+%         cnd = conds{c};
+%         for v = 1:length(vowels)
+%             vow = vowels{v};
+%             
+%             newdata = data(sid).(cnd).(vow);
+%             [obs,group] = add2anovars(obs,newdata,group,s,c,v);
+% 
+%         end
+%     end
+% end
 
 if isempty(group)
     group = cell(1,length(varargin));

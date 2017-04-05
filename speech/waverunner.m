@@ -1,4 +1,4 @@
-function [] = waverunner(dataPath,trialinds,buffertype,bSaveCheck,params2overwrite,bFilt)
+function [] = waverunner(dataPath,trialinds,buffertype,bSaveCheck,params2overwrite)
 %WAVERUNNER  Calls wave_proc on each trial in an experiment.
 %   WAVERUNNER(DATAPATH,TRIALINDS,BUFFERTYPE,BSAVECHECK,PARAMS2OVERWRITE)
 %   loads experiment data from DATAPATH and calls wave_proc on trials given
@@ -11,7 +11,6 @@ if nargin < 2, trialinds = []; end
 if nargin < 3 || isempty(buffertype), buffertype = 'signalIn'; end
 if nargin < 4 || isempty(bSaveCheck), bSaveCheck = 1; end
 if nargin < 5, params2overwrite = []; end
-if nargin < 6, bFilt = 0; end
 
 % load data
 load(fullfile(dataPath,'data.mat'),'data');
@@ -51,14 +50,6 @@ counter = 0;
 for itrial = trials2track  
     %% prepare inputs
     y = data(itrial).(buffertype);
-
-    if bFilt
-        a = [.25 1 .5 0];
-        f = [0 1950/(11025/2) 2200/(11025/2) .9];
-        n = 17;
-        b = firpm(n,f,a);
-        y = filter(b,1,y);
-    end
    
     % if trial data exists, load it
     savefile = fullfile(dataPath,trialfolder,sprintf('%d.mat',itrial));

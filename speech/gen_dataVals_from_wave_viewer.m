@@ -101,6 +101,9 @@ for i = 1:length(sortedfiles)
     dataVals(i).dur = offset_time - onset_time;
     dataVals(i).word = expt.allWords(trialnum);
     dataVals(i).vowel = expt.allVowels(trialnum);
+    if isfield(expt,'allColors')
+        dataVals(i).color = expt.allColors(trialnum);
+    end
     dataVals(i).cond = expt.allConds(trialnum);
     dataVals(i).token = trialnum;
     if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params)

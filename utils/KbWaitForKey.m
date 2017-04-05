@@ -1,4 +1,4 @@
-function [keyCode] = KbWaitForKey(keys2wait4,timelimit)
+function [keyCodeLogical] = KbWaitForKey(keys2wait4,timelimit)
 %KBWAITFORKEY  Wait for specific keypress.
 %   KBWAITFORKEY(KEY2WAIT4,TIMELIMIT) waits until one of the keys defined
 %   in KEYS2WAIT4 is pressed before continuing. If TIMELIMIT is defined,
@@ -12,8 +12,9 @@ tic;
 
 wait = 1;
 while wait && toc < timelimit
-    [~,keyCode] = KbWait;
-    if any(keys2wait4 == find(keyCode))
+    [~,keyCodeLogical] = KbWait;
+    keyCode = find(keyCodeLogical);
+    if any(keys2wait4 == keyCode(1))
         wait = 0;
     end
 end
