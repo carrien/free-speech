@@ -1,8 +1,10 @@
 function [filepaths] = get_eventfiles(dataPath)
 %GET_EVENTFILES  Get paths event files in a directory.
 
+if nargin < 1 || isempty(dataPath), dataPath = cd; end
+
 % list event files in directory
-filestruct = dir(fullfile(dataPath,'events*.mat'));
+filestruct = dir(fullfile(dataPath,'events_aphsis*.mat'));
 if isempty(filestruct)
     error('No matching event marker files found.')
 end

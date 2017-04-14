@@ -24,7 +24,7 @@ speak_fileinds = [speak_events.fileind];
 [speak_eventtimes,inds] = sort(speak_eventtimes);
 speak_eventsamples = speak_eventsamples(inds);
 speak_eventorder = speak_eventorder(inds);
-speak_eventorder = speak_eventorder - speak_inds(1) + 1;
+speak_eventorder = speak_eventorder - speak_inds(1) + 1; % convent to 1,2,3
 speak_fileinds = speak_fileinds(inds);
 % listen
 listen_eventtimes = [listen_events.times];
@@ -34,12 +34,12 @@ listen_fileinds = [listen_events.fileind];
 [listen_eventtimes,inds] = sort(listen_eventtimes);
 listen_eventsamples = listen_eventsamples(inds);
 listen_eventorder = listen_eventorder(inds);
-listen_eventorder = listen_eventorder - listen_inds(1) + 1;
+listen_eventorder = listen_eventorder - listen_inds(1) + 1; % convert to 1,2,3
 listen_fileinds = listen_fileinds(inds);
 
 % check that order matches expt file
 if length(expt.allWords) ~= length(speak_eventorder)
-    warning('Word and event lists do not have the same number of elements. Checking for earliest mismatch.');
+    warning('Word and speak event lists do not have the same number of elements. Checking for earliest mismatch.');
     figure; plot(speak_eventorder)
     hold on;
     plot(expt.allWords,'g'); % ground truth
@@ -48,6 +48,16 @@ if length(expt.allWords) ~= length(speak_eventorder)
     len = min(length(expt.allWords),length(speak_eventorder));
     mismatch = find(expt.allWords(1:len) ~= speak_eventorder(1:len));
     error('First mismatch found at %d seconds (trial %d)',speak_eventtimes(mismatch(1)),mismatch(1));
+elseif length(expt.allWords) ~= length(listen_eventorder)
+    warning('Word and listen event lists do not have the same number of elements. Checking for earliest mismatch.');
+    figure; plot(listen_eventorder)
+    hold on;
+    plot(expt.allWords,'g'); % ground truth
+    legend({'triggers in event order','presented words'});
+    % find first mismatching element
+    len = min(length(expt.allWords),length(listen_eventorder));
+    mismatch = find(expt.allWords(1:len) ~= listen_eventorder(1:len));
+    error('First mismatch found at %d seconds (trial %d)',listen_eventtimes(mismatch(1)),mismatch(1));
 elseif expt.allWords ~= speak_eventorder
     error('Word and event lists are the same length but do not match!')
 elseif speak_eventorder ~= listen_eventorder
