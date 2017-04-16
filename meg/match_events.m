@@ -9,6 +9,8 @@ eventnames = {allevents.label};
 speak_inds = zeros(1,nwords);
 listen_inds = zeros(1,nwords);
 for w=1:nwords
+    %    speakstim_inds(w) = find(strcmp(eventnames,num2str(w)));
+    %    listenstim_inds(w) = find(strcmp(eventnames,num2str(w+nwords)));
     speak_inds(w) = find(strcmp(eventnames,sprintf('speak%d',w)));
     listen_inds(w) = find(strcmp(eventnames,sprintf('listen%d',w)));
 end
@@ -43,7 +45,9 @@ if length(expt.allWords) ~= length(speak_eventorder)
     figure; plot(speak_eventorder)
     hold on;
     plot(expt.allWords,'g'); % ground truth
-    legend({'triggers in event order','presented words'});
+    legend({'triggers in event order','presented words'});=======
+>>>>>>> 995c3f715bf869c86e950622228278e628376c14
+
     % find first mismatching element
     len = min(length(expt.allWords),length(speak_eventorder));
     mismatch = find(expt.allWords(1:len) ~= speak_eventorder(1:len));
@@ -65,6 +69,13 @@ elseif speak_eventorder ~= listen_eventorder
 else
     fprintf('All %d events match experiment file.\n',length(speak_eventorder))
 end
+
+% for w=1:nwords
+%     if length(speakstim_events(w).times) ~= length(speak_events(w).times)
+%         warning('Speak event mismatch')
+%     end
+%     if length(listenstim_events(w).times) ~= length(listen_events(w).times)
+%         warning('Listen event mismatch (%s)',listen_events(w).label)
 
 % create new event structs
 for f = 1:length(unique([speak_fileinds listen_fileinds])); % for each file to write
