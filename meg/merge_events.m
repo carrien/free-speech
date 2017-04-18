@@ -1,12 +1,12 @@
-function [events] = merge_events(filepaths)
+function [events] = merge_events(eventFiles)
 %MERGE_EVENTS  Merge multiple Brainstorm event files.
 %   MERGE_EVENTS(FILEPATHS)
 
 % reorder filepaths to account for zero-indexing
-filepaths = sort_files(filepaths);
+eventFiles = sort_files(eventFiles);
 
 % load initial events file
-load(filepaths{1},'events');
+load(eventFiles{1},'events');
 eventnames = {events.label};
 fields2rm = {'color','epochs','reactTimes','select'};
 events = rmfield(events,fields2rm);
@@ -16,8 +16,8 @@ for e=1:length(events)
 end
 
 % append events from remaining files
-for f=2:length(filepaths)
-    events2add = load(filepaths{f},'events'); events2add = events2add.events;
+for f=2:length(eventFiles)
+    events2add = load(eventFiles{f},'events'); events2add = events2add.events;
     for e=1:length(events2add)
         e_ind = find(strcmp(eventnames,events2add(e).label)); % index in original event struct
         if e_ind

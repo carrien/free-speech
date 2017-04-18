@@ -42,19 +42,17 @@ listen_fileinds = listen_fileinds(inds);
 % check that order matches expt file
 if length(expt.allWords) ~= length(speak_eventorder)
     warning('Word and speak event lists do not have the same number of elements. Checking for earliest mismatch.');
-    figure; plot(speak_eventorder)
+    figure; plot(speak_eventorder,':')
     hold on;
     plot(expt.allWords,'g'); % ground truth
-    legend({'triggers in event order','presented words'});=======
->>>>>>> 995c3f715bf869c86e950622228278e628376c14
-
+    legend({'triggers in event order','presented words'});
     % find first mismatching element
     len = min(length(expt.allWords),length(speak_eventorder));
     mismatch = find(expt.allWords(1:len) ~= speak_eventorder(1:len));
     error('First mismatch found at %d seconds (trial %d)',speak_eventtimes(mismatch(1)),mismatch(1));
 elseif length(expt.allWords) ~= length(listen_eventorder)
     warning('Word and listen event lists do not have the same number of elements. Checking for earliest mismatch.');
-    figure; plot(listen_eventorder)
+    figure; plot(listen_eventorder,':')
     hold on;
     plot(expt.allWords,'g'); % ground truth
     legend({'triggers in event order','presented words'});

@@ -1,5 +1,7 @@
 function [eventInfo] = get_cvp_eventInfo(dataPath)
 %GET_CVP_EVENTINFO  Get event info for center and periph trials.
+%   GET_CVP_EVENTINFO(DATAPATH) uses trial information from fdata_vowel.mat
+%   to construct eventInfo grouped by center and peripheral trials.
 
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
 

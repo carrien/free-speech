@@ -1,5 +1,5 @@
-function [filepaths] = get_eventfiles(dataPath)
-%GET_EVENTFILES  Get paths event files in a directory.
+function [eventFiles] = get_eventfiles(dataPath)
+%GET_EVENTFILES  Get paths to event files in a directory.
 
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
 
@@ -19,8 +19,8 @@ end
 names = sort(names);
 
 % prepend dataPath and append extension
-filepaths = cell(1,length(names));
+eventFiles = cell(1,length(names));
 for i=1:length(filenames)
     filenames{i} = sprintf('%s.mat',names{i});
-    filepaths{i} = fullfile(dataPath,filenames{i});
+    eventFiles{i} = fullfile(dataPath,filenames{i});
 end
