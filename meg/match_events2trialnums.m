@@ -1,4 +1,4 @@
-function [trialnums] = match_events2trialnums(expt,allevents,newEventInfo)
+function [ ] = match_events2trialnums(expt,allevents,newEventInfo)
 %MATCH_EVENTS2TRIALNUMS  Match experiment events to trial numbers.
 %   MATCH_EVENTS2TRIALNUMS(EXPT,EVENTS,NEWEVENTINFO)
 
@@ -38,21 +38,22 @@ listen_eventsamples = listen_eventsamples(inds);
 listen_fileinds = listen_fileinds(inds);
 
 % for each event, find the time range that matches it
+speak_trialnums = zeros(1,length(speak_eventtimes));
+listen_trialnums = zeros(1,length(listen_eventtimes));
 for i=1:length(speak_eventtimes)
     diffs = speak_eventtimes(i) - speakstim_eventtimes;
     pos = find(diffs > 0); % first positive different is preceding event
     if ~isempty(pos)
-        trialnums.speak(i) = pos(end);
+        speak_trialnums(i) = pos(end);
     end
 end
 for i=1:length(listen_eventtimes)
     diffs = listen_eventtimes(i) - listenstim_eventtimes;
     pos = find(diffs > 0); % first positive different is preceding event
     if ~isempty(pos)
-        trialnums.listen(i) = pos(end);
+        listen_trialnums(i) = pos(end);
     end
 end
-
 
 % create new event structs
 for f = 1:length(unique([speak_fileinds listen_fileinds])); % for each file to write
@@ -62,15 +63,21 @@ for f = 1:length(unique([speak_fileinds listen_fileinds])); % for each file to w
         events(e).color = newEventInfo(e).color;
 
         if strncmp(events(e).label,'speak',5)
-            trialinds = intersect(newEventInfo(e).trialinds,find(speak_fileinds==f));
+            [trialinds,~,ind_speak_events] = intersect(newEventInfo(e).trialinds,speak_trialnums(speak_fileinds==f));
+            for i=1:f-1
+                ind_speak_events = ind_speak_events + length(find(speak_fileinds==i));
+            end
             events(e).epochs = ones(1,length(trialinds));
-            events(e).samples = speak_eventsamples(trialinds);
-            events(e).times = speak_eventtimes(trialinds);
+            events(e).samples = speak_eventsamples(ind_speak_events);
+            events(e).times = speak_eventtimes(ind_speak_events);
         elseif strncmp(events(e).label,'listen',6)
-            trialinds = intersect(newEventInfo(e).trialinds,find(listen_fileinds==f));
+            [trialinds,~,ind_listen_events] = intersect(newEventInfo(e).trialinds,listen_trialnums(listen_fileinds==f));
+            for i=1:f-1
+                ind_listen_events = ind_listen_events + length(find(listen_fileinds==i));
+            end
             events(e).epochs = ones(1,length(trialinds));
-            events(e).samples = listen_eventsamples(trialinds);
-            events(e).times = listen_eventtimes(trialinds);
+            events(e).samples = listen_eventsamples(ind_listen_events);
+            events(e).times = listen_eventtimes(ind_listen_events);
         end
 
         events(e).reactTimes = [];
