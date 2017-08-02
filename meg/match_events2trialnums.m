@@ -1,4 +1,4 @@
-function [ ] = match_events2trialnums(expt,allevents,newEventInfo)
+function [trialinds] = match_events2trialnums(expt,allevents,newEventInfo)
 %MATCH_EVENTS2TRIALNUMS  Match experiment events to trial numbers.
 %   MATCH_EVENTS2TRIALNUMS(EXPT,EVENTS,NEWEVENTINFO)
 
@@ -49,7 +49,7 @@ for i=1:length(speak_eventtimes)
 end
 for i=1:length(listen_eventtimes)
     diffs = listen_eventtimes(i) - listenstim_eventtimes;
-    pos = find(diffs > 0); % first positive different is preceding event
+    pos = find(diffs > 0.28); %0.02); % was: > 0); % first positive different is preceding event, but add buffer for late trials
     if ~isempty(pos)
         listen_trialnums(i) = pos(end);
     end
@@ -63,21 +63,21 @@ for f = 1:length(unique([speak_fileinds listen_fileinds])); % for each file to w
         events(e).color = newEventInfo(e).color;
 
         if strncmp(events(e).label,'speak',5)
-            [trialinds,~,ind_speak_events] = intersect(newEventInfo(e).trialinds,speak_trialnums(speak_fileinds==f));
+            [trialinds{f}{e},~,ind_speak_events] = intersect(newEventInfo(e).trialinds,speak_trialnums(speak_fileinds==f));
             for i=1:f-1
                 ind_speak_events = ind_speak_events + length(find(speak_fileinds==i));
             end
-            events(e).epochs = ones(1,length(trialinds));
+            events(e).epochs = ones(1,length(trialinds{f}{e}));
             events(e).samples = speak_eventsamples(ind_speak_events);
             events(e).times = speak_eventtimes(ind_speak_events);
         elseif strncmp(events(e).label,'listen',6)
-            [trialinds,~,ind_listen_events] = intersect(newEventInfo(e).trialinds,listen_trialnums(listen_fileinds==f));
+            [trialinds{f}{e},~,ind_listen_events] = intersect(newEventInfo(e).trialinds,listen_trialnums(listen_fileinds==f));
             for i=1:f-1
                 ind_listen_events = ind_listen_events + length(find(listen_fileinds==i));
             end
-            events(e).epochs = ones(1,length(trialinds));
+            events(e).epochs = ones(1,length(trialinds{f}{e}));
             events(e).samples = listen_eventsamples(ind_listen_events);
-            events(e).times = listen_eventtimes(ind_listen_events);
+            events(e).times = listen_eventtimes(ind_listen_events);            
         end
 
         events(e).reactTimes = [];
