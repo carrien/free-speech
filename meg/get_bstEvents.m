@@ -1,13 +1,8 @@
-function [eventFiles] = save_bstEvents(dataFiles,outPath)
-%SAVE_BSTEVENTS  Exports event markers from a list of Brainstorm raw files.
+function [eventFiles] = get_bstEvents(exptName,sid)
+%GET_BSTEVENTS  Returns filenames for saved Brainstorm event markers.
 
-eventFiles = cell(1,length(dataFiles));
-for i=1:length(dataFiles)
-    [~,filename] = fileparts(dataFiles{i});
-    data = load(dataFiles{i});
-    events = data.F.events; %#ok<NASGU>
-    eventfilename = sprintf('events_%s',filename(11:end));
-    eventFiles{i} = fullfile(outPath,eventfilename);
-    save(eventFiles{i},'events');
-    fprintf('Event file written to %s\n',eventFiles{i});
-end
+dataPath = getMegSubjPath(exptName,sid);
+
+d = dir(fullfile(dataPath,sprintf('events_%s*',lower(exptName))));
+z = d(end); d(end) = []; d = [z; d]; % reorder to put unsuffixed file first
+eventFiles = fullfile(dataPath,{d.name});

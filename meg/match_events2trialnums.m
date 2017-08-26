@@ -63,19 +63,19 @@ for f = 1:length(unique([speak_fileinds listen_fileinds])); % for each file to w
         events(e).color = newEventInfo(e).color;
 
         if strncmp(events(e).label,'speak',5)
-            [trialinds{f}{e},~,ind_speak_events] = intersect(newEventInfo(e).trialinds,speak_trialnums(speak_fileinds==f));
+            [trialinds{e}{f},~,ind_speak_events] = intersect(newEventInfo(e).trialinds,speak_trialnums(speak_fileinds==f));
             for i=1:f-1
                 ind_speak_events = ind_speak_events + length(find(speak_fileinds==i));
             end
-            events(e).epochs = ones(1,length(trialinds{f}{e}));
+            events(e).epochs = ones(1,length(trialinds{e}{f}));
             events(e).samples = speak_eventsamples(ind_speak_events);
             events(e).times = speak_eventtimes(ind_speak_events);
         elseif strncmp(events(e).label,'listen',6)
-            [trialinds{f}{e},~,ind_listen_events] = intersect(newEventInfo(e).trialinds,listen_trialnums(listen_fileinds==f));
+            [trialinds{e}{f},~,ind_listen_events] = intersect(newEventInfo(e).trialinds,listen_trialnums(listen_fileinds==f));
             for i=1:f-1
                 ind_listen_events = ind_listen_events + length(find(listen_fileinds==i));
             end
-            events(e).epochs = ones(1,length(trialinds{f}{e}));
+            events(e).epochs = ones(1,length(trialinds{e}{f}));
             events(e).samples = listen_eventsamples(ind_listen_events);
             events(e).times = listen_eventtimes(ind_listen_events);            
         end
@@ -99,4 +99,8 @@ for f = 1:length(unique([speak_fileinds listen_fileinds])); % for each file to w
         save(savefile,'events');
         fprintf('Event file saved to %s\n',savefile);
     end
+end
+
+for e=1:length(trialinds)
+    trialinds{e} = unique([trialinds{e}{:}]);
 end

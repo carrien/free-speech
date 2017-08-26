@@ -1,25 +1,29 @@
-function [eventInfo] = get_eventInfo_vowel(dataPath)
-%GET_EVENTINFO_CVP  Get event info for center and periph trials.
-%   GET_EVENTINFO_CVP(DATAPATH) uses trial information from fdata_vowel.mat
-%   to construct eventInfo grouped by center and peripheral trials.
+function [eventInfo] = get_eventInfo_vowel(dataPath,cond)
+%GET_EVENTINFO_VOWEL  Get event info for trials by vowel identity.
+%   GET_EVENTINFO_VOWEL(DATAPATH,CONDITION) uses trial information from
+%   expt.mat to construct eventInfo grouped by vowel identity. CONDITION
+%   determines which events will be tracked and can be 'speak', 'listen',
+%   or 'both'.
+%   Because expt.mat does not exclude bad trials, they are included here
+%   and must be removed downstream, e.g. after matching the event info to
+%   Brainstorm events imported in the database.
 
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
+if nargin < 2 || isempty(cond), cond = 'both'; end
 
 load(fullfile(dataPath,'expt.mat'));
-%load(fullfile(dataPath,'dataVals.mat'));
-%goodtrials = [dataVals(~[dataVals.bExcl]).token];
 
-eventInfo(1).name = 'listen_i';
-eventInfo(1).color = [.3 1 0];
-eventInfo(1).trialinds = expt.inds.vowels.i;
-%eventInfo(1).trialinds = intersect(expt.inds.vowels.i,goodtrials);
-
-eventInfo(2).name = 'listen_E';
-eventInfo(2).color = [1 0 0];
-eventInfo(2).trialinds = expt.inds.vowels.E;
-%eventInfo(2).trialinds = intersect(expt.inds.vowels.E,goodtrials);
-
-eventInfo(3).name = 'listen_ae';
-eventInfo(3).color = [0 .3 1];
-eventInfo(3).trialinds = expt.inds.vowels.ae;
-%eventInfo(3).trialinds = intersect(expt.inds.vowels.ae,goodtrials);
+eventInfo = struct([]);
+conds = {'speak','listen'};
+for c=1:length(conds)
+    thiscond = conds{c};
+    if any(strcmp(cond,{thiscond,'both'})) % if condition matches this cond (or is 'both')
+        len = length(eventInfo);
+        for v=1:length(expt.vowels)
+            thisvowel = expt.vowels{v};
+            eventInfo(v+len).name = sprintf('%s_%s',thiscond,thisvowel);
+            eventInfo(v+len).color = rand(1,3);
+            eventInfo(v+len).trialinds = expt.inds.vowels.(thisvowel);
+        end
+    end
+end

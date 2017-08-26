@@ -1,6 +1,7 @@
 function [events] = merge_events(eventFiles)
 %MERGE_EVENTS  Merge multiple Brainstorm event files.
-%   MERGE_EVENTS(FILEPATHS)
+%   MERGE_EVENTS(EVENTFILES) loads data from the list of filepaths in
+%   EVENTFILES and returns a single structure with data from all files.
 
 % reorder filepaths to account for zero-indexing
 eventFiles = sort_files(eventFiles);
@@ -30,4 +31,8 @@ for f=2:length(eventFiles)
             events(e_ind).eventind = [events(e_ind).eventind e_ind*ones(1,length(events2add(e).times))];
         end
     end
+end
+
+for e=1:length(events)
+    fprintf('%s: found %d events.\n',events(e).label,length(events(e).samples));
 end
