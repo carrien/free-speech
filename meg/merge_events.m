@@ -33,6 +33,21 @@ for f=2:length(eventFiles)
     end
 end
 
-for e=1:length(events)
+cen = find(~cellfun(@isempty, regexp(eventnames,'center')));
+pph = find(~cellfun(@isempty, regexp(eventnames,'periph')));
+snd = find(strcmp(eventnames,'soundOnset'));
+extras = [cen pph snd];
+eventlist = setdiff(1:length(events),extras);
+
+for e=eventlist
+    fprintf('%s: found %d events.\n',events(e).label,length(events(e).samples));
+    for ee=eventlist(eventlist>e)
+        overlap = intersect(events(e).times,events(ee).times);
+        if ~isempty(overlap)
+            warning('Events %s and %s overlap at times %s.',events(e).label,events(ee).label,mat2str(overlap))
+        end
+    end
+end
+for e=extras
     fprintf('%s: found %d events.\n',events(e).label,length(events(e).samples));
 end

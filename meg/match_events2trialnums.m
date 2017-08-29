@@ -49,10 +49,17 @@ for i=1:length(speak_eventtimes)
 end
 for i=1:length(listen_eventtimes)
     diffs = listen_eventtimes(i) - listenstim_eventtimes;
-    pos = find(diffs > 0.28); %0.02); % was: > 0); % first positive different is preceding event, but add buffer for late trials
+    pos = find(diffs > 0.02); % was: > 0); % first positive difference is preceding event, but add buffer for late trials
     if ~isempty(pos)
         listen_trialnums(i) = pos(end);
+    else
+        warning('No preceding stim found for event at %d ms.',listen_eventtimes(i));
     end
+end
+[~,ia]=unique(listen_trialnums);
+overlaps = setdiff(1:length(listen_trialnums),ia);
+if ~isempty(overlaps)
+    error('Repeat trials found at times %s in files %s',mat2str(listen_eventtimes(overlaps)),mat2str(listen_fileinds(overlaps)));
 end
 
 % create new event structs

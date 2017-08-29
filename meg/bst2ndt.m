@@ -20,11 +20,11 @@ switch type                                                     % Get trial grou
         foldername = 'listencp';
 end
 
-try                                                             % Get events:
-    eventFiles = get_bstEvents(exptName,snum);                  % load
-catch                                                           % or generate if needed
+%try                                                             % Get events:
+%    eventFiles = get_bstEvents(exptName,snum);                  % load
+%catch                                                           % or generate if needed
     eventFiles = save_bstEvents(get_bstRawFiles(exptName,snum),getMegSubjPath(exptName,snum));
-end
+%end
 allevents = merge_events(eventFiles);                           % Merge into one file
 
 trialinds = match_events2trialnums(expt,allevents,eventInfo);   % Trial match
