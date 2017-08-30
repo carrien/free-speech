@@ -1,4 +1,4 @@
-function [ ] = gen_bstRenamedTrials(dataPaths,trialinds,newDataPath)
+function [sortedfiles] = gen_bstRenamedTrials(dataPaths,trialinds,newDataPath)
 %GEN_BSTRENAMEDTRIALS  Copies and renumbers brainstorm trial files.
 %   GEN_BSTRENAMEDTRIALS(DATAPATH,NEWDATAPATH) copies mat files from
 %   DATAPATH to NEWDATAPATH, which must be an absolute path if it doesn't

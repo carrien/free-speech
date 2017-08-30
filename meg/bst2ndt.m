@@ -32,6 +32,7 @@ bstTrialFolders = get_bstTrialFolders(exptName,snum,type);
 
 newDataPath = fullfile('/projectnb/skiran/aphSISnb/ndtdata/',sprintf('s%02d',snum),foldername); % Set path for copying
 
-gen_bstRenamedTrials(bstTrialFolders,trialinds,newDataPath)     % Make the copy
+sortedfiles = gen_bstRenamedTrials(bstTrialFolders,trialinds,newDataPath);     % Make the copy
 
+fprintf('%d files written to %s.\n',length(sortedfiles),newDataPath);
 end
