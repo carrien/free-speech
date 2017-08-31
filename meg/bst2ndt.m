@@ -10,13 +10,13 @@ switch type                                                     % Get trial grou
         eventInfo = get_eventInfo_vowel(getAcoustSubjPath(exptName,snum,'meg'),'speak');
         foldername = 'speak123';
     case 'speak_cvp'
-        eventInfo = get_eventInfo_cvp(getAcoustSubjPath(exptName,snum,'meg'));
+        eventInfo = get_eventInfo_cvp(getAcoustSubjPath(exptName,snum,'meg'),'speak');
         foldername = 'speakcp';
     case 'listen'
         eventInfo = get_eventInfo_vowel(getAcoustSubjPath(exptName,snum,'meg'),'listen');
         foldername = 'listen123';
     case 'listen_cvp'
-        eventInfo = get_eventInfo_cvp(getAcoustSubjPath(exptName,snum,'meg'));
+        eventInfo = get_eventInfo_cvp(getAcoustSubjPath(exptName,snum,'meg'),'listen');
         foldername = 'listencp';
 end
 
@@ -32,7 +32,6 @@ bstTrialFolders = get_bstTrialFolders(exptName,snum,type);
 
 newDataPath = fullfile('/projectnb/skiran/aphSISnb/ndtdata/',sprintf('s%02d',snum),foldername); % Set path for copying
 
-sortedfiles = gen_bstRenamedTrials(bstTrialFolders,trialinds,newDataPath);     % Make the copy
+gen_bstRenamedTrials(bstTrialFolders,trialinds,newDataPath);     % Make the copy
 
-fprintf('%d files written to %s.\n',length(sortedfiles),newDataPath);
 end

@@ -1,4 +1,4 @@
-function [sortedfiles] = gen_bstRenamedTrials(dataPaths,trialinds,newDataPath)
+function [ ] = gen_bstRenamedTrials(dataPaths,trialinds,newDataPath)
 %GEN_BSTRENAMEDTRIALS  Copies and renumbers brainstorm trial files.
 %   GEN_BSTRENAMEDTRIALS(DATAPATH,NEWDATAPATH) copies mat files from
 %   DATAPATH to NEWDATAPATH, which must be an absolute path if it doesn't
@@ -12,7 +12,10 @@ if ~iscell(trialinds), trialinds = {trialinds}; end
 % check if new dir exists, create if not
 if exist(newDataPath,'dir')
     bSave = savecheck(newDataPath,'dir');
-    if ~bSave, return; end
+    if ~bSave
+        warning('No files written.')
+        return;
+    end
 else
     mkdir(newDataPath)
 end
@@ -59,5 +62,7 @@ for dP = 1:length(dataPaths)
         command = sprintf('cp %s %s',oldfilepath,newfilepath);
         system(command);
     end
+    
+    fprintf('%d files written to %s.\n',length(sortedfiles),newDataPath);
     
 end
