@@ -9,11 +9,21 @@ if nargin < 4 || isempty(fs), fs = 11025; end
 if nargin < 5 || isempty(bRamp), bRamp = 0; end
 if nargin < 6, bComplex = 0; end
 
-if ~bComplex
-    y = amp*get_sine(w,dur,fs); 
-else
-    y = amp*(get_sine(w,dur,fs) + get_sine(2*w,dur,fs) + get_sine(3*w,dur,fs));
+if length(amp) < length(w)
+    amp = amp(1)*ones(1,length(w));
 end
+
+t = 0:1/fs:dur;
+y = zeros(1,length(t));
+for i=1:length(w)
+    y = y + amp(i)*get_sine(w(i),dur,fs);
+end
+
+% if ~bComplex
+%     y = amp*get_sine(w,dur,fs); 
+% else
+%     y = amp*(get_sine(w,dur,fs) + get_sine(2*w,dur,fs) + get_sine(3*w,dur,fs));
+% end
 
 if bRamp
     t = 0:1/fs:dur;
