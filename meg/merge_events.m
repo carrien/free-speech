@@ -1,6 +1,7 @@
 function [events] = merge_events(eventFiles)
 %MERGE_EVENTS  Merge multiple Brainstorm event files.
-%   MERGE_EVENTS(FILEPATHS)
+%   MERGE_EVENTS(EVENTFILES) loads data from the list of filepaths in
+%   EVENTFILES and returns a single structure with data from all files.
 
 % reorder filepaths to account for zero-indexing
 eventFiles = sort_files(eventFiles);
@@ -30,4 +31,23 @@ for f=2:length(eventFiles)
             events(e_ind).eventind = [events(e_ind).eventind e_ind*ones(1,length(events2add(e).times))];
         end
     end
+end
+
+cen = find(~cellfun(@isempty, regexp(eventnames,'center')));
+pph = find(~cellfun(@isempty, regexp(eventnames,'periph')));
+snd = find(strcmp(eventnames,'soundOnset'));
+extras = [cen pph snd];
+eventlist = setdiff(1:length(events),extras);
+
+for e=eventlist
+    fprintf('%s: found %d events.\n',events(e).label,length(events(e).samples));
+    for ee=eventlist(eventlist>e)
+        overlap = intersect(events(e).times,events(ee).times);
+        if ~isempty(overlap)
+            warning('Events %s and %s overlap at times %s.',events(e).label,events(ee).label,mat2str(overlap))
+        end
+    end
+end
+for e=extras
+    fprintf('%s: found %d events.\n',events(e).label,length(events(e).samples));
 end

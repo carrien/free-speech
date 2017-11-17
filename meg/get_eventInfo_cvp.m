@@ -1,24 +1,33 @@
-function [eventInfo] = get_eventInfo_cvp(dataPath)
+function [eventInfo] = get_eventInfo_cvp(dataPath,cond)
 %GET_EVENTINFO_CVP  Get event info for center and periph trials.
-%   GET_EVENTINFO_CVP(DATAPATH) uses trial information from fdata_vowel.mat
-%   to construct eventInfo grouped by center and peripheral trials.
+%   GET_EVENTINFO_CVP(DATAPATH,COND) uses trial information from
+%   fdata_vowel.mat to construct eventInfo grouped by center and peripheral
+%   trials. COND determine which events will be tracked and can be 'speak',
+%   'listen', or 'both'. Because fdata_vowel has bad trials already
+%   excluded, only good trials are part of the event structure.
 
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
+if nargin < 2 || isempty(cond), cond = 'both'; end
 
 load(fullfile(dataPath,'fdata_vowel.mat'));
+vowels = fieldnames(fmtdata.mels);
 
-eventInfo(1).name = 'speak_center';
-eventInfo(1).color = [.1 .75 0];
-eventInfo(1).trialinds = [fmtdata.mels.i.first50ms.center33 fmtdata.mels.E.first50ms.center33 fmtdata.mels.ae.first50ms.center33];
+center = cellfun(@(fn) fmtdata.mels.(fn).first50ms.center33, vowels, 'UniformOutput',false);
+center = cat(2,center{:});
+periph = cellfun(@(fn) fmtdata.mels.(fn).first50ms.periph33, vowels, 'UniformOutput',false);
+periph = cat(2,periph{:});
 
-eventInfo(2).name = 'speak_periph';
-eventInfo(2).color = [1 0 0];
-eventInfo(2).trialinds = [fmtdata.mels.i.first50ms.periph33 fmtdata.mels.E.first50ms.periph33 fmtdata.mels.ae.first50ms.periph33];
-
-eventInfo(3).name = 'listen_center';
-eventInfo(3).color = [.1 .75 0];
-eventInfo(3).trialinds = eventInfo(1).trialinds;
-
-eventInfo(4).name = 'listen_periph';
-eventInfo(4).color = [1 0 0];
-eventInfo(4).trialinds = eventInfo(2).trialinds;
+eventInfo = struct([]);
+conds = {'speak','listen'};
+for c=1:length(conds)
+    thiscond = conds{c};
+    if any(strcmp(cond,{thiscond,'both'})) % if condition matches this cond (or is 'both')
+        len = length(eventInfo);
+        eventInfo(len+1).name = sprintf('%s_center',thiscond);
+        eventInfo(len+1).color = [.1 .75 0];
+        eventInfo(len+1).trialinds = center;
+        eventInfo(len+2).name = sprintf('%s_periph',thiscond);
+        eventInfo(len+2).color = [1 0 0];
+        eventInfo(len+2).trialinds = periph;
+    end
+end
