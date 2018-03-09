@@ -8,6 +8,10 @@ if nargin < 3 || isempty(group), group = 'eat'; end
 if nargin < 4 || isempty(nbtrials), nbtrials = 10; end
 if nargin < 5 || isempty(bExcl), bExcl = 1; end
 
+reply = input('Start trial? [1]: ','s');
+if isempty(reply), reply = '1'; end
+startTrial = sscanf(reply,'%d');
+
 load(fullfile(dataPath,'data.mat'));
 load(fullfile(dataPath,'expt.mat'));
 
@@ -21,7 +25,7 @@ if bExcl % remove bad trials
     trials = setdiff(trials,excl);
 end
 
-for t=1:length(trials)
+for t=startTrial:length(trials)
     trialnum = trials(t);
     disp(trialnum);
     h = audioplayer(data(trialnum).signalIn,data(trialnum).params.fs);
