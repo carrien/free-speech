@@ -6,8 +6,12 @@ if nargin < 6, trange = []; end
 
 tstep = .003;
 
+reply = input('Start trial? [1]: ','s');
+if isempty(reply), reply = '1'; end
+startTrial = sscanf(reply,'%d');
+
 outside = zeros(1,length(dataVals));
-for i=1:length(dataVals)
+for i=startTrial:length(dataVals)
     % only count good trials in the group
     if dataVals(i).(grouping) == groupnum && ~dataVals(i).bExcl
         % get track length
