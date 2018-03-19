@@ -6,19 +6,21 @@ elseif ischar(txt), txtcell = {txt}; % if string, convert to cell array
 else error('Input must be a text string or cell array of strings.')
 end
 
-vowels = {'a' 'ae' 'E' 'eI' 'I' 'i' 'o' 'u' 'er'};
+vowels = {'aa' 'ae' 'ah' 'eh' 'ey' 'ih' 'iy' 'ow' 'uw' 'er' 'oe'};
 
-a = ismember(txtcell,{'aa' 'ah'});
+aa = ismember(txtcell,{'aa' 'ah' 'a'}); % added 'a' because this was the original vowel name for this category. Possibly will need to change it if we ever use the indefinite article.
 ae = ismember(txtcell,{'ae' 'add' 'ad' 'rad'});
-E = ismember(txtcell,{'eh' 'Ed' 'head' 'red' 'glen' 'blend'});
-eI = ismember(txtcell,{'grain'});
-I = ismember(txtcell,{'ih' 'I' 'rid' 'grin'});
-i = ismember(txtcell,{'ee' 'eat' 'reed' 'green' 'bleed'});
-o = ismember(txtcell,{'oh' 'blow'});
-u = ismember(txtcell,{'oo' 'rude' 'groom' 'blue'});
+ah = ismember(txtcell,{'above'});
+eh = ismember(txtcell,{'eh' 'Ed' 'head' 'red' 'glen' 'blend' 'hais' 'eff' 'E' 'adept' 'meta'});
+ey = ismember(txtcell,{'grain' 'eI' 'beta' 'abate'});
+ih = ismember(txtcell,{'ih' 'I' 'rid' 'grin'});
+iy = ismember(txtcell,{'ee' 'eat' 'reed' 'green' 'bleed' 'Yves' 'Eve'});
+ow = ismember(txtcell,{'oh' 'blow' 'o'});
+uw = ismember(txtcell,{'oo' 'rude' 'groom' 'blue' 'u'});
 er = ismember(txtcell,{'er' 'blur'});
+oe = ismember(txtcell,{'oeuf'});
 
-vowelinds = [a; ae; E; eI; I; i; o; u; er];
+vowelinds = [aa; ae; ah; eh; ey; ih; iy; ow; uw; er; oe];
 vowelinds = sum(vowelinds .* repmat([1:size(vowelinds,1)]',1,size(vowelinds,2)),1);
 if any(~vowelinds)
     notfound = unique(txtcell(~vowelinds));
