@@ -1,14 +1,15 @@
-function [inds] = get_outliers(dataVals,grouping,groupnum,fmt,frange,trange)
+function [inds] = get_outliers(dataVals,grouping,groupnum,fmt,frange,trange,bExcl)
 %GET_OUTLIERS  Get trials with ftrack values outside a given range.
 
 if nargin < 2 || isempty(grouping), grouping = 'word'; end
 if nargin < 6, trange = []; end
+if nargin < 7 || isempty(bExcl), bExcl = 1; end
 
 tstep = .003;
 
 outside = zeros(1,length(dataVals));
 for i=1:length(dataVals)
-    % only count good trials in the group
+    if bExcl, dataVals(i).bExcl = 0; end % only count good trials in the group unless bExcl = 0
     if dataVals(i).(grouping) == groupnum && ~dataVals(i).bExcl
         % get track length
         len = length(dataVals(i).(fmt));

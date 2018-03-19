@@ -28,13 +28,14 @@ trials = trials(trials >= startTrial);
 
 for t=1:length(trials)
     trialnum = trials(t);
-    disp(trialnum);
+    fprintf('%d ',trialnum);
     h = audioplayer(data(trialnum).signalIn,data(trialnum).params.fs);
     playblocking(h);
     if nbtrials && ~mod(t,nbtrials)
+        fprintf('\n');
         pause;
     else
-        play_tone(500,.075,[],[],1);
+        play_tone(500,.075,.25,[],1);
         pause(.1);
     end
 end
