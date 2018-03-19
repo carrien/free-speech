@@ -25,7 +25,7 @@ end
 if strcmp(exptName,'cat'), subdirname = 'pert/formant_analysis';
 elseif strcmp(exptName,'vin'), subdirname = 'all';
 elseif strcmp(exptName,'stroop'), subdirname = 'Stroop';
-else subdirname = [];
+else, subdirname = [];
 end
 ffx = []; rfx = [];
 
@@ -34,8 +34,10 @@ fprintf('Adding data from subject');
 for s=1:length(svec) % for each subject
     % load data
     dataPath = getAcoustSubjPath(exptName,svec(s),subdirname);
-    load(fullfile(dataPath,fmtMatrixFile),'fmtMatrix','fmtMeans');
+    load(fullfile(dataPath,fmtMatrixFile));
     analyses = fieldnames(fmtMatrix);
+    bMelsVec(s) = bMels;
+    bFiltVec(s) = bFilt;
     
     fprintf(' %d',svec(s));
     for a=1:length(analyses) % for each type of track (diff1, etc.)
@@ -65,6 +67,12 @@ for s=1:length(svec) % for each subject
     end
 end
 
+bMels = unique(bMelsVec);
+bFilt = unique(bFiltVec);
+if length(bMels) > 1
+    warning('Inconsistant frequency scale: the following subjects'' data are in mels: %s',num2str(svec(logical(bMelsVec))))
+end
+
 %% save
 filesuffix = fmtMatrixFile(11:end);
 [~,filesuffix] = fileparts(filesuffix);
@@ -75,7 +83,7 @@ if bSaveCheck
 else
     bSave = 1;
 end
-if bSave,
-    save(savefile,'ffx','rfx','svec');
+if bSave
+    save(savefile,'ffx','rfx','svec','tstep','bMels','bFilt');
     fprintf('\n%s created.\n',filename);
 end
