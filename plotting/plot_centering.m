@@ -1,4 +1,4 @@
-function [] = plot_centering(dataPaths,condtype,condinds,plotinds,ntile)
+function [] = plot_centering(dataPaths,condtype,condinds,plotinds,ntile,bSave)
 %PLOT_CENTERING  Plot vowel centering in center and peripheral trials.
 %   PLOT_CENTERING reads formants from a subject's fdata file and plots
 %   them with respect to the median at both the beginning (first50ms) and
@@ -14,6 +14,7 @@ if nargin < 2 || isempty(condtype), condtype = 'vowel'; end
 if nargin < 3 || isempty(condinds), condinds = [1 2 3]; end
 if nargin < 4 || isempty(plotinds), plotinds = [1 2]; end
 if nargin < 5 || isempty(ntile), ntile = 5; end
+if nargin < 6 || isempty(bSave), bSave = 0; end
 
 for s=1:length(dataPaths)
     load(fullfile(dataPaths{s},sprintf('fdata_%s.mat',condtype)));
@@ -253,7 +254,9 @@ for s=1:length(dataPaths)
     
     % save centering info per subject
     centfilename = fullfile(dataPaths{s},sprintf('centering_cvp_%dtile.mat',ntile));
-    bSave = savecheck(centfilename);
+    if bSave
+        bSave = savecheck(centfilename);
+    end
     if bSave
         save(centfilename,'centering','centering_mean','dists_init','dists_mid','dur','eucl');
     end

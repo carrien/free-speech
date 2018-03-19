@@ -34,9 +34,9 @@ end
 
 % set line colors
 if ~exist('linecolors','var') || isempty(linecolors)
-    linecolors = get_color_struct(conds);
+    linecolors = get_colorStruct(conds);
 elseif ~isstruct(linecolors)
-    linecolors = get_color_struct(conds,linecolors);
+    linecolors = get_colorStruct(conds,linecolors);
 end
 
 % set axis labels and position
