@@ -40,7 +40,8 @@ for g = 1:length(groups)
     trials = expt.inds.(grouping).(group);
     trials = setdiff(trials,excl);
     trials = trials(trials >= startTrial);
-    fprintf('%s (%d %strials)\n',group,length(trials),trialAdjStr);
+    fprintf('%s (%d %strials)\nPress a key to begin; press CTRL-C at any time to quit.\n',group,length(trials),trialAdjStr);
+    pause;
     
     for t=1:length(trials)
         trialnum = trials(t);
