@@ -2,9 +2,11 @@ function [figpos] = get_figpos(screentype)
 %GET_FIGPOS  Shortcut to desired full-window figure position on various machines.
 %   e.g. get_figpos('carbo')
 
-if nargin < 1, screentype = 'carbo'; end
+if nargin < 1, screentype = 'blab'; end
 
 switch screentype
+    case 'blab'
+        figpos = [50 50 1800 930];
     case 'carbo'
         figpos = [10 44 2542 1302];
     case 'lab_old'
