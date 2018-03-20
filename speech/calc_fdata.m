@@ -50,7 +50,7 @@ switch condtype
     case 'color', conds = expt.colors;
     otherwise, error('Condition type must be "vowel", "cond", "word", or "color".')
 end
-avgfn = {'mid50p', 'first50ms', 'mid50p_NaN', 'mid50ms'};  % av: averging functions
+avgfn = {'mid50p', 'first50ms', 'mid50ms'};  % av: averging functions
 formant = {'f1' 'f2'};
 
 %% initialize empty data structure
@@ -123,7 +123,6 @@ for cnd=1:length(conds)
                 fmtdata.(fr).(c).mid50p.rawavg.(fm)(i) = nanmean(midnperc(y(~isnan(y)),50));
                 noNaNlength = length(y(~isnan(y)));
                 if noNaNlength/2 < ceil(fs_fmt*.025), error('Length of non-NaN portion of formant signal is only %d samples. (Token %d = trial %d in condition %s)',noNaNlength,trialinds.(c)(i),goodTrials(i),c); end
-                fmtdata.(fr).(c).mid50p_NaN.rawavg.(fm)(i) = nanmean(midnperc(y,50));
                 fmtdata.(fr).(c).mid50ms.rawavg.(fm)(i) = nanmean(y(round(noNaNlength/2-fs_fmt*.025):round(noNaNlength/2+fs_fmt*.025)));
             end
         end
@@ -137,7 +136,6 @@ for cnd=1:length(conds)
             f0data.(fr).(c).mid50p.rawavg.f0(i) = nanmean(midnperc(y(~isnan(y)),50));
             noNaNlength = length(y(~isnan(y)));
             if noNaNlength/2 < ceil(fs_fmt*.025), error('Length of non-NaN portion of pitch signal is only %d samples. (Token %d = trial %d in condition %s)',noNaNlength,trialinds.(c)(i),goodTrials(i),c); end
-            f0data.(fr).(c).mid50p_NaN.rawavg.f0(i) = nanmean(midnperc(y,50));
             f0data.(fr).(c).mid50ms.rawavg.f0(i) = nanmean(y(round(noNaNlength/2-fs_fmt*.025):round(noNaNlength/2+fs_fmt*.025)));
         end
     end
@@ -151,12 +149,13 @@ for cnd=1:length(conds)
         ampldata.dB.(c).mid50p.rawavg.ampl(i) = nanmean(midnperc(y(~isnan(y)),50));
         noNaNlength = length(y(~isnan(y)));
         if noNaNlength/2 < ceil(fs_fmt*.025), error('Length of non-NaN portion of amplitude signal is only %d samples. (Token %d = trial %d in condition %s)',noNaNlength,trialinds.(c)(i),goodTrials(i),c); end
-        ampldata.dB.(c).mid50p_NaN.rawavg.ampl(i) = nanmean(midnperc(y,50));
         ampldata.dB.(c).mid50ms.rawavg.ampl(i) = nanmean(y(round(noNaNlength/2-fs_fmt*.025):round(noNaNlength/2+fs_fmt*.025)));
     end
 end
 
 %% calculate median
+avgfn = fieldnames(fmtdata.(fr).(c));
+avgfn = setdiff(avgfn,'traces');
 for cnd=1:length(conds)
     c = conds{cnd};
     for avg=1:length(avgfn)

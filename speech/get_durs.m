@@ -1,6 +1,6 @@
 function [allDurs] = get_durs(exptName)
 
-exptData = getExptInfo(exptName);
+exptData = get_exptInfo(exptName);
 snums = exptData.snums;
 
 allDurs = [];

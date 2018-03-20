@@ -98,7 +98,7 @@ for itrial = trials2track
     else
         bSave = 1;
     end
-    if bSave,
+    if bSave
         if exist(savefile,'file')
             sigmat = saveddata.sigmat;      % load saved tracks
             fieldns = fieldnames(tracks);

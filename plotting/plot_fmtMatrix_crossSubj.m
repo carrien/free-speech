@@ -39,7 +39,7 @@ data_err = struct('ffx',ffx_err,'rfx',rfx_err);
 if ~exist('tstep','var'), tstep = .003; end
 alltime = 0:tstep:1;
 conds = fieldnames(ffx.rawf1);
-stop_ms = 250;
+stop_ms = 350;
 stop = ms2samps(stop_ms,1/tstep)*ones(1,length(conds)); % crop axis to here
 
 % calculate significance at each timepoint (assumes 2 conds)
@@ -65,9 +65,9 @@ end
 
 % set line colors
 if ~exist('linecolors','var') || isempty(linecolors)
-    linecolors = get_color_struct(conds);
+    linecolors = get_colorStruct(conds);
 elseif ~isstruct(linecolors) %ismatrix(linecolors)
-    linecolors = get_color_struct(conds,linecolors);
+    linecolors = get_colorStruct(conds,linecolors);
 end
 linestyles = {'-.',':','-','--'};
 
