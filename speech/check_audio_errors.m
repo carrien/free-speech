@@ -34,13 +34,15 @@ if isempty(reply), reply = '1'; end
 startTrial = sscanf(reply,'%d');
 
 % loop over groups
+fprintf('Press any key to begin; press CTRL-C at any time to quit.\n');
+pause;
 for g = 1:length(groups)
     group = groups{g};
     
     trials = expt.inds.(grouping).(group);
     trials = setdiff(trials,excl);
     trials = trials(trials >= startTrial);
-    fprintf('%s (%d %strials)\nPress a key to begin; press CTRL-C at any time to quit.\n',group,length(trials),trialAdjStr);
+    fprintf('%s (%d %strials)\n',group,length(trials),trialAdjStr);
     pause;
     
     for t=1:length(trials)
