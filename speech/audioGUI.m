@@ -78,6 +78,19 @@ for itrial = trials2track
     
     % optionally overwrite figure position
     if ~isempty(figpos), plot_params.figpos = figpos; end
+    if exist('bPraat','var')
+        if bPraat
+            sigproc_params.ftrack_method = 'praat';
+        end
+    elseif ~isempty(sigproc_params.ftrack_method) && ~strcmp(sigproc_params.ftrack_method,'praat')
+        reply = input(sprintf('Formant tracking method is %s. Use praat? [y/n]: ',sigproc_params.ftrack_method),'s');
+        if strcmp(reply,'y')
+            sigproc_params.ftrack_method = 'praat';
+            bPraat = 1;
+        else
+            bPraat = 0;
+        end
+    end
     
     %% call wave viewer
     endstate = wave_viewer(y,'fs',fs,'name',sprintf('trial(%d)',itrial), ...
