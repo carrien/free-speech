@@ -3,7 +3,7 @@ function [ipa] = txt2ipa(txt)
 
 if iscellstr(txt), txtcell = txt;
 elseif ischar(txt), txtcell = {txt}; % if string, convert to cell array
-else error('Input must be a text string or cell array of strings.')
+else, error('Input must be a text string or cell array of strings.')
 end
 
 vowels = {'aa' 'ae' 'ah' 'eh' 'ey' 'ih' 'iy' 'ow' 'uw' 'er' 'oe'};
@@ -11,12 +11,12 @@ vowels = {'aa' 'ae' 'ah' 'eh' 'ey' 'ih' 'iy' 'ow' 'uw' 'er' 'oe'};
 aa = ismember(txtcell,{'aa' 'ah' 'a'}); % added 'a' because this was the original vowel name for this category. Possibly will need to change it if we ever use the indefinite article.
 ae = ismember(txtcell,{'ae' 'add' 'ad' 'rad'});
 ah = ismember(txtcell,{'above'});
-eh = ismember(txtcell,{'eh' 'Ed' 'head' 'red' 'glen' 'blend' 'hais' 'eff' 'E' 'adept' 'meta'});
-ey = ismember(txtcell,{'grain' 'eI' 'beta' 'abate'});
-ih = ismember(txtcell,{'ih' 'I' 'rid' 'grin'});
-iy = ismember(txtcell,{'ee' 'eat' 'reed' 'green' 'bleed' 'Yves' 'Eve'});
-ow = ismember(txtcell,{'oh' 'blow' 'o'});
-uw = ismember(txtcell,{'oo' 'rude' 'groom' 'blue' 'u'});
+eh = ismember(txtcell,{'eh' 'E' 'Ed' 'bed' 'dead' 'head' 'ted' 'red' 'glen' 'blend' 'hais' 'eff' 'adept' 'meta'});
+ey = ismember(txtcell,{'eI' 'grain' 'beta' 'abate'});
+ih = ismember(txtcell,{'ih' 'I' 'rid' 'grin' 'pink' 'bink'});
+iy = ismember(txtcell,{'i' 'ee' 'eat' 'reed' 'green' 'bleed' 'creed' 'kreen' 'Yves' 'Eve'});
+ow = ismember(txtcell,{'o' 'oh' 'blow'});
+uw = ismember(txtcell,{'u' 'oo' 'rude' 'groom' 'blue' 'plume' 'plue'});
 er = ismember(txtcell,{'er' 'blur'});
 oe = ismember(txtcell,{'oeuf'});
 
