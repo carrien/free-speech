@@ -9,11 +9,11 @@ end
 vowels = {'aa' 'ae' 'ah' 'eh' 'ey' 'ih' 'iy' 'ow' 'uw' 'er' 'oe'};
 
 aa = ismember(txtcell,{'aa' 'ah' 'a'}); % added 'a' because this was the original vowel name for this category. Possibly will need to change it if we ever use the indefinite article.
-ae = ismember(txtcell,{'ae' 'add' 'ad' 'rad'});
+ae = ismember(txtcell,{'ae' 'add' 'ad' 'rad' 'yallow'});
 ah = ismember(txtcell,{'above'});
-eh = ismember(txtcell,{'eh' 'E' 'Ed' 'bed' 'dead' 'head' 'ted' 'red' 'glen' 'blend' 'hais' 'eff' 'adept' 'meta'});
+eh = ismember(txtcell,{'eh' 'E' 'Ed' 'bed' 'dead' 'head' 'ted' 'red' 'glen' 'blend' 'hais' 'eff' 'adept' 'meta' 'yellow'});
 ey = ismember(txtcell,{'eI' 'grain' 'beta' 'abate'});
-ih = ismember(txtcell,{'ih' 'I' 'rid' 'grin' 'pink' 'bink'});
+ih = ismember(txtcell,{'ih' 'I' 'rid' 'grin' 'yillow' 'pink' 'bink'});
 iy = ismember(txtcell,{'i' 'ee' 'eat' 'reed' 'green' 'bleed' 'creed' 'kreen' 'Yves' 'Eve'});
 ow = ismember(txtcell,{'o' 'oh' 'blow'});
 uw = ismember(txtcell,{'u' 'oo' 'rude' 'groom' 'blue' 'plume' 'plue'});
