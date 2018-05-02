@@ -5,6 +5,8 @@ function [figpos] = get_figpos(screentype)
 if nargin < 1, screentype = 'blab'; end
 
 switch screentype
+    case 'adamas'
+        figpos = [1710 30 1700 850];
     case 'blab'
         figpos = [50 50 1800 930];
     case 'carbo'
