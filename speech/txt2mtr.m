@@ -1,4 +1,4 @@
-function [meter] = txt2ipa(txt)
+function [meter] = txt2mtr(txt)
 %TXT2IPA   Converts text string to IPA equivalent.
 
 if iscellstr(txt), txtcell = txt;
