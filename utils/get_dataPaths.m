@@ -1,10 +1,14 @@
 function [dataPaths] = get_dataPaths(exptName,svec,varargin)
-%UNTITLED6 Summary of this function goes here
-%   Detailed explanation goes here
+%GET_ACOUSTPATHS  Get path to acoustic data for multiple subjects.
 
 dataPaths = cell(1,length(svec));
+
 for s=1:length(svec)
-    dataPaths{s} = getAcoustSubjPath(exptName,svec(s),varargin{:});
+    if isnumeric(svec)
+        dataPaths{s} = get_acoustLoadPath(exptName,svec(s),varargin{:});
+    else
+        dataPaths{s} = get_acoustLoadPath(exptName,svec{s},varargin{:});
+    end
 end
 
 % if single subject, return string instead of cell array
