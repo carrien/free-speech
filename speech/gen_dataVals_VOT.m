@@ -12,7 +12,7 @@ if nargin < 2 || isempty(trialdir), trialdir = 'trials'; end
 max_events = 3; % three events for VOT study: word onset, voice onset, word offset
 
 % set output file
-savefile = fullfile(dataPath,sprintf('dataValsVOT%s.mat',trialdir(7:end)));
+savefile = fullfile(dataPath,sprintf('dataVals%s.mat',trialdir(7:end)));
 bSave = savecheck(savefile);
 if ~bSave, return; end
 
@@ -36,7 +36,7 @@ for i = 1:length(sortedTrials)
     
     word = expt.allWords(trialnum);
     if isfield(expt,'allColors') 
-        color = expt.listColors{trialnum};
+        color = expt.allColors(trialnum);
     else
         color = [];
     end
