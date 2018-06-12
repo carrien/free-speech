@@ -44,4 +44,14 @@ for j=unique([dataVals.(grouping)])
         end
     end
     
+    title(sprintf('%s %d',grouping,j))
+    if taxis
+        xlabel('time (s)')
+    else
+        xlabel('sample number')
+    end
+    ylabel('frequency (Hz)')
+    box off;
+    makeFig4Screen;
+    
 end
