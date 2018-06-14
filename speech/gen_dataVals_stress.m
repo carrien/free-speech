@@ -20,9 +20,9 @@ if nargin < 2 || isempty(trialdir), trialdir = 'trials'; end
 max_events = 4; % three events for VOT study: word onset, voice onset, word offset
 
 % set output file
-savefile = fullfile(dataPath,sprintf('dataVals%s.mat',trialdir(7:end)));
-bSave = savecheck(savefile);
-if ~bSave, return; end
+%savefile = fullfile(dataPath,sprintf('dataVals%s.mat',trialdir(7:end)));
+%bSave = savecheck(savefile);
+%if ~bSave, return; end
 
 % load expt files
 load(fullfile(dataPath,'expt.mat'));
@@ -33,8 +33,10 @@ else
 end
 trialPath = fullfile(dataPath,trialdir); % e.g. trials; trials_default
 sortedTrials = get_sortedTrials(trialPath);
-shortTracks = [];
-dataVals = struct([]);
+shortTracks_syll1 = [];
+shortTracks_syll2 = [];
+dataVals_syll1 = struct([]);
+dataVals_syll2 = struct([]);
 
 % extract tracks from each trial
 for i = 1:length(sortedTrials)
@@ -49,6 +51,17 @@ for i = 1:length(sortedTrials)
         color = [];
     end
     
+    if strcmp(expt.listStress(trialnum),'trochee');
+        dataVals_syll1(trialnum).stress=1;
+        dataVals_syll2(trialnum).stress=0;
+    else if strcmp(expt.listStress(trialnum),'iamb');
+        dataVals_syll1(trialnum).stress=0;
+        dataVals_syll2(trialnum).stress=1;
+        end
+    end
+    
+
+
     % get user-created events
     if exist('trialparams','var') ...
             && isfield(trialparams,'event_params') ...
@@ -132,11 +145,11 @@ for i = 1:length(sortedTrials)
             %            offset1IndAmp = length(sigmat.ampl); % use last index if no offset found
         end
         offset_time1 = sigmat.ampl_taxis(offset1IndAmp); % or -1?
-%        offset_time2 = sigmat.ampl_taxis(offset2IndAmp);
+        %        offset_time2 = sigmat.ampl_taxis(offset2IndAmp);
         % and now you can get onset2
-%         if onset_time2
-%             error('Missing event for trial %d (%s found). if no offset marked then onset should not be marked.',trialnum,n_event_str)
-%         end
+        %         if onset_time2
+        %             error('Missing event for trial %d (%s found). if no offset marked then onset should not be marked.',trialnum,n_event_str)
+        %         end
         % use amplitude indices we already found
         % amplInds = all indices where amplitude is above threshold
         if exist('trialparams','var') && ~isempty(trialparams.sigproc_params)
@@ -234,60 +247,108 @@ for i = 1:length(sortedTrials)
     
     % find onset/offset indices for each track
     onset1Indf0 = get_index_at_time(sigmat.pitch_taxis,onset_time1);
-	onset2Indf0 = get_index_at_time(sigmat.pitch_taxis,onset_time2);
+    onset2Indf0 = get_index_at_time(sigmat.pitch_taxis,onset_time2);
     offset1Indf0 = get_index_at_time(sigmat.pitch_taxis,offset_time1);
-	offset2Indf0 = get_index_at_time(sigmat.pitch_taxis,offset_time2);
+    offset2Indf0 = get_index_at_time(sigmat.pitch_taxis,offset_time2);
     onset1Indfx = get_index_at_time(sigmat.ftrack_taxis,onset_time1);
-	onset2Indfx = get_index_at_time(sigmat.ftrack_taxis,onset_time2);
+    onset2Indfx = get_index_at_time(sigmat.ftrack_taxis,onset_time2);
     offset1Indfx = get_index_at_time(sigmat.ftrack_taxis,offset_time1);
     offset2Indfx = get_index_at_time(sigmat.ftrack_taxis,offset_time2);
     
     % convert to dataVals struct
     
-    dataVals(i).syll1.f0 = sigmat.pitch(onset1Indf0:offset1Indf0)';
-    dataVals(i).syll2.f0 = sigmat.pitch(onset1Indf0:offset2Indf0)';
-    dataVals(i).syll1.f1 = sigmat.ftrack(1,onset1Indfx:offset1Indfx)'; % 1 = first formant
-    dataVals(i).syll2.f1 = sigmat.ftrack(1,onset2Indfx:offset2Indfx)';
-    dataVals(i).syll1.f2 = sigmat.ftrack(2,onset1Indfx:offset1Indfx)';
-    dataVals(i).syll2.f2 = sigmat.ftrack(2,onset2Indfx:offset2Indfx)';
-    dataVals(i).syll1.int = sigmat.ampl(onset1IndAmp:offset1IndAmp)';
-    dataVals(i).syll2.int = sigmat.ampl(onset2IndAmp:offset2IndAmp)';
-    dataVals(i).syll1.pitch_taxis = sigmat.pitch_taxis(onset1Indf0:offset1Indf0)';
-    dataVals(i).syll2.pitch_taxis = sigmat.pitch_taxis(onset2Indf0:offset2Indf0)';
-    dataVals(i).syll1.ftrack_taxis = sigmat.ftrack_taxis(onset1Indfx:offset1Indfx)';
-    dataVals(i).syll2.ftrack_taxis = sigmat.ftrack_taxis(onset2Indfx:offset2Indfx)';
-    dataVals(i).syll1.ampl_taxis = sigmat.ampl_taxis(onset1IndAmp:offset1IndAmp)';
-    dataVals(i).syll2.ampl_taxis = sigmat.ampl_taxis(onset2IndAmp:offset2IndAmp)';
-    dataVals(i).syll1.dur = offset_time1 - onset_time1;
-    dataVals(i).syll2.dur = offset_time2 - onset_time2;
-    dataVals(i).word = word;
-    dataVals(i).vowel = expt.allVowels(trialnum);
-    dataVals(i).color = color;
-    dataVals(i).cond = expt.allConds(trialnum);
-    dataVals(i).token = trialnum;    if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params)
-        dataVals(i).bExcl = ~trialparams.event_params.is_good_trial;
+    dataVals_syll1(i).f0 = sigmat.pitch(onset1Indf0:offset1Indf0)';
+    dataVals_syll2(i).f0 = sigmat.pitch(onset1Indf0:offset2Indf0)';
+    dataVals_syll1(i).f1 = sigmat.ftrack(1,onset1Indfx:offset1Indfx)'; % 1 = first formant
+    dataVals_syll2(i).f1 = sigmat.ftrack(1,onset2Indfx:offset2Indfx)';
+    dataVals_syll1(i).f2 = sigmat.ftrack(2,onset1Indfx:offset1Indfx)';
+    dataVals_syll2(i).f2 = sigmat.ftrack(2,onset2Indfx:offset2Indfx)';
+    dataVals_syll1(i).int = sigmat.ampl(onset1IndAmp:offset1IndAmp)';
+    dataVals_syll2(i).int = sigmat.ampl(onset2IndAmp:offset2IndAmp)';
+    dataVals_syll1(i).pitch_taxis = sigmat.pitch_taxis(onset1Indf0:offset1Indf0)';
+    dataVals_syll2(i).pitch_taxis = sigmat.pitch_taxis(onset2Indf0:offset2Indf0)';
+    dataVals_syll1(i).ftrack_taxis = sigmat.ftrack_taxis(onset1Indfx:offset1Indfx)';
+    dataVals_syll2(i).ftrack_taxis = sigmat.ftrack_taxis(onset2Indfx:offset2Indfx)';
+    dataVals_syll1(i).ampl_taxis = sigmat.ampl_taxis(onset1IndAmp:offset1IndAmp)';
+    dataVals_syll2(i).ampl_taxis = sigmat.ampl_taxis(onset2IndAmp:offset2IndAmp)';
+    dataVals_syll1(i).dur = offset_time1 - onset_time1;
+    dataVals_syll2(i).dur = offset_time2 - onset_time2;
+    
+    dataVals_syll1(i).word = word;
+    dataVals_syll1(i).vowel = expt.allVowels(trialnum);
+    dataVals_syll1(i).color = color;
+    dataVals_syll1(i).cond = expt.allConds(trialnum);
+    dataVals_syll1(i).token = trialnum;
+    
+    dataVals_syll2(i).word = word;
+    dataVals_syll2(i).vowel = expt.allVowels(trialnum);
+    dataVals_syll2(i).color = color;
+    dataVals_syll2(i).cond = expt.allConds(trialnum);
+    dataVals_syll2(i).token = trialnum;
+    
+    
+    if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params)
+        dataVals_syll1(i).bExcl = ~trialparams.event_params.is_good_trial;
     else
-        dataVals(i).bExcl = 0;
+        dataVals_syll1(i).bExcl = 0;
     end
+    
+    
+    if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params)
+        dataVals_syll2(i).bExcl = ~trialparams.event_params.is_good_trial;
+    else
+        dataVals_syll2(i).bExcl = 0;
+    end
+    
+    
     
     % warn about short tracks
-    if ~dataVals(i).bExcl && (sum(~isnan(dataVals(i).syll1.f0)) < 20 || sum(~isnan(dataVals(i).syll2.f0)) < 20 )
-        shortTracks = [shortTracks dataVals(i).token];
+    if ~dataVals_syll1(i).bExcl && sum(~isnan(dataVals_syll1(i).f0)) < 20
+        shortTracks_syll1 = [shortTracks_syll1 dataVals(i).token];
         warning('Short pitch track: trial %d',dataVals(i).token);
     end
-    if ~dataVals(i).bExcl && ( sum(~isnan(dataVals(i).syll1.f1)) < 20 || sum(~isnan(dataVals(i).syll2.f1)) < 20 )
-        shortTracks = [shortTracks dataVals(i).token];
-        warning('Short formant track: trial %d',dataVals(i).token);
+    if ~dataVals_syll1(i).bExcl &&  sum(~isnan(dataVals_syll1(i).f1)) < 20
+        shortTracks_syll1 = [shortTracks_syll1 dataVals_syll1(i).token];
+        warning('Short formant track: trial %d',dataVals_syll1(i).token);
     end
     
+    
+    
+    
+    if ~isempty(shortTracks_syll1)
+        shortTracks_syll1 = unique(shortTracks_syll1);
+        warning('Short track list: %s',num2str(shortTracks_syll1));
+    end
+    
+    
+    
+    
+    
+    if ~dataVals_syll2(i).bExcl && sum(~isnan(dataVals_syll2(i).f0)) < 20
+        shortTracks_syll2 = [shortTracks_syll2 dataVals_syll2(i).token];
+        warning('Short pitch track: trial %d',dataVals_syll2(i).token);
+    end
+    if ~dataVals_syll2(i).bExcl &&  sum(~isnan(dataVals_syll2(i).f1)) < 20
+        shortTracks_syll2 = [shortTracks_syll2 dataVals_syll2(i).token];
+        warning('Short formant track: trial %d',dataVals_syll2(i).token);
+    end
+    
+    
+    
+    
+    if ~isempty(shortTracks_syll2)
+        shortTracks_syll2 = unique(shortTracks_syll2);
+        warning('Short track list: %s',num2str(shortTracks_syll2));
+    end
 end
 
-if ~isempty(shortTracks)
-    shortTracks = unique(shortTracks);
-    warning('Short track list: %s',num2str(shortTracks));
-end
 
-save(savefile,'dataVals');
-fprintf('%d trials saved in %s.\n',length(sortedTrials),savefile)
+
+save('dataVals_syll1.mat','dataVals_syll1');
+%fprintf('%d trials saved in %s.\n',length(sortedTrials),savefile)
+
+save('dataVals_syll2.mat','dataVals_syll2');
+%fprintf('%d trials saved in %s.\n',length(sortedTrials),savefile)
+
 
 end
