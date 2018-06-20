@@ -51,7 +51,6 @@ for itrial = trials2track
     if isfield([data.params],'fs')
         fs = data(itrial).params.fs;
     else
-        warning('No "fs" field found; looking for sampling rate in field "sr".');
         fs = data(itrial).params.sr;
     end
     
