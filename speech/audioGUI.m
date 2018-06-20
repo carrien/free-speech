@@ -71,7 +71,7 @@ for itrial = trials2track
         event_params = [];
     else % otherwise, get defaults
         sigproc_params = get_sigproc_defaults;
-        plot_params = [];
+        plot_params = get_plot_defaults;
         event_params = [];
     end
     
