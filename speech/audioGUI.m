@@ -51,7 +51,6 @@ for itrial = trials2track
     if isfield([data.params],'fs')
         fs = data(itrial).params.fs;
     else
-        warning('No "fs" field found; looking for sampling rate in field "sr".');
         fs = data(itrial).params.sr;
     end
     
@@ -72,7 +71,7 @@ for itrial = trials2track
         event_params = [];
     else % otherwise, get defaults
         sigproc_params = get_sigproc_defaults;
-        plot_params = [];
+        plot_params = get_plot_defaults;
         event_params = [];
     end
     

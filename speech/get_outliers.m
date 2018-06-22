@@ -9,7 +9,7 @@ tstep = .003;
 
 outside = zeros(1,length(dataVals));
 for i=1:length(dataVals)
-    if bExcl, dataVals(i).bExcl = 0; end % only count good trials in the group unless bExcl = 0
+    if ~bExcl, dataVals(i).bExcl = 0; end % only count good trials in the group unless bExcl = 0
     if dataVals(i).(grouping) == groupnum && ~dataVals(i).bExcl
         % get track length
         len = length(dataVals(i).(fmt));

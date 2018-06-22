@@ -1,4 +1,9 @@
 function [ind] = get_index_at_time(taxis,t,roundtype)
+%GET_INDEX_AT_TIME  Return index into time axis at specified time.
+%   GET_INDEX_AT_TIME(TAXIS,T,ROUNDTYPE) runs a simple binary search to
+%   find the index into a time axis TAXIS corresponding to a time value T.
+%   ROUNDTYPE determines whether the index is rounded up ('ceil') or down
+%   ('floor'), or if the closest value is used ('round').
 
 if nargin < 3, roundtype = 'round'; end
 
