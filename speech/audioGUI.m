@@ -58,22 +58,25 @@ for itrial = trials2track
     savefile = fullfile(dataPath,trialfolder,sprintf('%d.mat',itrial));
     if exist(savefile,'file')
         load(savefile);
-        sigproc_params = trialparams.sigproc_params;
-        if isfield(trialparams,'plot_params'), plot_params = trialparams.plot_params; else plot_params = []; end
-        if isfield(trialparams,'event_params'), event_params = trialparams.event_params; else event_params = []; end
-    elseif exist('wvp','var') % otherwise, use param file if it exists
-        sigproc_params = wvp.sigproc_params;
-        plot_params = wvp.plot_params;
-        event_params = [];
-    elseif exist('endstate','var') % otherwise, use last trial's params
-        sigproc_params = endstate.sigproc_params;
-        plot_params = endstate.plot_params;
-        event_params = [];
-    else % otherwise, get defaults
-        sigproc_params = get_sigproc_defaults;
-        plot_params = get_plot_defaults;
+        if isfield(trialparams,'sigproc_params'), sigproc_params = trialparams.sigproc_params; else, sigproc_params = [];end
+        if isfield(trialparams,'plot_params'), plot_params = trialparams.plot_params; else, plot_params = []; end
+        if isfield(trialparams,'event_params'), event_params = trialparams.event_params; else, event_params = []; end
+    else
+        sigproc_params = [];
         event_params = [];
     end
+    if isempty(sigproc_params)
+        if exist('wvp','var') % otherwise, use param file if it exists
+            sigproc_params = wvp.sigproc_params;
+            plot_params = wvp.plot_params;
+        elseif exist('endstate','var') % otherwise, use last trial's params
+            sigproc_params = endstate.sigproc_params;
+            plot_params = endstate.plot_params;
+        else % otherwise, get defaults
+            sigproc_params = get_sigproc_defaults;
+            plot_params = get_plot_defaults;
+        end
+    end    
     
     % optionally overwrite figure position
     if ~isempty(figpos), plot_params.figpos = figpos; end
