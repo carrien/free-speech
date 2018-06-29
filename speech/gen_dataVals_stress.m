@@ -304,8 +304,8 @@ for i = 1:length(sortedTrials)
     
     % warn about short tracks
     if ~dataVals_syll1(i).bExcl && sum(~isnan(dataVals_syll1(i).f0)) < 20
-        shortTracks_syll1 = [shortTracks_syll1 dataVals(i).token];
-        warning('Short pitch track: trial %d',dataVals(i).token);
+        shortTracks_syll1 = [shortTracks_syll1 dataVals_syll1(i).token];
+        warning('Short pitch track: trial %d',dataVals_syll1(i).token);
     end
     if ~dataVals_syll1(i).bExcl &&  sum(~isnan(dataVals_syll1(i).f1)) < 20
         shortTracks_syll1 = [shortTracks_syll1 dataVals_syll1(i).token];
