@@ -1,4 +1,4 @@
-function [sortedTrialnums,sortedTrialnames] = get_sortedTrials(trialpath)
+function [sortedTrialnums,sortedFilenames] = get_sortedTrials(trialpath)
 %GET_SORTEDTRIALS  Get sorted list of numbered matfiles in a directory.
 
 w = what(trialpath);
@@ -12,7 +12,7 @@ for i = 1:length(matFiles)
 end
 [sortedTrialnums,idx] = sort(filenums);
 
-% Sort trial names in the same order
-sortedTrialnames = matFiles(idx);
+% Sort filenames in the same order
+sortedFilenames = matFiles(idx);
 
 end
