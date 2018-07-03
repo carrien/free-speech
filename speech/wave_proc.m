@@ -55,7 +55,7 @@ if params2track(2)
     if isfield(sigproc_params,'ftrack_method')
         ftrack_method = sigproc_params.ftrack_method;
     else
-        ftrack_method = 'mine2';
+        ftrack_method = 'praat';
     end
     
     %make spectrogram axdat
