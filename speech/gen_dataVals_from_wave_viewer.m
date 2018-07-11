@@ -46,8 +46,10 @@ for i = 1:length(sortedfiles)
     filename = sprintf('%d.mat',trialnum);
     load(fullfile(trialPath,filename));
     
-    %skip bad trials
-    if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params) && trialparams.event_params.is_good_trial
+    % skip bad trials, except for labelling them as bad.
+    if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params) && ~trialparams.event_params.is_good_trial
+        dataVals(i).bExcl = 1;
+    else
         % find onset
         if exist('trialparams','var') & isfield(trialparams,'event_params') & ~isempty(trialparams.event_params) & trialparams.event_params.user_event_times %#ok<AND2>
             % find time of user-created onset event
