@@ -1,4 +1,4 @@
-function [] = gen_dataVals_from_wave_viewer(dataPath,trialdir)
+function [] = gen_dataVals_from_wave_viewer(dataPath,trialdir,bSaveCheck)
 %GEN_DATAVALS  Scrape subject trial files for data and save.
 %   GEN_DATAVALS(DATAPATH,TRIALDIR) scrapes the files from a subject's
 %   DATAPATH/TRIALDIR directory and collects formant data into the single
@@ -8,9 +8,15 @@ function [] = gen_dataVals_from_wave_viewer(dataPath,trialdir)
 
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
 if nargin < 2 || isempty(trialdir), trialdir = 'trials'; end
+if nargin < 3 || isempty(bSaveCheck), bSaveCheck = 1;end
+
 
 savefile = fullfile(dataPath,sprintf('dataVals%s.mat',trialdir(7:end)));
-bSave = savecheck(savefile);
+if bSaveCheck
+    bSave = savecheck(savefile);
+else
+    bSave = 1;
+end
 if ~bSave, return; end
 
 load(fullfile(dataPath,'expt.mat'));
