@@ -8,7 +8,7 @@ function [] = gen_dataVals_from_wave_viewer(dataPath,trialdir,bSaveCheck)
 
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
 if nargin < 2 || isempty(trialdir), trialdir = 'trials'; end
-if nargin < 3 || isempty(bSaveCheck), bSaveCheck = 1;end
+if nargin < 3 || isempty(bSaveCheck), bSaveCheck = 1; end
 
 
 savefile = fullfile(dataPath,sprintf('dataVals%s.mat',trialdir(7:end)));
@@ -123,11 +123,11 @@ for i = 1:length(sortedfiles)
         end
 
         % warn about short tracks
-        if ~dataVals(i).bExcl && sum(~isnan(dataVals(i).f0)) < 20,
+        if ~dataVals(i).bExcl && sum(~isnan(dataVals(i).f0)) < 20
             shortTracks = [shortTracks dataVals(i).token];
             warning('Short pitch track: trial %d',dataVals(i).token);
         end
-        if ~dataVals(i).bExcl && sum(~isnan(dataVals(i).f1)) < 20,
+        if ~dataVals(i).bExcl && sum(~isnan(dataVals(i).f1)) < 20
             shortTracks = [shortTracks dataVals(i).token];
             warning('Short formant track: trial %d',dataVals(i).token);
         end
