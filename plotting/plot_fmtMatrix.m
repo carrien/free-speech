@@ -1,4 +1,4 @@
-function [] = plot_fmtMatrix(dataPath,plotfile,toPlot,errtype,linecolors)
+function [hfig] = plot_fmtMatrix(dataPath,plotfile,toPlot,errtype,linecolors)
 %PLOT_FMTMATRIX  Plot formant difference tracks per condition.
 %   PLOT_FMTMATRIX(DATAPATH,PLOTFILE,TOPLOT,ERRTYPE,LINECOLORS) plots
 %   a formant tracks for each condition in the formant matrix specified in
@@ -17,7 +17,7 @@ load(fullfile(dataPath,plotfile));
 conds = fieldnames(fmtMatrix.(toPlot));
 
 % get time axis
-if ~exist('tstep','var');
+if ~exist('tstep','var')
     load(fullfile(dataPath,'dataVals.mat'),'dataVals');
     goodtrials = find(~[dataVals.bExcl]);
     tstep = mean(diff(dataVals(goodtrials(1)).ftrack_taxis));
@@ -54,16 +54,16 @@ end
 axpos = [0.14 0.14 .8 .8];
 
 % create figure
-figure;
+hfig = figure;
 axes('Position',axpos);
-h = zeros(1,length(conds)); % handles to each track
+htracks = zeros(1,length(conds)); % handles to each track
 for c = 1:length(conds)
     cnd = conds{c};
     linecolor = linecolors.(cnd);
     errcolor = linecolor + (1-linecolor)./3;
     % plot tracks
     sig = fmtMeans.(toPlot).(cnd);
-    h(c) = plot(alltime(1:length(sig)), sig', 'LineWidth', 3, 'Color', linecolor); hold on;
+    htracks(c) = plot(alltime(1:length(sig)), sig', 'LineWidth', 3, 'Color', linecolor); hold on;
     % plot errorbars
     err = get_errorbars(fmtMatrix.(toPlot).(cnd),errtype,size(fmtMatrix.(toPlot).(cnd),2));
     err = err(~isnan(err));
@@ -73,9 +73,11 @@ for c = 1:length(conds)
     hashalf_s(c) = find(hashalf.(cnd), 1, 'last')*tstep; %#ok<AGROW>
     %hasquart_s(c) = find(hasquart.(cnd), 1, 'last')*tstep; %#ok<AGROW>
 end
-hline(0,'k');
+if ~strncmp(toPlot,'raw',3)
+    hline(0,'k');
+end
 vline(mean(hashalf_s),'k','--');
-legend(h, conds, 'Location','SouthEast'); legend boxoff;
+legend(htracks, conds, 'Location','SouthEast'); legend boxoff;
 xlabel(xlab, 'FontWeight', 'bold', 'FontSize', 11);
 ylabel(ylab, 'FontWeight', 'bold', 'FontSize', 11);
 set(gca, 'FontSize', 10); set(gca, 'TickLength', [0.0 0.0]);
