@@ -45,7 +45,9 @@ for trialind = inds  % for each trial in the condition
     end
 end
 
-warning('Missing trials: %s',num2str(missingTrials));
+if ~isempty(missingTrials)
+    warning('Missing trials: %s',num2str(missingTrials));
+end
 if isempty(rawf1)
     warning('No trials in this condition found.');
 end
