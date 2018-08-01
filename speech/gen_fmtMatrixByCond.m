@@ -20,15 +20,19 @@ if length(indBase) ~= length(conds)
         for c=2:length(conds)
             indBase(c) = indBase(1);
         end
-    else error('Number of baselines must match number of conditions to plot.')
+    else
+        error('Number of baselines must match number of conditions to plot.')
     end
-else basename = [indBase.name];
+else
+    basename = [indBase.name];
 end
 baseconds = {indBase.name};
 
+% load data
 load(fullfile(dataPath,'expt.mat'));
 load(fullfile(dataPath,dataValsStr));
 
+% remove bad trials
 badtrials = [dataVals(find([dataVals.bExcl])).token];
 for i=1:length(indShift)
     indShift(i).inds = setdiff(indShift(i).inds,badtrials);
@@ -36,7 +40,7 @@ for i=1:length(indShift)
 end
 
 %% generate traces (each with its own baseline)
-display(sprintf('Subject directory: %s',dataPath));
+fprintf('Subject directory: %s\n',dataPath);
 for c = 1:length(indShift) % for each condition to plot
     %% generate array of baseline traces (each column is a trial)
     if indBase(c).inds == 0 % if no baseline -- not well-tested
@@ -105,25 +109,39 @@ for c = 1:length(indShift) % for each condition to plot
         %% if a perturbation study
         if isfield(indShift,'shiftind')
             % get shift vector
-            if bMels
-                if isfield(expt.shifts,'mels')
-                    shiftvec = expt.shifts.mels{indShift(c).shiftind};
+            if isfield(expt,'shifts')
+                if bMels
+                    if isfield(expt.shifts,'mels')
+                        shiftvec = expt.shifts.mels{indShift(c).shiftind};
+                    else
+                        shiftvec_hz = expt.shifts.hz{indShift(c).shiftind};
+                        load(fullfile(dataPath,'fdata_cond_nearfar.mat'));
+                        medprod_hz = [fmtdata.hz.noshift.mid50p.med.f1 fmtdata.hz.noshift.mid50p.med.f2];
+                        medprod_mels = [fmtdata.mels.noshift.mid50p.med.f1 fmtdata.mels.noshift.mid50p.med.f2];
+                        shiftedprod_hz = medprod_hz + shiftvec_hz;
+                        shiftedprod_mels = hz2mels(shiftedprod_hz);
+                        shiftvec = shiftedprod_mels - medprod_mels;
+                    end
                 else
-                    shiftvec_hz = expt.shifts.hz{indShift(c).shiftind};
-                    load(fullfile(dataPath,'fdata_cond_nearfar.mat'));
-                    medprod_hz = [fmtdata.hz.noshift.mid50p.med.f1 fmtdata.hz.noshift.mid50p.med.f2];
-                    medprod_mels = [fmtdata.mels.noshift.mid50p.med.f1 fmtdata.mels.noshift.mid50p.med.f2];
-                    shiftedprod_hz = medprod_hz + shiftvec_hz;
-                    shiftedprod_mels = hz2mels(shiftedprod_hz);
-                    shiftvec = shiftedprod_mels - medprod_mels;
+                    if isfield(expt.shifts,'true_hz')
+                        fprintf('Warning: field "true_hz" found; using these values for shiftvec.\n')
+                        shiftvec = expt.shifts.true_hz{indShift(c).shiftind};
+                    else
+                        shiftvec = expt.shifts.hz{indShift(c).shiftind};
+                    end
                 end
             else
-                if isfield(expt.shifts,'true_hz'),
-                    fprintf('Warning: field "true_hz" found; using these values for shiftvec.\n')
-                    shiftvec = expt.shifts.true_hz{indShift(c).shiftind};
+                load(fullfile(dataPath,'fdata_neutralWord'));
+                if bMels
+                    fr = 'mels';
                 else
-                    shiftvec = expt.shifts.hz{indShift(c).shiftind};
+                    fr = 'hz';
                 end
+                basef1 = fmtdata.(fr).(indBase(c).name).mid50p.med.f1;
+                basef2 = fmtdata.(fr).(indBase(c).name).mid50p.med.f2;
+                newf1 = fmtdata.(fr).(indShift(c).name).mid50p.med.f1;
+                newf2 = fmtdata.(fr).(indShift(c).name).mid50p.med.f2;
+                shiftvec = [newf1 newf2] - [basef1 basef2];
             end
             magShift = sqrt(shiftvec(1)^2 + shiftvec(2)^2);
             %display(sprintf('%s magShift = %2f; sdist = %2f',conds{c},magShift,subjInfo.sdist))
@@ -137,7 +155,7 @@ for c = 1:length(indShift) % for each condition to plot
             percdiff2d_mean.(conds{c}) = diff2d_mean.(conds{c}).*(100/magShift);
             
             % calculate dot products (projection and efficiency)
-            display(sprintf('Calculating dot products: %s',conds{c}))
+            fprintf('Calculating dot products: %s\n',conds{c})
             for t = 1:size(diff1.(conds{c}),1) % for each timepoint
                 proj_mean.(conds{c})(t,1) = dot([diff1_mean.(conds{c})(t) diff2_mean.(conds{c})(t)],-shiftvec)/magShift;
                 effproj_mean.(conds{c})(t,1) = proj_mean.(conds{c})(t)*(100/diff2d_mean.(conds{c})(t));
@@ -153,11 +171,21 @@ for c = 1:length(indShift) % for each condition to plot
         end
         
     end
+    
+    %% colors
+    if isfield(indShift,'linecolor')
+        linecolors.(indShift(c).name) = indShift(c).linecolor;
+    end
+    if isfield(indBase,'linecolor')
+        linecolors.(indBase(c).name) = indBase(c).linecolor;
+    end
+    
 end
 
 tstep = mean(diff(dataVals(1).ftrack_taxis)); %#ok<NASGU>
 
 %% save data
+% construct filename
 if bMels
     bMelsStr = '_mels';
 else
@@ -170,6 +198,7 @@ if length(filename) > 100
     pause(1)
 end
 
+% construct structs
 savefile = fullfile(dataPath,filename);
 fmtMatrix.rawf1 = rawf1; fmtMeans.rawf1 = rawf1_mean;
 fmtMatrix.rawf2 = rawf2; fmtMeans.rawf2 = rawf2_mean;
@@ -186,6 +215,7 @@ if isfield(indShift,'shiftind')
     fmtMatrix.effdist = effdist; fmtMeans.effdist = effdist_mean; %#ok<STRNU>
 end
 
+% save
 if bSaveCheck
     bSave = savecheck(savefile);
 else
@@ -193,5 +223,8 @@ else
 end
 if bSave
     save(savefile,'fmtMatrix','fmtMeans','hashalf','hasthird','hasquart','tstep','bMels','bFilt')
+    if exist('linecolors','var')
+        save(savefile,'linecolors','-append')
+    end
     fprintf('%s created.\n',filename);
 end
