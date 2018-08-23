@@ -24,14 +24,14 @@ else
     sigproc_params = get_sigproc_defaults;
 end
 trialPath = fullfile(dataPath,trialdir); % e.g. trials; trials_default
-sortedTrials = get_sortedTrials(trialPath);
+[sortedTrialnums,sortedFilenames] = get_sortedTrials(trialPath);
 shortTracks = [];
 dataVals = struct([]);
 
 % extract tracks from each trial
-for i = 1:length(sortedTrials)
-    trialnum = sortedTrials(i);
-    filename = sprintf('%d.mat',trialnum);
+for i = 1:length(sortedTrialnums)
+    trialnum = sortedTrialnums(i);
+    filename = sortedFilenames{i};
     load(fullfile(trialPath,filename));
     
     word = expt.allWords(trialnum);
@@ -175,6 +175,6 @@ if ~isempty(shortTracks)
 end
 
 save(savefile,'dataVals');
-fprintf('%d trials saved in %s.\n',length(sortedTrials),savefile)
+fprintf('%d trials saved in %s.\n',length(sortedTrialnums),savefile)
 
 end

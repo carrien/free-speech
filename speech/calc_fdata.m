@@ -48,6 +48,7 @@ switch condtype
     case 'cond', conds = expt.conds;
     case 'word', conds = expt.words;
     case 'color', conds = expt.colors;
+    case 'group', conds = expt.group;
     otherwise, error('Condition type must be "vowel", "cond", "word", or "color".')
 end
 avgfn = {'mid50p', 'first50ms', 'mid50ms'};  % av: averging functions
