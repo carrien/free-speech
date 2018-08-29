@@ -104,14 +104,14 @@ for i = 1:length(sortedTrials)
     
     
     if n_events == 4
-        offsetEventInd1 = 2
-        offsetEventInd2 = 4
+        offsetEventInd1 = 2;
+        offsetEventInd2 = 4;
     else
         if n_events == 1
-            offsetEventInd2 =1
+            offsetEventInd2 =1;
         else
             if n_events
-                error('Missing event for trial %d (%s found). Require either 0, 1 or 4 events',trialnum,n_event_str)
+                error('Missing event for trial %d (%s found). Require either 0, 1 or 4 events',trialnum,n_event_str);
             end
         end
     end
@@ -295,6 +295,13 @@ for i = 1:length(sortedTrials)
     
     
     if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params)
+        dataVals(i).bExcl = ~trialparams.event_params.is_good_trial;
+    else
+        dataVals(i).bExcl = 0;
+    end
+    
+    
+    if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params)
         dataVals_syll2(i).bExcl = ~trialparams.event_params.is_good_trial;
     else
         dataVals_syll2(i).bExcl = 0;
@@ -303,42 +310,58 @@ for i = 1:length(sortedTrials)
     
     
     % warn about short tracks
-    if ~dataVals_syll1(i).bExcl && sum(~isnan(dataVals_syll1(i).f0)) < 20
-        shortTracks_syll1 = [shortTracks_syll1 dataVals(i).token];
-        warning('Short pitch track: trial %d',dataVals(i).token);
+    if ~dataVals_syll1(i).bExcl && dataVals_syll1(i).stress ==1 && sum(~isnan(dataVals_syll1(i).f0)) < 20
+        shortTracks_syll1 = [shortTracks_syll1 dataVals_syll1(i).token];
+        warning('Short pitch track: trial %d',dataVals_syll1(i).token);
     end
-    if ~dataVals_syll1(i).bExcl &&  sum(~isnan(dataVals_syll1(i).f1)) < 20
+    if ~dataVals_syll1(i).bExcl && dataVals_syll1(i).stress ==1 && sum(~isnan(dataVals_syll1(i).f1)) < 20
+        shortTracks_syll1 = [shortTracks_syll1 dataVals_syll1(i).token];
+        warning('Short formant track: trial %d',dataVals_syll1(i).token);
+    end
+    
+    if ~dataVals_syll1(i).bExcl && dataVals_syll1(i).stress ==0 && sum(~isnan(dataVals_syll1(i).f0)) < 6
+        shortTracks_syll1 = [shortTracks_syll1 dataVals_syll1(i).token];
+        warning('Short pitch track: trial %d',dataVals_syll1(i).token);
+    end
+    if ~dataVals_syll1(i).bExcl && dataVals_syll1(i).stress ==0 && sum(~isnan(dataVals_syll1(i).f1)) < 6
         shortTracks_syll1 = [shortTracks_syll1 dataVals_syll1(i).token];
         warning('Short formant track: trial %d',dataVals_syll1(i).token);
     end
     
     
     
-    
     if ~isempty(shortTracks_syll1)
         shortTracks_syll1 = unique(shortTracks_syll1);
-        warning('Short track list: %s',num2str(shortTracks_syll1));
+        warning('Short track list for syllable 1: %s',num2str(shortTracks_syll1));
     end
     
     
     
     
     
-    if ~dataVals_syll2(i).bExcl && sum(~isnan(dataVals_syll2(i).f0)) < 20
+    if ~dataVals_syll2(i).bExcl &&dataVals_syll2(i).stress ==1 && sum(~isnan(dataVals_syll2(i).f0)) < 20
         shortTracks_syll2 = [shortTracks_syll2 dataVals_syll2(i).token];
         warning('Short pitch track: trial %d',dataVals_syll2(i).token);
     end
-    if ~dataVals_syll2(i).bExcl &&  sum(~isnan(dataVals_syll2(i).f1)) < 20
+    if ~dataVals_syll2(i).bExcl &&  dataVals_syll2(i).stress ==1 &&sum(~isnan(dataVals_syll2(i).f1)) < 20
+        shortTracks_syll2 = [shortTracks_syll2 dataVals_syll2(i).token];
+        warning('Short formant track: trial %d',dataVals_syll2(i).token);
+    end
+    
+    if ~dataVals_syll2(i).bExcl &&dataVals_syll2(i).stress ==0 && sum(~isnan(dataVals_syll2(i).f0)) < 6
+        shortTracks_syll2 = [shortTracks_syll2 dataVals_syll2(i).token];
+        warning('Short pitch track: trial %d',dataVals_syll2(i).token);
+    end
+    if ~dataVals_syll2(i).bExcl &&  dataVals_syll2(i).stress ==0 &&sum(~isnan(dataVals_syll2(i).f1)) < 6
         shortTracks_syll2 = [shortTracks_syll2 dataVals_syll2(i).token];
         warning('Short formant track: trial %d',dataVals_syll2(i).token);
     end
     
     
     
-    
     if ~isempty(shortTracks_syll2)
         shortTracks_syll2 = unique(shortTracks_syll2);
-        warning('Short track list: %s',num2str(shortTracks_syll2));
+        warning('Short track list for syllable 2: %s',num2str(shortTracks_syll2));
     end
 end
 
