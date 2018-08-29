@@ -12,4 +12,6 @@ elseif strcmp(errortype,'se')
     err = nanstd(sig,stdtype,2)./sqrt(ntrials);
 elseif strcmp(errortype,'std')
     err = nanstd(sig,stdtype,2);
+else
+    error('Unrecognized error type ''%s''.',errortype)
 end

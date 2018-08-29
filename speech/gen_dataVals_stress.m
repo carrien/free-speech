@@ -310,6 +310,7 @@ for i = 1:length(sortedTrials)
     
     
     % warn about short tracks
+
     if ~dataVals_syll1(i).bExcl && dataVals_syll1(i).stress ==1 && sum(~isnan(dataVals_syll1(i).f0)) < 20
         shortTracks_syll1 = [shortTracks_syll1 dataVals_syll1(i).token];
         warning('Short pitch track: trial %d',dataVals_syll1(i).token);

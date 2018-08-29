@@ -24,21 +24,21 @@ else
     sigproc_params = get_sigproc_defaults;
 end
 trialPath = fullfile(dataPath,trialdir); % e.g. trials; trials_default
-sortedTrials = get_sortedTrials(trialPath);
+[sortedTrialnums,sortedFilenames] = get_sortedTrials(trialPath);
 shortTracks = [];
 dataVals = struct([]);
 
 % extract tracks from each trial
-for i = 1:length(sortedTrials)
-    trialnum = sortedTrials(i);
-    filename = sprintf('%d.mat',trialnum);
+for i = 1:length(sortedTrialnums)
+    trialnum = sortedTrialnums(i);
+    filename = sortedFilenames{i};
     load(fullfile(trialPath,filename));
     
     word = expt.allWords(trialnum);
     if isfield(expt,'allColors') 
-        color = expt.allColors(trialnum);
+        colorname = expt.listColors{trialnum};
     else
-        color = [];
+        colorname = [];
     end
     
     % get user-created events
@@ -78,7 +78,7 @@ for i = 1:length(sortedTrials)
     end
     
     % find vowel onset
-    if any(strncmp(color,{'p' 't' 'k' 'b' 'd' 'g'},1))
+    if any(strncmp(colorname,{'p' 't' 'k' 'b' 'd' 'g'},1))
         % find time of second user-created event
         if n_events > 1 && user_event_times(1) ~= user_event_times(2)
             vowelOnset_time = user_event_times(2);
@@ -148,7 +148,7 @@ for i = 1:length(sortedTrials)
     dataVals(i).vot = vowelOnset_time - onset_time;
     dataVals(i).word = word;
     dataVals(i).vowel = expt.allVowels(trialnum);
-    dataVals(i).color = color;
+    dataVals(i).color = expt.allColors(trialnum);
     dataVals(i).cond = expt.allConds(trialnum);
     dataVals(i).token = trialnum;
     if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params)
@@ -175,6 +175,6 @@ if ~isempty(shortTracks)
 end
 
 save(savefile,'dataVals');
-fprintf('%d trials saved in %s.\n',length(sortedTrials),savefile)
+fprintf('%d trials saved in %s.\n',length(sortedTrialnums),savefile)
 
 end
