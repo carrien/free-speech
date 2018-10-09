@@ -56,12 +56,14 @@ for itrial = trials2track
     if (exist(savefile,'file') == 2)
         saveddata = load(savefile);
         trialparams = saveddata.trialparams;        % load saved trial params
-        fieldns = fieldnames(trialparams.sigproc_params);
-        for i=1:length(fieldns)                     % use previously saved params
-            if ~sum(strcmp(fieldns{i},params2overwrite))
-                sigproc_params.(fieldns{i}) = trialparams.sigproc_params.(fieldns{i});
-            end
-        end        
+        if isfield(trialparams,sigproc_params)      % if sigproc_params exists, use existing values
+            fieldns = fieldnames(trialparams.sigproc_params);
+            for i=1:length(fieldns)                     % use previously saved params
+                if ~sum(strcmp(fieldns{i},params2overwrite))
+                    sigproc_params.(fieldns{i}) = trialparams.sigproc_params.(fieldns{i});
+                end
+            end        
+        end
     else clear sigmat trialparams
     end
     
@@ -99,7 +101,7 @@ for itrial = trials2track
         bSave = 1;
     end
     if bSave
-        if exist(savefile,'file')
+        if exist(savefile,'file') && isfield(saveddata,'sigmat')
             sigmat = saveddata.sigmat;      % load saved tracks
             fieldns = fieldnames(tracks);
             for i=1:length(fieldns)         % only overwrite newly tracked params
