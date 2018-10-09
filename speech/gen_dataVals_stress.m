@@ -65,19 +65,30 @@ for i = 1:length(sortedTrials)
     
     
     % skip bad trials
-    if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params)
-        dataVals_syll1(trialnum).bExcl = ~trialparams.event_params.is_good_trial;
-        dataVals_syll2(trialnum).bExcl = ~trialparams.event_params.is_good_trial;
-    else
-        dataVals_syll2(trialnum).bExcl = 0;
-        dataVals_syll2(trialnum).bExcl = 0;
+    if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params) && ~trialparams.event_params.is_good_trial
+        dataVals_syll1(trialnum).bExcl = 1 %~trialparams.event_params.is_good_trial;
+        dataVals_syll2(trialnum).bExcl = 1 %~trialparams.event_params.is_good_trial;
+        dataVals_syll1(i).word = word;
+        dataVals_syll1(i).vowel = expt.allVowels(trialnum);
+        dataVals_syll1(i).color = color;
+        dataVals_syll1(i).cond = expt.allConds(trialnum);
+        dataVals_syll1(i).token = trialnum;
         
+        dataVals_syll2(i).word = word;
+        dataVals_syll2(i).vowel = expt.allVowels(trialnum);
+        dataVals_syll2(i).color = color;
+        dataVals_syll2(i).cond = expt.allConds(trialnum);
+        dataVals_syll2(i).token = trialnum;
+    else
+        dataVals_syll1(trialnum).bExcl = 0;
+        dataVals_syll2(trialnum).bExcl = 0;
+    
         
         
         
         if exist('trialparams','var') ...
                 && isfield(trialparams,'event_params') ...
-                && ~isempty(trialparams.event_params)
+                && ~isempty(trialparams.event_params) 
             user_event_times = sort(trialparams.event_params.user_event_times);
         else
             user_event_times = [];
@@ -299,13 +310,13 @@ for i = 1:length(sortedTrials)
         dataVals_syll2(i).cond = expt.allConds(trialnum);
         dataVals_syll2(i).token = trialnum;
         
-        
-        if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params)
-            dataVals_syll1(i).bExcl = ~trialparams.event_params.is_good_trial;
-        else
-            dataVals_syll1(i).bExcl = 0;
-        end
-        
+%         
+%         if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params)
+%             dataVals_syll1(i).bExcl = ~trialparams.event_params.is_good_trial;
+%         else
+%             dataVals_syll1(i).bExcl = 0;
+%         end
+%         
         
         %     if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params)
         %         dataVals(i).bExcl = ~trialparams.event_params.is_good_trial;
@@ -314,11 +325,11 @@ for i = 1:length(sortedTrials)
         %     end
         
         
-        if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params)
-            dataVals_syll2(i).bExcl = ~trialparams.event_params.is_good_trial;
-        else
-            dataVals_syll2(i).bExcl = 0;
-        end
+%         if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params)
+%             dataVals_syll2(i).bExcl = ~trialparams.event_params.is_good_trial;
+%         else
+%             dataVals_syll2(i).bExcl = 0;
+%         end
         
         
         
