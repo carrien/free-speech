@@ -56,7 +56,7 @@ for itrial = trials2track
     if (exist(savefile,'file') == 2)
         saveddata = load(savefile);
         trialparams = saveddata.trialparams;        % load saved trial params
-        if isfield(trialparams,sigproc_params)      % if sigproc_params exists, use existing values
+        if isfield(trialparams,'sigproc_params')      % if sigproc_params exists, use existing values
             fieldns = fieldnames(trialparams.sigproc_params);
             for i=1:length(fieldns)                     % use previously saved params
                 if ~sum(strcmp(fieldns{i},params2overwrite))
