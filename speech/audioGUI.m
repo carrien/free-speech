@@ -64,6 +64,7 @@ for itrial = trials2track
     else
         sigproc_params = [];
         event_params = [];
+        plot_params = [];
     end
     if isempty(sigproc_params)
         if exist('wvp','var') % otherwise, use param file if it exists
