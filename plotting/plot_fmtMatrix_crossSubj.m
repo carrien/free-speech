@@ -1,4 +1,4 @@
-function [] = plot_fmtMatrix_crossSubj(dataPath,plotfile,toPlotList,errtype,linecolors,bsigbar,fx)
+function [hfig] = plot_fmtMatrix_crossSubj(dataPath,plotfile,toPlotList,errtype,bsigbar,fx,linecolors,bDualAx)
 %PLOT_FMTMATRIX_CROSSSUBJ  Plot magnitude of compensation across subjects.
 %   PLOT_FMTMATRIX_CROSSSUBJ(DATAPATH,PLOTFILE,TOPLOTLIST,ERRTYPE,BSIGBAR,FX,LINECOLORS)
 %   plots formant tracks per condition across multiple subjects.
@@ -8,12 +8,13 @@ function [] = plot_fmtMatrix_crossSubj(dataPath,plotfile,toPlotList,errtype,line
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
 if nargin < 3 || isempty(toPlotList), toPlotList = {'diff1'}; end
 if nargin < 4 || isempty(errtype), errtype = 'se'; end
-if nargin < 6 || isempty(bsigbar), bsigbar = 0; end
-if nargin < 7 || isempty(fx)
+if nargin < 5 || isempty(bsigbar), bsigbar = 0; end
+if nargin < 6 || isempty(fx)
     fx = {'ffx'}; % fx = {'ffx','rfx'}; end
 elseif ~iscell(fx)
     fx = {fx};
 end
+if nargin < 8 || isempty(bDualAx), bDualAx = 0; end
 
 load(fullfile(dataPath,plotfile)) % e.g. fmtTraces_10s.mat
 analyses = fieldnames(ffx);
@@ -31,7 +32,7 @@ for a = 1:length(analyses)
         rfx_err.(anl).(cnd) = get_errorbars(rfx.(anl).(cnd),errtype);
     end
 end
-fprintf('Done.\n');
+fprintf(' done.\n');
 data_mean = struct('ffx',ffx_mean,'rfx',rfx_mean);
 data_err = struct('ffx',ffx_err,'rfx',rfx_err);
 
@@ -39,7 +40,7 @@ data_err = struct('ffx',ffx_err,'rfx',rfx_err);
 if ~exist('tstep','var'), tstep = .003; end
 alltime = 0:tstep:1;
 conds = fieldnames(ffx.rawf1);
-stop_ms = 350;
+stop_ms = 225;
 stop = ms2samps(stop_ms,1/tstep)*ones(1,length(conds)); % crop axis to here
 
 % calculate significance at each timepoint (assumes 2 conds)
@@ -57,6 +58,7 @@ if bsigbar
             [h2.rfx.(anl)(t),p2.rfx.(anl)(t)] = ttest(rfx.(anl).(conds{2})(t,:),[],[],'right');            
         end
     end
+    fprintf(' done.\n');
 end
 
 %% plot
@@ -87,17 +89,26 @@ ylabs = toPlotList;
 for f=1:length(fx)
     for fn=1:length(toPlotList)
         toPlot = toPlotList{fn};
-        figure; %axes('Visible','off');
+        hfig = figure; %axes('Visible','off');
         % plot only means (for legend)
         conds = fieldnames(ffx.(toPlot));
         for c = 1:length(conds)
             cnd = conds{c};
             linecolor = linecolors.(cnd);
-            errcolor = linecolor + (1-linecolor)./3;
+            errcolor = get_lightcolor(linecolor);
             linestyle = linestyles{mod(c,length(linestyles))+1};
+            
+            if bDualAx
+                if ~mod(c,2)
+                    yyaxis left;
+                else
+                    yyaxis right;
+                end
+            end
+            
             % plot tracks
             sig = data_mean.(fx{f}).(toPlot).(cnd)(1:stop(c));
-            h(c) = plot(alltime(1:length(sig)), sig', 'LineWidth',3, 'Color',linecolor, 'LineStyle',linestyle); hold on;
+            hlin(c) = plot(alltime(1:length(sig)), sig', 'LineWidth',3, 'Color',linecolor, 'LineStyle',linestyle); hold on;
             % plot errorbars
             err = data_err.(fx{f}).(toPlot).(cnd)(1:stop(c));
             %err = get_errorbars(fmtMatrix.(toPlot).(cnd),errtype,size(fmtMatrix.(toPlot).(cnd),2));
@@ -115,7 +126,7 @@ for f=1:length(fx)
         hline(0,'k');
 
         %vline(mean(hashalf_s),'k','--');
-        legend(h, conds, 'Location','NorthEast'); legend boxoff;
+        legend(hlin, conds, 'Location','NorthEast'); legend boxoff;
         xlabel(xlab, 'FontSize', 20);
         ylabel(ylabs{fn}, 'FontSize', 20);
         set(gca, 'FontSize', 20);
@@ -125,9 +136,29 @@ for f=1:length(fx)
         %title(sprintf('%s %s',slab,toPlot));
         %set(gca,'XTick',(0:.1:alltime(stop(c)))); set(gca, 'TickLength', [0.0 0.0]);
 
-        ax = axis;
-        axis([alltime(1) alltime(stop(c)) ax(3) ax(4)])
-        box off;
+        yax = axis;
+        xmin = -20; %ax(3);
+        xmax = 20; %ax(4);
+        
+        if bDualAx
+            yyaxis left;
+            axis([alltime(1) alltime(stop(c)) xmin xmax])
+            haxL = gca;
+            %haxL.YColor = [0 0 0];
+            haxL.YColor = linecolors.(conds{1});
+            
+            yyaxis right;
+            axis([alltime(1) alltime(stop(c)) xmin xmax])
+            haxR = gca;
+            %haxR.YColor = [0 0 0];
+            haxR.YColor = linecolors.(conds{2});
+            axRpos = haxR.Position;
+            haxR.YDir = 'reverse';
+            haxR.Position = axRpos;
+        else
+            axis([alltime(1) alltime(stop(c)) xmin xmax]);
+            box off
+        end
         
         if bsigbar
             [h_fdr,p_fdr] = fdr(p.(fx{f}).(toPlot),0.05);
@@ -141,8 +172,8 @@ for f=1:length(fx)
             h2.(fx{f}).(toPlot)(h2.(fx{f}).(toPlot)==0) = NaN;
             
             plot(t,h.(fx{f}).(toPlot)*(yax(2)-2),'g')
-            plot(t,h1.(fx{f}).(toPlot)*(yax(2)-1.5),'Color',linecolors(1,:))
-            plot(t,h2.(fx{f}).(toPlot)*(yax(2)-1),'Color',linecolors(2,:))
+            plot(t,h1.(fx{f}).(toPlot)*(yax(2)-1.5),'Color',linecolors.(conds{1}))
+            plot(t,h2.(fx{f}).(toPlot)*(yax(2)-1),'Color',linecolors.(conds{2}))
             
             plot(t,h_fdr*(yax(2)-2.2),'m')
             plot(t,h_fdr10*(yax(2)-2.4),'c')

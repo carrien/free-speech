@@ -1,7 +1,9 @@
 function [ ] = gen_fmtMatrix_crossSubj(exptName,svec,fmtMatrixFile,bSaveCheck)
 %GEN_FMTMATRIX_CROSSSUBJ  Generate a plottable fmt matrix across subjects.
 %   GEN_FMTMATRIX_CROSSSUBJ(EXPTNAME,SVEC,FMTMATRIXFILE) concatenates
-%   formant matrix data from FMTMATRIXFILE for all the subjects in SVEC.
+%   formant matrix data from FMTMATRIXFILE for all the subjects in SVEC,
+%   which can be a vector of subject numbers or a cell array of subject ID
+%   strings.
 %
 % cn 11/2014
 
@@ -20,26 +22,39 @@ if nargin < 4 || isempty(bSaveCheck)
 end
 
 if ~exist('basedir','var')
-    basedir = getAcoustSubjPath(exptName);
+    basedir = get_acoustLoadPath(exptName);
 end
-if strcmp(exptName,'cat'), subdirname = 'pert/formant_analysis';
-elseif strcmp(exptName,'vin'), subdirname = 'all';
-elseif strcmp(exptName,'stroop'), subdirname = 'Stroop';
-else, subdirname = [];
+switch exptName
+    case 'cat'
+        subdirname = 'pert/formant_analysis';
+    case 'vin'
+        subdirname = 'all';
+    case 'stroop'
+        subdirname = 'Stroop';
+    otherwise
+        subdirname = [];
+end
+if isnumeric(svec)
+    sids = cell(1,length(svec));
+    for s=1:length(svec)
+        sids{s} = sprintf('s%02d',svec(s));
+    end
+else
+    sids = svec;
 end
 ffx = []; rfx = [];
 
 %% concatenate matrices
 fprintf('Adding data from subject');
-for s=1:length(svec) % for each subject
+for s=1:length(sids) % for each subject
     % load data
-    dataPath = getAcoustSubjPath(exptName,svec(s),subdirname);
+    dataPath = get_acoustLoadPath(exptName,sids{s},subdirname);
     load(fullfile(dataPath,fmtMatrixFile));
     analyses = fieldnames(fmtMatrix);
     bMelsVec(s) = bMels;
     bFiltVec(s) = bFilt;
     
-    fprintf(' %d',svec(s));
+    fprintf(' %s',sids{s});
     for a=1:length(analyses) % for each type of track (diff1, etc.)
         anl = analyses{a};
         conds = fieldnames(fmtMatrix.(anl));
@@ -70,7 +85,7 @@ end
 bMels = unique(bMelsVec);
 bFilt = unique(bFiltVec);
 if length(bMels) > 1
-    warning('Inconsistant frequency scale: the following subjects'' data are in mels: %s',num2str(svec(logical(bMelsVec))))
+    warning('Inconsistant frequency scale: the following subjects'' data are in mels: %s',sids{logical(bMelsVec)})
 end
 
 %% save
@@ -84,6 +99,9 @@ else
     bSave = 1;
 end
 if bSave
-    save(savefile,'ffx','rfx','svec','tstep','bMels','bFilt');
+    save(savefile,'ffx','rfx','svec','sids','tstep','bMels','bFilt');
+    if exist('linecolors','var')
+        save(savefile,'linecolors','-append')
+    end    
     fprintf('\n%s created.\n',filename);
 end

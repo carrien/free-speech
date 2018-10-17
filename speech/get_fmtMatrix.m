@@ -13,30 +13,41 @@ if nargin < 2 || isempty(inds), inds = 1:length(dataVals); end
 if nargin < 3 || isempty(bMels), bMels = 1; end
 if nargin < 4 || isempty(bFilt), bFilt = 1; end
 
-rawf1 = []; rawf2 = [];
+rawf1 = []; rawf2 = []; missingTrials = [];
 dvinds = [dataVals.token];
 for trialind = inds  % for each trial in the condition
     dvind = find(dvinds==trialind);
-    dat1 = dataVals(dvind).f1; % assumes Hz
-    dat1 = dat1(~isnan(dat1));
-    dat2 = dataVals(dvind).f2;
-    dat2 = dat2(~isnan(dat2));
-    
-    if bFilt % try filtering
-        hb = hamming(8)/sum(hamming(8));
-        try
-            dat1 = filtfilt(hb, 1, dat1);
-            dat2 = filtfilt(hb, 1, dat2);
-        catch  %#ok<*CTCH>
+    if ~isempty(dvind)
+        dat1 = dataVals(dvind).f1; % assumes Hz
+        dat1 = dat1(~isnan(dat1));
+        dat2 = dataVals(dvind).f2;
+        dat2 = dat2(~isnan(dat2));
+        
+        if bFilt % try filtering
+            hb = hamming(8)/sum(hamming(8));
+            try
+                dat1 = filtfilt(hb, 1, dat1);
+                dat2 = filtfilt(hb, 1, dat2);
+            catch  %#ok<*CTCH>
+            end
         end
+        
+        if bMels % convert to mels
+            dat1 = hz2mels(dat1);
+            dat2 = hz2mels(dat2);
+        end
+        
+        % add data to matrix
+        rawf1 = nancat(rawf1,dat1);
+        rawf2 = nancat(rawf2,dat2);
+    else
+        missingTrials(end+1) = trialind; %#ok<AGROW>
     end
-    
-    if bMels % convert to mels
-        dat1 = hz2mels(dat1);
-        dat2 = hz2mels(dat2);
-    end
-    
-    % add data to matrix
-    rawf1 = nancat(rawf1,dat1);
-    rawf2 = nancat(rawf2,dat2);
+end
+
+if ~isempty(missingTrials)
+    warning('Missing trials: %s',num2str(missingTrials));
+end
+if isempty(rawf1)
+    warning('No trials in this condition found.');
 end

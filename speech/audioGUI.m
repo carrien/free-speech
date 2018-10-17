@@ -64,16 +64,23 @@ for itrial = trials2track
     else
         sigproc_params = [];
         event_params = [];
+        plot_params = [];
     end
     if isempty(sigproc_params)
         if exist('wvp','var') % otherwise, use param file if it exists
             sigproc_params = wvp.sigproc_params;
-            plot_params = wvp.plot_params;
         elseif exist('endstate','var') % otherwise, use last trial's params
             sigproc_params = endstate.sigproc_params;
-            plot_params = endstate.plot_params;
         else % otherwise, get defaults
             sigproc_params = get_sigproc_defaults;
+        end
+    end    
+    if isempty(plot_params) %separate out where to look for plot_params and sigproc_params
+        if exist('wvp','var') % otherwise, use param file if it exists
+            plot_params = wvp.plot_params;
+        elseif exist('endstate','var') % otherwise, use last trial's params
+            plot_params = endstate.plot_params;
+        else % otherwise, get defaults
             plot_params = get_plot_defaults;
         end
     end    

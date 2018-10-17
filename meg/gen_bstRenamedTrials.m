@@ -1,9 +1,12 @@
-function [ ] = gen_bstRenamedTrials(dataPaths,trialinds,newDataPath)
+function [ ] = gen_bstRenamedTrials(dataPaths,trialinds,newDataPath,subjfifs)
 %GEN_BSTRENAMEDTRIALS  Copies and renumbers brainstorm trial files.
 %   GEN_BSTRENAMEDTRIALS(DATAPATH,NEWDATAPATH) copies mat files from
 %   DATAPATH to NEWDATAPATH, which must be an absolute path if it doesn't
 %   already exist, renaming the files to reflect the trial numbers in
 %   TRIALNUMS.
+
+% subjfifs is the list of fifs that you created when you ran the first bst
+% load data script.
 
 % if only one dir, create cell arrays of length 1
 if ~iscell(dataPaths), dataPaths = {dataPaths}; end
@@ -23,10 +26,10 @@ end
 for dP = 1:length(dataPaths)
     
     % get all files in original dir
-    dataPath = dataPaths{dP};
-    filter = fullfile(dataPath,'data_*.mat');
-    files = dir(filter);
-    filenames = {files.name};
+    dataPath = dataPaths{dP}
+    filter = fullfile(dataPath,'data_*.mat')
+    files = dir(filter)
+    filenames = {files.name}
     % split off trial suffix -- can use "split" without for loop in Matlab 2014+
     prefix = [];
     suffixes = cell(length(files),1);
@@ -40,7 +43,7 @@ for dP = 1:length(dataPaths)
         suffixes{f} = C{end};
     end
     
-    nfifs = 3; % set to 3 for now but can find programmatically later
+    nfifs = length(subjfifs); % set to 3 for now but can find programmatically later
     
     % use regular expression to find file order -- can use "endsWith" in Matlab 2016+
     fif0 = 1:length(filenames);
