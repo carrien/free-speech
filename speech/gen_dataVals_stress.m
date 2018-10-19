@@ -355,10 +355,7 @@ for i = 1:length(sortedTrials)
         
         
         
-        if ~isempty(shortTracks_syll1)
-            shortTracks_syll1 = unique(shortTracks_syll1);
-            warning('Short track list for syllable 1: %s',num2str(shortTracks_syll1));
-        end
+
         
         
         
@@ -383,14 +380,19 @@ for i = 1:length(sortedTrials)
         end
         
         
+
+    end
+end
+
+        if ~isempty(shortTracks_syll1)
+            shortTracks_syll1 = unique(shortTracks_syll1);
+            warning('Short track list for syllable 1: %s',num2str(shortTracks_syll1));
+        end
         
         if ~isempty(shortTracks_syll2)
             shortTracks_syll2 = unique(shortTracks_syll2);
             warning('Short track list for syllable 2: %s',num2str(shortTracks_syll2));
         end
-    end
-end
-
 
 save('dataVals_syll1.mat','dataVals_syll1');
 %fprintf('%d trials saved in %s.\n',length(sortedTrials),savefile)
