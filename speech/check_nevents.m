@@ -38,7 +38,7 @@ for i = 1:length(sortedTrials)
             user_event_times = [];
         end
         
-        n_events = length(user_event_times)
+        n_events = length(user_event_times);
     end
         if ~ismember(n_events,nEvents)
             sprintf('%d events found in trial %d (expected %d or fewer)',n_events,trialnum,max(nEvents));

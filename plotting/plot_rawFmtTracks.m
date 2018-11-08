@@ -15,7 +15,7 @@ tstep = .003;
 for j=unique([dataVals.(grouping)])
     figure;
     for i=trialset
-        if dataVals(i).(grouping) == j && (~isfield(dataVals,'bExcl') || ~dataVals(i).bExcl)
+        if (~isfield(dataVals,'bExcl') || ~dataVals(i).bExcl) && dataVals(i).(grouping) == j
             len = length(dataVals(i).f1);
             if taxis
                 plot(tstep.*(0:len-1),dataVals(i).f1,'b');
@@ -31,7 +31,7 @@ for j=unique([dataVals.(grouping)])
     
     % plot ends
     for i=trialset
-        if dataVals(i).(grouping) == j && (~isfield(dataVals,'bExcl') || ~dataVals(i).bExcl)
+        if (~isfield(dataVals,'bExcl') || ~dataVals(i).bExcl) && dataVals(i).(grouping) == j
             len = length(dataVals(i).f1);
             if taxis
                 plot(tstep*(len-1),dataVals(i).f1(end),'co');
