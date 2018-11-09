@@ -1,17 +1,18 @@
-function [] = audioGUI(dataPath,trialinds,buffertype,figpos,bSaveCheck)
+function [] = audioGUI(dataPath,trialnums,buffertype,figpos,bSaveCheck)
 %AUDIOGUI  Wrapper for wave_viewer.
-%   AUDIOGUI(DATAPATH,TRIALINDS,BUFFERTYPE,FIGPOS,PITCHLIMITS,BSAVECHECK)
+%   AUDIOGUI(DATAPATH,TRIALNUMS,BUFFERTYPE,FIGPOS,PITCHLIMITS,BSAVECHECK)
 %   sends audio data found in DATAPATH to the wave_viewer analysis program.
 %   This path must contain a file called data.mat with each trial n stored
-%   in data(n).[fieldname]. TRIALINDS specifies the trials to analyze (if
+%   in data(n).[fieldname]. TRIALNUMS specifies the trials to analyze (if
 %   empty, all trials are used). BUFFERTYPE names the field in the data.mat
 %   structure to use (e.g. 'signalIn'). FIGPOS overrides the default figure
-%   position.
+%   position. BSAVECHECK is a binary variable specifying whether to check
+%   via a user dialog before overwriting existing files (1 = yes, 0 = no).
 %
 %CN 2011
 
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
-if nargin < 2, trialinds = []; end
+if nargin < 2, trialnums = []; end
 if nargin < 3 || isempty(buffertype), buffertype = 'signalIn'; end
 if nargin < 4, figpos = []; end
 if nargin < 5, bSaveCheck = 1; end
@@ -20,18 +21,18 @@ if nargin < 5, bSaveCheck = 1; end
 load(fullfile(dataPath,'data.mat'),'data');
 
 % pick trials
-if isempty(trialinds)
+if isempty(trialnums)
     reply = input('Start trial? [1]: ','s');
     if isempty(reply), reply = '1'; end
     startTrial = sscanf(reply,'%d');
     trials2track = startTrial:length(data);
 else
-    trials2track = trialinds;
+    trials2track = trialnums;
 end
 
 % set trial folder
 if strcmp(buffertype,'signalIn'), trialfolder = 'trials';
-else trialfolder = sprintf('trials_%s',buffertype);
+else, trialfolder = sprintf('trials_%s',buffertype);
 end
 if ~exist(fullfile(dataPath,trialfolder),'dir')
     mkdir(fullfile(dataPath,trialfolder))
@@ -118,7 +119,7 @@ for itrial = trials2track
     sigmat.ampl = endstate.ampl_axinfo.dat{1};
     sigmat.ampl_taxis = endstate.ampl_axinfo.params{1}.taxis;
         
-    if bSaveCheck, bSave = savecheck(savefile); else bSave = 1; end
+    if bSaveCheck, bSave = savecheck(savefile); else, bSave = 1; end
     if bSave, save(savefile,'sigmat','trialparams'); end
     
     if strcmp(endstate.name,'end'), break; end
