@@ -1,12 +1,12 @@
-function [] = plot_adaptationTrack(exptName,svec,subdirname,avgtype,avgval,binsize,toPlot,plotcolor)
+function [] = plot_adaptationTrack(dataPaths,avgtype,avgval,binsize,toPlot,plotcolor)
 %PLOT_ADAPTATIONTRACK  Plot timecourse of acoustic adaptation.
 
-if nargin < 3, subdirname = []; end
-if nargin < 4 || isempty(avgtype), avgtype = 'mid'; end
-if nargin < 5 || isempty(avgval), avgval = 50; end
-if nargin < 6 || isempty(binsize), binsize = 10; end
-if nargin < 7 || isempty(toPlot), toPlot = {'f1' 'f2'}; end
-if nargin < 8 || isempty(plotcolor)
+if ischar(dataPaths), dataPaths = {dataPaths}; end
+if nargin < 2 || isempty(avgtype), avgtype = 'mid'; end
+if nargin < 3 || isempty(avgval), avgval = 50; end
+if nargin < 4 || isempty(binsize), binsize = 10; end
+if nargin < 5 || isempty(toPlot), toPlot = {'f1' 'f2'}; end
+if nargin < 6 || isempty(plotcolor)
     switch avgtype
     case 'mid'
         plotcolor = 'k';
@@ -19,18 +19,18 @@ if nargin < 8 || isempty(plotcolor)
     end
 end
 
-% get expt phase info
-exptInfo = get_exptInfo(exptName);
-vlines(1) = exptInfo.nbasetrials;
-vlines(2) = vlines(1) + exptInfo.nramptrials;
-vlines(3) = vlines(2) + exptInfo.nholdtrials;
-vlines(4) = exptInfo.ntrials - exptInfo.npostbasetrials;
-
 % get subject data
-for s=1:length(svec)
-    snum = svec(s);
-    [~,~,normavg(s)] = get_adaptationTrack(exptName,snum,subdirname,avgtype,avgval,binsize,toPlot); %#ok<AGROW>
+for dP=1:length(dataPaths)
+    dataPath = dataPaths{dP};
+    [~,~,normavg(dP)] = get_adaptationTrack(dataPath,avgtype,avgval,binsize,toPlot); %#ok<AGROW>
 end
+
+% get expt phase info
+load(fullfile(dataPath,'expt.mat'),'expt'); % load from last subject
+vlines(1) = expt.nBaseline;
+vlines(2) = vlines(1) + expt.nRamp;
+vlines(3) = vlines(2) + expt.nHold;
+vlines(4) = vlines(3) + expt.nPost;
 
 toBin = fieldnames(normavg); % different bin sizes
 for b = 1:length(toBin)
@@ -41,7 +41,7 @@ for b = 1:length(toBin)
     end
 end
 
-    %% plot
+%% plot
 for i=1:length(toPlot)
     % all trials
     figname = toPlot{i};
