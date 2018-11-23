@@ -48,8 +48,8 @@ for c2m = 1:length(conds2merge)
 
     % linecolors
     if isfield(fmtData,'linecolors') && isstruct(fmtData.linecolors)
-        for i=1:length(mergednames)
-            fmtData.linecolors.(mergednames{i}) = fmtData.linecolors.(conds2merge{i}{1});
+        for iCond=1:length(mergednames)
+            fmtData.linecolors.(mergednames{iCond}) = fmtData.linecolors.(conds2merge{iCond}{1});
         end
     end
         
