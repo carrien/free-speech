@@ -1,16 +1,15 @@
-function [] = merge_fmtMatrices(exptName,snum,plotfile,conds2merge,mergednames)
+function [] = merge_fmtMatrices(dataPath,plotfile,conds2merge,mergednames)
 %MERGE_FMTMATRICES  Merges conditions within a plotfile.
-%   MERGE_FMTMATRICES(EXPTNAME,SNUM,PLOTFILE,CONDS2MERGE,MERGEDNAMES)
-%   combines conditions in a plotfile to be plotted as one condition.
-%   CONDS2MERGE is an array of cell arrays, each consisting of a pair of
-%   condition names (strings). MERGEDNAMES is an array of new condition
-%   names for each pair.
+%   MERGE_FMTMATRICES(DATAPATH,PLOTFILE,CONDS2MERGE,MERGEDNAMES) combines
+%   conditions in a plotfile to be plotted as one condition. CONDS2MERGE is
+%   an array of cell arrays, each consisting of a pair of condition names
+%   (strings). MERGEDNAMES is an array of new condition names for each
+%   pair.
 
-% dataPath = getAcoustSubjPath(exptName,snum); %BP note: this function is
-% currently broken as of 11/20/2018
-dataPath = pwd;
-load(fullfile(dataPath,plotfile),'fmtMatrix','fmtMeans','tstep','bMels','bFilt') % e.g. fmtTraces_3subj.mat
-analyses = fieldnames(fmtMeans); %#ok<NODEF>
+fmtData = load(fullfile(dataPath,plotfile)); % e.g. fmtMatrix_shiftUpshiftDown_noShift.mat
+fmtMatrix = fmtData.fmtMatrix;
+fmtMeans = fmtData.fmtMeans;
+analyses = fieldnames(fmtMeans);
 
 for c2m = 1:length(conds2merge)
     nSubConds = length(conds2merge{c2m});
@@ -24,46 +23,45 @@ for c2m = 1:length(conds2merge)
         anl = analyses{a};
         
         % fmtMatrix (all trials: ffx)
-        for iSubConds = 1:nSubConds
-            merge{iSubConds} = fmtMatrix.(anl).(oldcnd{iSubConds});
-        end
-
-        fmtMatrix.(anl).(newcnd) = merge{1};
-        for iSubConds=2:nSubConds
-            fmtMatrix.(anl).(newcnd) = nancat(fmtMatrix.(anl).(newcnd),merge{iSubConds});
-        end
-    
+        fmtMatrix.(anl).(newcnd) = [];
         for iSubConds=1:nSubConds
+            data2add = fmtMatrix.(anl).(oldcnd{iSubConds});
+            fmtMatrix.(anl).(newcnd) = nancat(fmtMatrix.(anl).(newcnd),data2add);
             fmtMatrix.(anl) = rmfield(fmtMatrix.(anl),oldcnd{iSubConds});
         end
         
         % fmtMeans (one average trial: rfx)
-        for iSubConds = 1:nSubConds
-            merge{iSubConds} = fmtMeans.(anl).(oldcnd{iSubConds});
-        end
-
-        fmtMeans.(anl).(newcnd) = merge{1};
-        for iSubConds=2:nSubConds
-            fmtMeans.(anl).(newcnd) = nancat(fmtMeans.(anl).(newcnd),merge{iSubConds});
-        end
-        fmtMeans.(anl).(newcnd) = nanmean(fmtMeans.(anl).(newcnd),2);
-
+        fmtMeans.(anl).(newcnd) = [];
         for iSubConds=1:nSubConds
+            data2add = fmtMeans.(anl).(oldcnd{iSubConds});
+            fmtMeans.(anl).(newcnd) = nancat(fmtMeans.(anl).(newcnd),data2add);
             fmtMeans.(anl) = rmfield(fmtMeans.(anl),oldcnd{iSubConds});
         end
+        fmtMeans.(anl).(newcnd) = nanmean(fmtMeans.(anl).(newcnd),2); %%
 
     end
     
     % hasNpercent
-    hashalf.(newcnd) = has_nperc(fmtMatrix.diff1.(newcnd),50);
-    hasthird.(newcnd) = has_nperc(fmtMatrix.diff1.(newcnd),33.3333);
-    hasquart.(newcnd) = has_nperc(fmtMatrix.diff1.(newcnd),25);
+    fmtData.hashalf.(newcnd) = has_nperc(fmtMatrix.diff1.(newcnd),50);
+    fmtData.hasthird.(newcnd) = has_nperc(fmtMatrix.diff1.(newcnd),33.3333);
+    fmtData.hasquart.(newcnd) = has_nperc(fmtMatrix.diff1.(newcnd),25);
+
+    % linecolors
+    if isfield(fmtData,'linecolors') && isstruct(fmtData.linecolors)
+        for i=1:length(mergednames)
+            fmtData.linecolors.(mergednames{i}) = fmtData.linecolors.(conds2merge{i}{1});
+        end
+    end
+        
 end
 
 %% save data
-if bMels, bMelsStr = '_mels'; else bMelsStr = []; end
-savefile = fullfile(dataPath,sprintf('fmtMatrix_%s_merged%s.mat',cell2mat(mergednames),bMelsStr));
+fmtData.fmtMatrix = fmtMatrix;
+fmtData.fmtMeans = fmtMeans;
+
+savefile = fullfile(dataPath,sprintf('fmtMatrix_%s_merged.mat',cell2mat(mergednames)));
 bSave = savecheck(savefile);
-if bSave,
-    save(savefile,'fmtMatrix','fmtMeans','hashalf','hasthird','hasquart','tstep','bMels','bFilt')
+if bSave
+    save(savefile,'-struct','fmtData')
+    fprintf('%s created.\n',savefile);
 end
