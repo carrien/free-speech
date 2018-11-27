@@ -1,4 +1,4 @@
-function [] = gen_fmtMatrixByCond(dataPath,indBase,indShift,dataValsStr,bMels,bFilt,bSaveCheck)
+function [savefile] = gen_fmtMatrixByCond(dataPath,indBase,indShift,dataValsStr,bMels,bFilt,bSaveCheck)
 %GEN_FMTMATRIXBYCOND  Generate a plottable formant matrix from a davaVals object.
 %   GEN_FMTMATRIXBYCOND(DATAPATH,INDBASE,INDSHIFT,DATAVALSSTR,BMELS,BFILT,BSAVECHECK)
 %   Generates a fmtMatrix suitable for plotting by, e.g., plot_fmtMatrix.
