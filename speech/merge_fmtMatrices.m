@@ -41,10 +41,8 @@ for c2m = 1:length(conds2merge)
 
     end
     
-    % hasNpercent
-    fmtData.hashalf.(newcnd) = has_nperc(fmtMatrix.diff1.(newcnd),50);
-    fmtData.hasthird.(newcnd) = has_nperc(fmtMatrix.diff1.(newcnd),33.3333);
-    fmtData.hasquart.(newcnd) = has_nperc(fmtMatrix.diff1.(newcnd),25);
+    % recalculate trial ending points
+    fmtData.percNaN.(newcnd) = get_percNaN(fmtMatrix.diff1.(newcnd));
 
     % linecolors
     if isfield(fmtData,'linecolors') && isstruct(fmtData.linecolors)
