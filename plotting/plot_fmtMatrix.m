@@ -70,8 +70,13 @@ for c = 1:length(conds)
     sig = sig(~isnan(err));
     fill([alltime(1:length(sig)) fliplr(alltime(1:length(sig)))], [sig'+err' fliplr(sig'-err')], errcolor, ...
         'EdgeColor', errcolor, 'FaceAlpha', .5, 'EdgeAlpha', 0);
-    hashalf_s(c) = find(percNaN.(cnd) <= 50, 1, 'last')*tstep; %#ok<AGROW>
-    hasquart_s(c) = find(percNaN.(cnd) <= 75, 1, 'last')*tstep; %#ok<AGROW>
+    if exist('percNaN','var')
+        hashalf_s(c) = find(percNaN.(cnd) <= 50, 1, 'last')*tstep; %#ok<AGROW>
+        hasquart_s(c) = find(percNaN.(cnd) <= 75, 1, 'last')*tstep; %#ok<AGROW>
+    else
+        hashalf_s(c) = find(hashalf.(cnd), 1, 'last')*tstep; %#ok<AGROW>
+        hasquart_s(c) = find(hasquart.(cnd), 1, 'last')*tstep; %#ok<AGROW>
+    end
 end
 if ~strncmp(toPlot,'raw',3)
     hline(0,'k');  % draw y = 0 line (if not plotting raw formants)
