@@ -5,6 +5,7 @@ function [] = plot_rawFmtTracks(dataVals,grouping,trialset)
 %   the field in DATAVALS by which data should be grouped; e.g. GROUPING =
 %   'vowel' will create a separate plot for each vowel.
 
+if nargin < 2 || isempty(grouping), grouping = 'vowel'; end
 if nargin < 1 || isempty(dataVals)
     fprintf('Loading dataVals from current directory...')
     load dataVals.mat;
@@ -16,7 +17,6 @@ if nargin < 1 || isempty(dataVals)
         groupnames = expt.(sprintf('%ss',grouping));
     end
 end
-if nargin < 2 || isempty(grouping), grouping = 'vowel'; end
 if nargin < 3, trialset = 1:length(dataVals); end
 
 f1color = [0 0 1]; % blue
