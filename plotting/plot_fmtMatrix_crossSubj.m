@@ -40,7 +40,7 @@ data_err = struct('ffx',ffx_err,'rfx',rfx_err);
 if ~exist('tstep','var'), tstep = .003; end
 alltime = 0:tstep:1;
 conds = fieldnames(ffx.rawf1);
-stop_ms = 225;
+stop_ms = 350;
 stop = ms2samps(stop_ms,1/tstep)*ones(1,length(conds)); % crop axis to here
 
 % calculate significance at each timepoint (assumes 2 conds)
@@ -126,7 +126,7 @@ for f=1:length(fx)
         hline(0,'k');
 
         %vline(mean(hashalf_s),'k','--');
-        legend(hlin, conds, 'Location','NorthEast'); legend boxoff;
+        legend(hlin, conds, 'Location','NorthWest'); legend boxoff;
         xlabel(xlab, 'FontSize', 20);
         ylabel(ylabs{fn}, 'FontSize', 20);
         set(gca, 'FontSize', 20);
@@ -137,18 +137,18 @@ for f=1:length(fx)
         %set(gca,'XTick',(0:.1:alltime(stop(c)))); set(gca, 'TickLength', [0.0 0.0]);
 
         yax = axis;
-        xmin = -20; %ax(3);
-        xmax = 20; %ax(4);
+        ymin = -30; %ax(3);
+        ymax = 30; %ax(4);
         
         if bDualAx
             yyaxis left;
-            axis([alltime(1) alltime(stop(c)) xmin xmax])
+            axis([alltime(1) alltime(stop(c)) ymin ymax])
             haxL = gca;
             %haxL.YColor = [0 0 0];
             haxL.YColor = linecolors.(conds{1});
             
             yyaxis right;
-            axis([alltime(1) alltime(stop(c)) xmin xmax])
+            axis([alltime(1) alltime(stop(c)) ymin ymax])
             haxR = gca;
             %haxR.YColor = [0 0 0];
             haxR.YColor = linecolors.(conds{2});
@@ -156,7 +156,7 @@ for f=1:length(fx)
             haxR.YDir = 'reverse';
             haxR.Position = axRpos;
         else
-            axis([alltime(1) alltime(stop(c)) xmin xmax]);
+            axis([alltime(1) alltime(stop(c)) ymin ymax]);
             box off
         end
         
