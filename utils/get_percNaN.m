@@ -8,5 +8,5 @@ percNaN = zeros(ntimepts,1);
 for t = 1:ntimepts % for each timepoint
     thistime = tracks(t,:);
     nNaNs = sum(isnan(thistime)); % #NaNs
-    percNaN(t) = nNaNs/ntrials;
+    percNaN(t) = 100*nNaNs/ntrials;
 end
