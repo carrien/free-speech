@@ -1,4 +1,4 @@
-function [htracks] = plot_rawFmtTracks(dataVals,grouping,trialset,parent,expt)
+function [htracks,hsub] = plot_rawFmtTracks(dataVals,grouping,trialset,parent,expt)
 %PLOT_RAWFMTTRACKS  Plot formant tracks from dataVals object.
 %   PLOT_RAWFMTTRACKS(DATAVALS,GROUPING,TRIALSET,PARENT) plots the first and
 %   second formant tracks from each trial in TRIALSET in the figure or
@@ -25,7 +25,7 @@ f2color = [1 0 0]; % red
 
 groups = unique([dataVals.(grouping)]);
 for g = groups
-    subplot(1,length(groups),g,'Parent',parent);
+    hsub(g) = subplot(1,length(groups),g,'Parent',parent);
     % plot tracks
     for i=trialset
         if (~isfield(dataVals,'bExcl') || ~dataVals(i).bExcl) && dataVals(i).(grouping) == g

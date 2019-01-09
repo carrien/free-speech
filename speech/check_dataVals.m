@@ -27,14 +27,36 @@ UserData = guihandles(f);
 
 UserData.f = f;
 
-%%load data
-% dataVals = load_dataVals(dataPath,bCalc);
-errors = get_dataVals_errors(dataVals);
 
-%% create buttons
+%% create warning field in GUI
 xPosMax = 0.975;
 
-%% create panel for plots
+% create warning text area
+warnPanelXPos = 0.575;
+warnPanelXSpan = 0.125;
+warnPanelYSpan = 0.11;
+warnPanelYPos = xPosMax-warnPanelYSpan;
+warnPanelPos = [warnPanelXPos warnPanelYPos warnPanelXSpan warnPanelYSpan];
+UserData.warnPanel= uipanel(UserData.f,'Units','Normalized','Position',...
+            warnPanelPos,'Title',' alerts ',...
+            'Tag','warn_panel','TitlePosition','CenterTop',...
+            'FontSize',0.02,'FontUnits','Normalized','Visible','on');
+
+UserData.warnText = uicontrol(UserData.warnPanel,'style','text',...
+            'String',[],...
+            'Units','Normalized','Position',[.1 .1 .8 .8],...
+            'FontUnits','Normalized','FontSize',.3);
+        
+%% load data
+% dataVals = load_dataVals(dataPath,bCalc);
+UserData.dataVals = dataVals;
+UserData.expt = expt;
+UserData.errors = get_dataVals_errors(UserData,dataVals);
+
+%% create buttons
+
+
+% create panel for plots
 plotPanelXPos = 0.175;
 plotPanelXSpan = 1 - 0.025 - plotPanelXPos;
 plotPanelYPos = xPosMax - 0.95;
@@ -54,9 +76,10 @@ UserData.errorPanel = uibuttongroup(UserData.f,'Units','Normalized','Position',.
             errorPanelPos,'Title',' error types ',...
             'Tag','error_types','TitlePosition','CenterTop',...
             'FontSize',0.02,'FontUnits','Normalized','Visible','on',...
-            'SelectionChangedFcn',@update_plots);
-
-errorTypes = fieldnames(errors);
+            'SelectedObject',[],'SelectionChangedFcn',@update_plots);
+        
+errorTypes = fieldnames(UserData.errors);
+errorTypes(strcmp(errorTypes,'badTrials')) = []; %remove badTrials from list
 nErrorTypes = length(errorTypes);
 
 errorButtonYSep = 0.01;
@@ -72,6 +95,9 @@ for iButton = 1: nErrorTypes
         'Style','togglebutton','String',errorTypes(iButton),...
         'Units','Normalized','Position',errorButtonPos,...
         'FontUnits','Normalized','FontSize',0.3);
+    if ~isempty(UserData.errors.(errorTypes{iButton}))
+        set(UserData.(EBname{1}),'ForegroundColor',[0 0.7 0]);
+    end
 end
 
 % create sort selection buttons
@@ -102,7 +128,8 @@ end
 UserData.sortSel = uicontrol(UserData.sortPanel,'style','popup',...
     'string',sortTypes,...
     'Units','Normalized','Position',sortButtonPos,...
-        'FontUnits','Normalized','FontSize',sortFontSize);
+    'FontUnits','Normalized','FontSize',sortFontSize,...
+    'Callback',@update_plots);
 
 
 % create trial selection buttons
@@ -134,9 +161,10 @@ for iButton = 1: nTrialTypes
         'FontUnits','Normalized','FontSize',0.3);
 end
 
+        
 % create action buttons
-actionPanelXPos = 0.675;
-actionPanelXSpan = 0.3;
+actionPanelXPos = 0.725;
+actionPanelXSpan = 0.25;
 actionPanelYSpan = 0.11;
 actionPanelYPos = xPosMax-actionPanelYSpan;
 actionPanelPos = [actionPanelXPos actionPanelYPos actionPanelXSpan actionPanelYSpan]; 
@@ -163,10 +191,12 @@ for iButton = 1: nActionTypes
         'FontUnits','Normalized','FontSize',0.3);
 end
 
+guidata(f,UserData);
+
 end
 
-function errors = get_dataVals_errors(dataVals)
-    f = msgbox('Checking for errors');
+function errors = get_dataVals_errors(UserData,dataVals)
+    set(UserData.warnText,'String','Checking for errors');
     
     %set thresholds for errors
     shortThresh = .1; %(<200 ms)
@@ -222,29 +252,52 @@ function errors = get_dataVals_errors(dataVals)
     errors.lateTrials = lateTrials;
     errors.goodTrials = goodTrials;
     
-    delete(f)
+    set(UserData.warnText,'String',[])
 end
 
-function [dataVals,expt] = load_dataVals(dataPath,bCalc)
+function [dataVals,expt] = load_dataVals(UserData,dataPath,bCalc)
     if bCalc
         msg = 'Regenerating and loading dataVals';
     else
         msg = 'Loading dataVals';
     end
-    f = msgbox(msg);
+    set(UserData.warnText,'String',msg)
     %if yesCalc == 1, generate dataVals
     if bCalc
         gen_dataVals_from_wave_viewer(dataPath);
     end
     load(fullfile(dataPath,'dataVals'))
     load(fullfile(dataPath,'expt'))
-    delete(f)
+    set(UserData.warnText,'String',[])
 end
 
 function KeyPress(src, evt)
 end
 
-function update_plots
-    disp('this is working')
+function update_plots(src,evt)
+    UserData = guidata(src);
+    errorField = UserData.errorPanel.SelectedObject.String{1};
+    trialset = UserData.errors.(errorField);
+    grouping = UserData.sortSel.String{UserData.sortSel.Value};
+    if isfield(UserData,'htracks')
+        delete(UserData.hsub);
+        UserData = rmfield(UserData,'htracks');
+        UserData = rmfield(UserData,'hsub');
+    end
+    if isfield(UserData,'noPlotMessage')
+        delete(UserData.noPlotMessage);
+        UserData = rmfield(UserData,'noPlotMessage');
+    end
+    if isempty(trialset)
+        UserData.noPlotMessage = uicontrol(UserData.plotPanel,'style','text',...
+            'String','No data to plot',...
+            'Units','Normalized','Position',[.1 .4 .8 .2],...
+            'FontUnits','Normalized','FontSize',0.3);
+    else
+        set(UserData.warnText,'String','Plotting data')
+        [UserData.htracks,UserData.hsub] = plot_rawFmtTracks(UserData.dataVals,grouping,trialset,UserData.plotPanel,UserData.expt);
+        set(UserData.warnText,'String',[])
+    end
+    guidata(src,UserData);
 end
     
