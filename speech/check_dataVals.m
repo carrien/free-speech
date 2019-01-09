@@ -48,13 +48,12 @@ UserData.warnText = uicontrol(UserData.warnPanel,'style','text',...
             'FontUnits','Normalized','FontSize',.3);
         
 %% load data
-% dataVals = load_dataVals(dataPath,bCalc);
+[dataVals,expt] = load_dataVals(UserData,dataPath,bCalc);
 UserData.dataVals = dataVals;
 UserData.expt = expt;
 UserData.errors = get_dataVals_errors(UserData,dataVals);
 
-%% create buttons
-
+%% create other buttons
 
 % create panel for plots
 plotPanelXPos = 0.175;
@@ -101,34 +100,45 @@ for iButton = 1: nErrorTypes
 end
 
 % create sort selection buttons
-sortPanelXPos = 0.175;
-sortPanelXSpan = 0.15;
-sortPanelYSpan = 0.11;
-sortPanelYPos = xPosMax - sortPanelYSpan;
+groupPanelXPos = 0.175;
+groupPanelXSpan = 0.15;
+groupPanelYSpan = 0.11;
+groupPanelYPos = xPosMax - groupPanelYSpan;
 
-sortPanelPos = [sortPanelXPos sortPanelYPos sortPanelXSpan sortPanelYSpan]; 
-UserData.sortPanel = uipanel(UserData.f,'Units','Normalized','Position',...
-            sortPanelPos,'Title',' sort by: ',...
-            'Tag','sort_by','TitlePosition','CenterTop',...
+groupPanelPos = [groupPanelXPos groupPanelYPos groupPanelXSpan groupPanelYSpan]; 
+UserData.groupPanel = uipanel(UserData.f,'Units','Normalized','Position',...
+            groupPanelPos,'Title',' group by: ',...
+            'Tag','group_by','TitlePosition','CenterTop',...
             'FontSize',0.02,'FontUnits','Normalized','Visible','on');
-sortTypes = {'vowel', 'word', 'color'};
-nSortTypes = length(sortTypes);
-sortButtonYSep = 0.05;
-sortButtonXSep = 0.05;
-sortButtonYSpan = 1 - 2*sortButtonYSep;
-sortButtonYPos = sortButtonYSep;
-sortButtonXSpan = 1 - 2*sortButtonXSep;
-sortButtonXPos = sortButtonXSep;
-sortButtonPos = [sortButtonXPos sortButtonYPos sortButtonXSpan sortButtonYSpan];
+groupTypes = fields(UserData.dataVals);
+%remove known fields to get grouping types
+    groupTypes(strcmp(groupTypes,'f0')) = [];
+    groupTypes(strcmp(groupTypes,'f1')) = [];
+    groupTypes(strcmp(groupTypes,'f2')) = [];
+    groupTypes(strcmp(groupTypes,'int')) = [];
+    groupTypes(strcmp(groupTypes,'pitch_taxis')) = [];
+    groupTypes(strcmp(groupTypes,'ftrack_taxis')) = [];
+    groupTypes(strcmp(groupTypes,'ampl_taxis')) = [];
+    groupTypes(strcmp(groupTypes,'dur')) = [];
+    groupTypes(strcmp(groupTypes,'cond')) = [];
+    groupTypes(strcmp(groupTypes,'token')) = [];
+    groupTypes(strcmp(groupTypes,'bExcl')) = [];
+groupButtonYSep = 0.05;
+groupButtonXSep = 0.05;
+groupButtonYSpan = 1 - 2*groupButtonYSep;
+groupButtonYPos = groupButtonYSep;
+groupButtonXSpan = 1 - 2*groupButtonXSep;
+groupButtonXPos = groupButtonXSep;
+groupButtonPos = [groupButtonXPos groupButtonYPos groupButtonXSpan groupButtonYSpan];
 if ismac
-    sortFontSize = 0.2;
+    groupFontSize = 0.2;
 else
-    sortFontSize = 0.3;
+    groupFontSize = 0.3;
 end
-UserData.sortSel = uicontrol(UserData.sortPanel,'style','popup',...
-    'string',sortTypes,...
-    'Units','Normalized','Position',sortButtonPos,...
-    'FontUnits','Normalized','FontSize',sortFontSize,...
+UserData.groupSel = uicontrol(UserData.groupPanel,'style','popup',...
+    'string',groupTypes,...
+    'Units','Normalized','Position',groupButtonPos,...
+    'FontUnits','Normalized','FontSize',groupFontSize,...
     'Callback',@update_plots);
 
 
@@ -196,7 +206,8 @@ guidata(f,UserData);
 end
 
 function errors = get_dataVals_errors(UserData,dataVals)
-    set(UserData.warnText,'String','Checking for errors');
+    outstring = textwrap(UserData.warnText,{'Checking for errors'});
+    set(UserData.warnText,'BackgroundColor','red','String',outstring)
     
     %set thresholds for errors
     shortThresh = .1; %(<200 ms)
@@ -252,7 +263,7 @@ function errors = get_dataVals_errors(UserData,dataVals)
     errors.lateTrials = lateTrials;
     errors.goodTrials = goodTrials;
     
-    set(UserData.warnText,'String',[])
+    set(UserData.warnText,'String',[],'BackgroundColor',[0.9400    0.9400    0.9400])
 end
 
 function [dataVals,expt] = load_dataVals(UserData,dataPath,bCalc)
@@ -261,14 +272,15 @@ function [dataVals,expt] = load_dataVals(UserData,dataPath,bCalc)
     else
         msg = 'Loading dataVals';
     end
-    set(UserData.warnText,'String',msg)
+    outstring = textwrap(UserData.warnText,{msg});
+    set(UserData.warnText,'BackgroundColor','red','String',outstring)
     %if yesCalc == 1, generate dataVals
     if bCalc
         gen_dataVals_from_wave_viewer(dataPath);
     end
     load(fullfile(dataPath,'dataVals'))
     load(fullfile(dataPath,'expt'))
-    set(UserData.warnText,'String',[])
+    set(UserData.warnText,'String',[],'BackgroundColor',[0.9400    0.9400    0.9400])
 end
 
 function KeyPress(src, evt)
@@ -278,7 +290,7 @@ function update_plots(src,evt)
     UserData = guidata(src);
     errorField = UserData.errorPanel.SelectedObject.String{1};
     trialset = UserData.errors.(errorField);
-    grouping = UserData.sortSel.String{UserData.sortSel.Value};
+    grouping = UserData.groupSel.String{UserData.groupSel.Value};
     if isfield(UserData,'htracks')
         delete(UserData.hsub);
         UserData = rmfield(UserData,'htracks');
@@ -294,9 +306,11 @@ function update_plots(src,evt)
             'Units','Normalized','Position',[.1 .4 .8 .2],...
             'FontUnits','Normalized','FontSize',0.3);
     else
-        set(UserData.warnText,'String','Plotting data')
+        outstring = textwrap(UserData.warnText,{'Plotting data'});
+        set(UserData.warnText,'BackgroundColor','red','String',outstring)
+        pause(0.0001)
         [UserData.htracks,UserData.hsub] = plot_rawFmtTracks(UserData.dataVals,grouping,trialset,UserData.plotPanel,UserData.expt);
-        set(UserData.warnText,'String',[])
+        set(UserData.warnText,'String',[],'BackgroundColor',[0.9400    0.9400    0.9400])
     end
     guidata(src,UserData);
 end
