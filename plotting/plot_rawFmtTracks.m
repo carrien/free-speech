@@ -20,8 +20,6 @@ end
 if nargin < 3 || isempty(trialset), trialset = 1:length(dataVals); end
 if nargin < 4 || isempty(parent), h = figure('Units','normalized', 'Position',[.01 .25 .98 .5]); parent = h; end
 
-if exist('expt','var'), groupnames = expt.(sprintf('%ss',grouping)); end
-
 f1color = [0 0 1]; % blue
 f2color = [1 0 0]; % red
 
@@ -49,7 +47,8 @@ for g = groups
     end
     
     % figure labels
-    if exist('groupnames','var')
+    if exist('expt','var')
+        groupnames = expt.(sprintf('%ss',grouping));
         titlesuffix = sprintf(': %s',groupnames{g});
     else
         titlesuffix = [];
