@@ -8,34 +8,35 @@ function errors = check_dataVals(dataPath,bCalc,dataVals)
 %             * durations over 1 s
 %             * early trials (first sample is above threshold)
 %             * late trials (last sample is above threshold)
-% inputs: dataPath: path where data to check is located [snum/subdir].
-%           Function reads from current directory if not specified
-%         yesCalc:  option to calculate dataVals using
-%           gen_dataVals_from_wave_viewer function (1) or not (0).
-%           Defualt is 0 if not specified.
+% inputs (optional):dataPath: path where data to check is located 
+%                       [snum/subdir]. Function reads from current directory 
+%                       if not specified
+%                   yesCalc:  option to calculate dataVals using
+%                       gen_dataVals_from_wave_viewer function (1) or not (0).
+%                       Defualt is 0 if not specified.
+%                   dataVals: dataVals stored as a variable
+%
 % rewritten to include GUI JAN 2019
 
 if nargin < 1 || isempty(dataPath), dataPath = pwd; end
 if nargin < 2 || isempty(bCalc), bCalc = 1; end
-if nargin == 3, load(fullfile(dataPath,'expt')); end
 
 %% create GUI
 f = figure('Visible','on','Units','Normalized','Position',[.1 .1 .8 .8]);
-set(f, 'WindowKeyPressFcn', @KeyPress)
 
 UserData = guihandles(f);
-
+UserData.dataPath = dataPath;
 UserData.f = f;
 
 
 %% create warning field in GUI
-xPosMax = 0.975;
+UserData.xPosMax = 0.975;
 
 % create warning text area
 warnPanelXPos = 0.575;
 warnPanelXSpan = 0.125;
 warnPanelYSpan = 0.11;
-warnPanelYPos = xPosMax-warnPanelYSpan;
+warnPanelYPos = UserData.xPosMax-warnPanelYSpan;
 warnPanelPos = [warnPanelXPos warnPanelYPos warnPanelXSpan warnPanelYSpan];
 UserData.warnPanel= uipanel(UserData.f,'Units','Normalized','Position',...
             warnPanelPos,'Title',' alerts ',...
@@ -47,136 +48,31 @@ UserData.warnText = uicontrol(UserData.warnPanel,'style','text',...
             'Units','Normalized','Position',[.1 .1 .8 .8],...
             'FontUnits','Normalized','FontSize',.3);
         
-%% load data
-[dataVals,expt] = load_dataVals(UserData,dataPath,bCalc);
+%% load data if needed
+if nargin < 3
+    [dataVals,expt] = load_dataVals(UserData,dataPath,bCalc);
+else
+    load(fullfile(dataPath,'expt')); 
+end
 UserData.dataVals = dataVals;
 UserData.expt = expt;
 UserData.errors = get_dataVals_errors(UserData,dataVals);
 
 %% create other buttons
-
 % create panel for plots
 plotPanelXPos = 0.175;
 plotPanelXSpan = 1 - 0.025 - plotPanelXPos;
-plotPanelYPos = xPosMax - 0.95;
+plotPanelYPos = UserData.xPosMax - 0.95;
 plotPanelYSpan = 0.815;
 plotPanelPos = [plotPanelXPos plotPanelYPos plotPanelXSpan plotPanelYSpan];
 UserData.plotPanel = uipanel(UserData.f,'Units','Normalized','Position',...
             plotPanelPos,...
             'Tag','formant_plots','Visible','on');
-
-% create error type buttons
-errorPanelXPos = 0.025;
-errorPanelXSpan = 0.125;
-errorPanelYSpan = 0.95;
-errorPanelYPos = xPosMax - errorPanelYSpan;
-errorPanelPos = [errorPanelXPos errorPanelYPos errorPanelXSpan errorPanelYSpan]; 
-UserData.errorPanel = uibuttongroup(UserData.f,'Units','Normalized','Position',...
-            errorPanelPos,'Title',' error types ',...
-            'Tag','error_types','TitlePosition','CenterTop',...
-            'FontSize',0.02,'FontUnits','Normalized','Visible','on',...
-            'SelectedObject',[],'SelectionChangedFcn',@update_plots);
-        
-errorTypes = fieldnames(UserData.errors);
-errorTypes(strcmp(errorTypes,'badTrials')) = []; %remove badTrials from list
-nErrorTypes = length(errorTypes);
-
-errorButtonYSep = 0.01;
-errorButtonXSep = 0.05;
-errorButtonXSpan = 1 - 2*errorButtonXSep;
-errorButtonXPos = errorButtonXSep;
-errorButtonYSpan = (1 - errorButtonYSep*(nErrorTypes+1))/nErrorTypes;
-for iButton = 1: nErrorTypes
-    EBname = strcat('EB_', errorTypes(iButton));
-    errorButtonYPos = 1 - errorButtonYSep*iButton - errorButtonYSpan*iButton;
-    errorButtonPos = [errorButtonXPos errorButtonYPos errorButtonXSpan errorButtonYSpan];
-    UserData.(EBname{1}) = uicontrol(UserData.errorPanel,...
-        'Style','togglebutton','String',errorTypes(iButton),...
-        'Units','Normalized','Position',errorButtonPos,...
-        'FontUnits','Normalized','FontSize',0.3);
-    if ~isempty(UserData.errors.(errorTypes{iButton}))
-        set(UserData.(EBname{1}),'ForegroundColor',[0 0.7 0]);
-    end
-end
-
-% create sort selection buttons
-groupPanelXPos = 0.175;
-groupPanelXSpan = 0.15;
-groupPanelYSpan = 0.11;
-groupPanelYPos = xPosMax - groupPanelYSpan;
-
-groupPanelPos = [groupPanelXPos groupPanelYPos groupPanelXSpan groupPanelYSpan]; 
-UserData.groupPanel = uipanel(UserData.f,'Units','Normalized','Position',...
-            groupPanelPos,'Title',' group by: ',...
-            'Tag','group_by','TitlePosition','CenterTop',...
-            'FontSize',0.02,'FontUnits','Normalized','Visible','on');
-groupTypes = fields(UserData.dataVals);
-%remove known fields to get grouping types
-    groupTypes(strcmp(groupTypes,'f0')) = [];
-    groupTypes(strcmp(groupTypes,'f1')) = [];
-    groupTypes(strcmp(groupTypes,'f2')) = [];
-    groupTypes(strcmp(groupTypes,'int')) = [];
-    groupTypes(strcmp(groupTypes,'pitch_taxis')) = [];
-    groupTypes(strcmp(groupTypes,'ftrack_taxis')) = [];
-    groupTypes(strcmp(groupTypes,'ampl_taxis')) = [];
-    groupTypes(strcmp(groupTypes,'dur')) = [];
-    groupTypes(strcmp(groupTypes,'cond')) = [];
-    groupTypes(strcmp(groupTypes,'token')) = [];
-    groupTypes(strcmp(groupTypes,'bExcl')) = [];
-groupButtonYSep = 0.05;
-groupButtonXSep = 0.05;
-groupButtonYSpan = 1 - 2*groupButtonYSep;
-groupButtonYPos = groupButtonYSep;
-groupButtonXSpan = 1 - 2*groupButtonXSep;
-groupButtonXPos = groupButtonXSep;
-groupButtonPos = [groupButtonXPos groupButtonYPos groupButtonXSpan groupButtonYSpan];
-if ismac
-    groupFontSize = 0.2;
-else
-    groupFontSize = 0.3;
-end
-UserData.groupSel = uicontrol(UserData.groupPanel,'style','popup',...
-    'string',groupTypes,...
-    'Units','Normalized','Position',groupButtonPos,...
-    'FontUnits','Normalized','FontSize',groupFontSize,...
-    'Callback',@update_plots);
-
-
-% create trial selection buttons
-trialPanelXPos = 0.35;
-trialPanelXSpan = 0.2;
-trialPanelYSpan = 0.11;
-trialPanelYPos = xPosMax-trialPanelYSpan;
-trialPanelPos = [trialPanelXPos trialPanelYPos trialPanelXSpan trialPanelYSpan]; 
-UserData.trialPanel = uibuttongroup(UserData.f,'Units','Normalized','Position',...
-            trialPanelPos,'Title',' trial selection ',...
-            'Tag','trial_sel','TitlePosition','CenterTop',...
-            'FontSize',0.02,'FontUnits','Normalized','Visible','on');
-
-trialTypes = {'all_trials', 'select_trial'};
-nTrialTypes = length(trialTypes);
-
-trialButtonYSep = 0.05;
-trialButtonXSep = 0.05;
-trialButtonYSpan = 1 - 2*trialButtonYSep;
-trialButtonYPos = trialButtonYSep;
-trialButtonXSpan = (1 - trialButtonYSep*(nTrialTypes+1))/nTrialTypes;
-for iButton = 1: nTrialTypes
-    TBname = strcat('TB_', trialTypes(iButton));
-    trialButtonXPos = trialButtonXSep*iButton + trialButtonXSpan*(iButton-1);
-    trialButtonPos = [trialButtonXPos trialButtonYPos trialButtonXSpan trialButtonYSpan];
-    UserData.(TBname{1}) = uicontrol(UserData.trialPanel,...
-        'Style','togglebutton','String',trialTypes(iButton),...
-        'Units','Normalized','Position',trialButtonPos,...
-        'FontUnits','Normalized','FontSize',0.3);
-end
-
-        
-% create action buttons
+ % create action buttons
 actionPanelXPos = 0.725;
 actionPanelXSpan = 0.25;
 actionPanelYSpan = 0.11;
-actionPanelYPos = xPosMax-actionPanelYSpan;
+actionPanelYPos = UserData.xPosMax-actionPanelYSpan;
 actionPanelPos = [actionPanelXPos actionPanelYPos actionPanelXSpan actionPanelYSpan]; 
 UserData.actionPanel = uipanel(UserData.f,'Units','Normalized','Position',...
             actionPanelPos,'Title',' actions ',...
@@ -200,9 +96,37 @@ for iButton = 1: nActionTypes
         'Units','Normalized','Position',actionButtonPos,...
         'FontUnits','Normalized','FontSize',0.3);
 end
+set(UserData.AB_launch_GUI,'CallBack',@launch_GUI)
+set(UserData.AB_reload_dataVals,'CallBack',@reload_dataVals)
+
+%generate other buttons
+UserData = generate_menus(UserData);
 
 guidata(f,UserData);
 
+end
+
+function launch_GUI(src,evt)
+    UserData = guidata(src);
+    errorField = UserData.errorPanel.SelectedObject.String{1};
+    trialset = UserData.errors.(errorField);
+    audioGUI(UserData.dataPath,trialset,[],[],0)
+end
+
+function reload_dataVals(src,evt)
+    UserData = guidata(src);
+    delete(UserData.errorPanel)
+    delete(UserData.groupPanel)
+    delete(UserData.trialPanel)
+    if isfield(UserData,'htracks')
+        delete(UserData.hsub);
+        UserData = rmfield(UserData,'htracks');
+        UserData = rmfield(UserData,'hsub');
+    end
+    [UserData.dataVals,UserData.expt] = load_dataVals(UserData,UserData.dataPath,1);
+    UserData.errors = get_dataVals_errors(UserData,UserData.dataVals);
+    UserData = generate_menus(UserData);
+    guidata(src,UserData);
 end
 
 function errors = get_dataVals_errors(UserData,dataVals)
@@ -283,7 +207,112 @@ function [dataVals,expt] = load_dataVals(UserData,dataPath,bCalc)
     set(UserData.warnText,'String',[],'BackgroundColor',[0.9400    0.9400    0.9400])
 end
 
-function KeyPress(src, evt)
+function UserData = generate_menus(UserData)
+    % create error type buttons
+    errorPanelXPos = 0.025;
+    errorPanelXSpan = 0.125;
+    errorPanelYSpan = 0.95;
+    errorPanelYPos = UserData.xPosMax - errorPanelYSpan;
+    errorPanelPos = [errorPanelXPos errorPanelYPos errorPanelXSpan errorPanelYSpan]; 
+    UserData.errorPanel = uibuttongroup(UserData.f,'Units','Normalized','Position',...
+                errorPanelPos,'Title',' error types ',...
+                'Tag','error_types','TitlePosition','CenterTop',...
+                'FontSize',0.02,'FontUnits','Normalized','Visible','on',...
+                'SelectedObject',[],'SelectionChangedFcn',@update_plots);
+
+    errorTypes = fieldnames(UserData.errors);
+    errorTypes(strcmp(errorTypes,'badTrials')) = []; %remove badTrials from list
+    nErrorTypes = length(errorTypes);
+
+    errorButtonYSep = 0.01;
+    errorButtonXSep = 0.05;
+    errorButtonXSpan = 1 - 2*errorButtonXSep;
+    errorButtonXPos = errorButtonXSep;
+    errorButtonYSpan = (1 - errorButtonYSep*(nErrorTypes+1))/nErrorTypes;
+    for iButton = 1: nErrorTypes
+        EBname = strcat('EB_', errorTypes(iButton));
+        errorButtonYPos = 1 - errorButtonYSep*iButton - errorButtonYSpan*iButton;
+        errorButtonPos = [errorButtonXPos errorButtonYPos errorButtonXSpan errorButtonYSpan];
+        UserData.(EBname{1}) = uicontrol(UserData.errorPanel,...
+            'Style','togglebutton','String',errorTypes(iButton),...
+            'Units','Normalized','Position',errorButtonPos,...
+            'FontUnits','Normalized','FontSize',0.3);
+        if ~isempty(UserData.errors.(errorTypes{iButton}))
+            set(UserData.(EBname{1}),'ForegroundColor',[0 0.7 0]);
+        end
+    end
+
+    % create sort selection buttons
+    groupPanelXPos = 0.175;
+    groupPanelXSpan = 0.15;
+    groupPanelYSpan = 0.11;
+    groupPanelYPos = UserData.xPosMax - groupPanelYSpan;
+
+    groupPanelPos = [groupPanelXPos groupPanelYPos groupPanelXSpan groupPanelYSpan]; 
+    UserData.groupPanel = uipanel(UserData.f,'Units','Normalized','Position',...
+                groupPanelPos,'Title',' group by: ',...
+                'Tag','group_by','TitlePosition','CenterTop',...
+                'FontSize',0.02,'FontUnits','Normalized','Visible','on');
+    groupTypes = fields(UserData.dataVals);
+    %remove known fields to get grouping types
+        groupTypes(strcmp(groupTypes,'f0')) = [];
+        groupTypes(strcmp(groupTypes,'f1')) = [];
+        groupTypes(strcmp(groupTypes,'f2')) = [];
+        groupTypes(strcmp(groupTypes,'int')) = [];
+        groupTypes(strcmp(groupTypes,'pitch_taxis')) = [];
+        groupTypes(strcmp(groupTypes,'ftrack_taxis')) = [];
+        groupTypes(strcmp(groupTypes,'ampl_taxis')) = [];
+        groupTypes(strcmp(groupTypes,'dur')) = [];
+        groupTypes(strcmp(groupTypes,'cond')) = [];
+        groupTypes(strcmp(groupTypes,'token')) = [];
+        groupTypes(strcmp(groupTypes,'bExcl')) = [];
+    groupButtonYSep = 0.05;
+    groupButtonXSep = 0.05;
+    groupButtonYSpan = 1 - 2*groupButtonYSep;
+    groupButtonYPos = groupButtonYSep;
+    groupButtonXSpan = 1 - 2*groupButtonXSep;
+    groupButtonXPos = groupButtonXSep;
+    groupButtonPos = [groupButtonXPos groupButtonYPos groupButtonXSpan groupButtonYSpan];
+    if ismac
+        groupFontSize = 0.2;
+    else
+        groupFontSize = 0.3;
+    end
+    UserData.groupSel = uicontrol(UserData.groupPanel,'style','popup',...
+        'string',groupTypes,...
+        'Units','Normalized','Position',groupButtonPos,...
+        'FontUnits','Normalized','FontSize',groupFontSize,...
+        'Callback',@update_plots);
+
+
+    % create trial selection buttons
+    trialPanelXPos = 0.35;
+    trialPanelXSpan = 0.2;
+    trialPanelYSpan = 0.11;
+    trialPanelYPos = UserData.xPosMax-trialPanelYSpan;
+    trialPanelPos = [trialPanelXPos trialPanelYPos trialPanelXSpan trialPanelYSpan]; 
+    UserData.trialPanel = uibuttongroup(UserData.f,'Units','Normalized','Position',...
+                trialPanelPos,'Title',' trial selection ',...
+                'Tag','trial_sel','TitlePosition','CenterTop',...
+                'FontSize',0.02,'FontUnits','Normalized','Visible','on');
+
+    trialTypes = {'all_trials', 'select_trial'};
+    nTrialTypes = length(trialTypes);
+
+    trialButtonYSep = 0.05;
+    trialButtonXSep = 0.05;
+    trialButtonYSpan = 1 - 2*trialButtonYSep;
+    trialButtonYPos = trialButtonYSep;
+    trialButtonXSpan = (1 - trialButtonYSep*(nTrialTypes+1))/nTrialTypes;
+    for iButton = 1: nTrialTypes
+        TBname = strcat('TB_', trialTypes(iButton));
+        trialButtonXPos = trialButtonXSep*iButton + trialButtonXSpan*(iButton-1);
+        trialButtonPos = [trialButtonXPos trialButtonYPos trialButtonXSpan trialButtonYSpan];
+        UserData.(TBname{1}) = uicontrol(UserData.trialPanel,...
+            'Style','togglebutton','String',trialTypes(iButton),...
+            'Units','Normalized','Position',trialButtonPos,...
+            'FontUnits','Normalized','FontSize',0.3);
+    end
 end
 
 function update_plots(src,evt)
