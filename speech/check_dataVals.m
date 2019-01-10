@@ -108,9 +108,7 @@ end
 
 function launch_GUI(src,evt)
     UserData = guidata(src);
-    errorField = UserData.errorPanel.SelectedObject.String{1};
-    trialset = UserData.errors.(errorField);
-    audioGUI(UserData.dataPath,trialset,[],[],0)
+    audioGUI(UserData.dataPath,UserData.trialset,[],[],0)
 end
 
 function reload_dataVals(src,evt)
@@ -131,7 +129,8 @@ end
 
 function errors = get_dataVals_errors(UserData,dataVals)
     outstring = textwrap(UserData.warnText,{'Checking for errors'});
-    set(UserData.warnText,'BackgroundColor','red','String',outstring)
+    set(UserData.warnPanel,'HighlightColor','yellow')
+    set(UserData.warnText,'String',outstring)
     
     %set thresholds for errors
     shortThresh = .1; %(<200 ms)
@@ -187,7 +186,8 @@ function errors = get_dataVals_errors(UserData,dataVals)
     errors.lateTrials = lateTrials;
     errors.goodTrials = goodTrials;
     
-    set(UserData.warnText,'String',[],'BackgroundColor',[0.9400    0.9400    0.9400])
+    set(UserData.warnText,'String',[])
+    set(UserData.warnPanel,'HighlightColor',[1 1 1])
 end
 
 function [dataVals,expt] = load_dataVals(UserData,dataPath,bCalc)
@@ -197,14 +197,16 @@ function [dataVals,expt] = load_dataVals(UserData,dataPath,bCalc)
         msg = 'Loading dataVals';
     end
     outstring = textwrap(UserData.warnText,{msg});
-    set(UserData.warnText,'BackgroundColor','red','String',outstring)
+    set(UserData.warnPanel,'HighlightColor','yellow')
+    set(UserData.warnText,'String',outstring)
     %if yesCalc == 1, generate dataVals
     if bCalc
         gen_dataVals_from_wave_viewer(dataPath);
     end
     load(fullfile(dataPath,'dataVals'))
     load(fullfile(dataPath,'expt'))
-    set(UserData.warnText,'String',[],'BackgroundColor',[0.9400    0.9400    0.9400])
+    set(UserData.warnText,'String',[])
+    set(UserData.warnPanel,'HighlightColor',[1 1 1])
 end
 
 function UserData = generate_menus(UserData)
@@ -221,7 +223,6 @@ function UserData = generate_menus(UserData)
                 'SelectedObject',[],'SelectionChangedFcn',@update_plots);
 
     errorTypes = fieldnames(UserData.errors);
-    errorTypes(strcmp(errorTypes,'badTrials')) = []; %remove badTrials from list
     nErrorTypes = length(errorTypes);
 
     errorButtonYSep = 0.01;
@@ -238,7 +239,11 @@ function UserData = generate_menus(UserData)
             'Units','Normalized','Position',errorButtonPos,...
             'FontUnits','Normalized','FontSize',0.3);
         if ~isempty(UserData.errors.(errorTypes{iButton}))
-            set(UserData.(EBname{1}),'ForegroundColor',[0 0.7 0]);
+            if strcmp(errorTypes{iButton},'goodTrials')
+                set(UserData.(EBname{1}),'ForegroundColor',[0 0.7 0]);
+            else
+                set(UserData.(EBname{1}),'ForegroundColor',[0.7 0 0]);
+            end
         end
     end
 
@@ -313,12 +318,15 @@ function UserData = generate_menus(UserData)
             'Units','Normalized','Position',trialButtonPos,...
             'FontUnits','Normalized','FontSize',0.3);
     end
+    set(UserData.TB_all_trials,'Callback',@TB_all)
+    set(UserData.TB_select_trial,'Callback',@TB_sel)
+    
 end
 
 function update_plots(src,evt)
     UserData = guidata(src);
     errorField = UserData.errorPanel.SelectedObject.String{1};
-    trialset = UserData.errors.(errorField);
+    UserData.trialset = UserData.errors.(errorField);
     grouping = UserData.groupSel.String{UserData.groupSel.Value};
     if isfield(UserData,'htracks')
         delete(UserData.hsub);
@@ -329,18 +337,87 @@ function update_plots(src,evt)
         delete(UserData.noPlotMessage);
         UserData = rmfield(UserData,'noPlotMessage');
     end
-    if isempty(trialset)
+    if isempty(UserData.trialset) || strcmp(errorField,'badTrials')
         UserData.noPlotMessage = uicontrol(UserData.plotPanel,'style','text',...
             'String','No data to plot',...
             'Units','Normalized','Position',[.1 .4 .8 .2],...
             'FontUnits','Normalized','FontSize',0.3);
     else
         outstring = textwrap(UserData.warnText,{'Plotting data'});
-        set(UserData.warnText,'BackgroundColor','red','String',outstring)
+        set(UserData.warnPanel,'HighlightColor','yellow')
+        set(UserData.warnText,'String',outstring)
         pause(0.0001)
-        [UserData.htracks,UserData.hsub] = plot_rawFmtTracks(UserData.dataVals,grouping,trialset,UserData.plotPanel,UserData.expt);
-        set(UserData.warnText,'String',[],'BackgroundColor',[0.9400    0.9400    0.9400])
+        [UserData.htracks,UserData.hsub] = plot_rawFmtTracks(UserData.dataVals,grouping,UserData.trialset,UserData.plotPanel,UserData.expt);
+        set(UserData.warnText,'String',[])
+        set(UserData.warnPanel,'HighlightColor',[1 1 1])
+        for iPlot = 1:length(UserData.htracks)
+            for iLine = 1:length(UserData.htracks(iPlot).f1)
+                set(UserData.htracks(iPlot).f1(iLine),'ButtonDownFcn',{@pick_line,iLine,iPlot})
+                set(UserData.htracks(iPlot).f2(iLine),'ButtonDownFcn',{@pick_line,iLine,iPlot})
+            end
+        end
+    end
+    outstring = textwrap(UserData.warnText,{strcat(num2str(length(UserData.trialset)),' trials selected')});
+    set(UserData.warnText,'String',outstring)
+    guidata(src,UserData);
+end
+
+function pick_line(src,evt,iLine,iPlot)
+    UserData = guidata(src);
+    unselectedColor = [0.7 0.7 0.7];
+    f1color = [0 0 1]; % blue
+    f2color = [1 0 0]; % red
+    UserData.TB_select_trial.Value = 1;
+    
+    outstring = textwrap(UserData.warnText,{'Selected trial: ', src.Tag});
+    set(UserData.warnText,'String',outstring)
+    UserData.trialset = str2double(src.Tag);
+    if strcmp(src.YDataSource,'f1')
+        selF = UserData.htracks(iPlot).f1;
+    else
+        selF = UserData.htracks(iPlot).f2;
+    end
+    set(UserData.htracks(iPlot).f1(selF==src),'Color',f1color,'LineWidth',3)
+    set(UserData.htracks(iPlot).f2(selF==src),'Color',f2color,'LineWidth',3)
+    set(UserData.htracks(iPlot).f1Ends(selF==src),'MarkerEdgeColor',f1color,'MarkerFaceColor',get_lightcolor(f1color,1.2))
+    set(UserData.htracks(iPlot).f2Ends(selF==src),'MarkerEdgeColor',f2color,'MarkerFaceColor',get_lightcolor(f2color,1.2))
+    uistack(UserData.htracks(iPlot).f1(selF==src),'top');
+    uistack(UserData.htracks(iPlot).f2(selF==src),'top');
+    uistack(UserData.htracks(iPlot).f1Ends(selF==src),'top');
+    uistack(UserData.htracks(iPlot).f2Ends(selF==src),'top');
+    
+    set(UserData.htracks(iPlot).f1(selF~=src),'Color',unselectedColor,'LineWidth',1)
+    set(UserData.htracks(iPlot).f2(selF~=src),'Color',unselectedColor,'LineWidth',1)
+    set(UserData.htracks(iPlot).f1Ends(selF~=src),'MarkerEdgeColor',unselectedColor,'MarkerFaceColor',get_lightcolor(unselectedColor,1.2))
+    set(UserData.htracks(iPlot).f2Ends(selF~=src),'MarkerEdgeColor',unselectedColor,'MarkerFaceColor',get_lightcolor(unselectedColor,1.2))
+    for i = 1:length(UserData.htracks)
+        if i ~= iPlot
+            set(UserData.htracks(i).f1(:),'Color',unselectedColor,'LineWidth',1)
+            set(UserData.htracks(i).f2(:),'Color',unselectedColor,'LineWidth',1)
+            set(UserData.htracks(i).f1Ends(:),'MarkerEdgeColor',unselectedColor,'MarkerFaceColor',get_lightcolor(unselectedColor,1.2))
+            set(UserData.htracks(i).f2Ends(:),'MarkerEdgeColor',unselectedColor,'MarkerFaceColor',get_lightcolor(unselectedColor,1.2))
+        end
     end
     guidata(src,UserData);
 end
+
+function TB_all(src,evt)
+    UserData = guidata(src);
+    for i = 1:length(UserData.htracks)
+        set(UserData.htracks(i).f1(:),'Color','b')
+        set(UserData.htracks(i).f2(:),'Color','r')
+    end
+    errorField = UserData.errorPanel.SelectedObject.String{1};
+    UserData.trialset = UserData.errors.(errorField);
+    outstring = textwrap(UserData.warnText,{strcat(num2str(length(UserData.trialset)),' trials selected')});
+    set(UserData.warnText,'String',outstring)
+    guidata(src,UserData);
+end
+
+function TB_sel(src,evt)
+    UserData = guidata(src);
+    outstring = textwrap(UserData.warnText,{'Select a trial'});
+    set(UserData.warnText,'String',outstring)
     
+    guidata(src,UserData);
+end
