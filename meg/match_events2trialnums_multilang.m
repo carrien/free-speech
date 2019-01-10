@@ -1,7 +1,9 @@
-function [trialinds] = match_events2trialnums(expt,allevents,newEventInfo, cond, sid)
+function [trialinds] = match_events2trialnums_multilang(expt,allevents,newEventInfo, cond, sid)
 %MATCH_EVENTS2TRIALNUMS  Match experiment events to trial numbers.
 %   MATCH_EVENTS2TRIALNUMS(EXPT,EVENTS,NEWEVENTINFO)
 %   cond can equal, for example, language
+
+% check for case/Case in speak/Speak--maybe try strcmpi?
 
 nwords = length(expt.words);
 eventnames = {allevents.label};
@@ -76,7 +78,7 @@ for f = 1:length(unique([speak_fileinds listen_fileinds])); % for each file to w
         events(e).color = newEventInfo(e).color;
         
         %        if strncmp(events(e).label,'speak',5)
-        if strfind(events(e).label,'speak')
+        if strfind(events(e).label,sprintf('%sSpeak',cond))
             [trialinds{e}{f},~,ind_speak_events] = intersect(newEventInfo(e).trialinds,speak_trialnums(speak_fileinds==f));
             for i=1:f-1
                 ind_speak_events = ind_speak_events + length(find(speak_fileinds==i));
@@ -85,7 +87,7 @@ for f = 1:length(unique([speak_fileinds listen_fileinds])); % for each file to w
             events(e).samples = speak_eventsamples(ind_speak_events);
             events(e).times = speak_eventtimes(ind_speak_events);
             %        elseif strncmp(events(e).label,'listen',6)
-        elseif strfind(events(e).label,'listen')
+        elseif strfind(events(e).label,sprintf('%sListen',cond))
             [trialinds{e}{f},~,ind_listen_events] = intersect(newEventInfo(e).trialinds,listen_trialnums(listen_fileinds==f));
             for i=1:f-1
                 ind_listen_events = ind_listen_events + length(find(listen_fileinds==i));
