@@ -26,23 +26,24 @@ f2color = [1 0 0]; % red
 groups = unique([dataVals.(grouping)]);
 for g = groups
     hsub(g) = subplot(1,length(groups),g,'Parent',parent);
-    % plot tracks
+    % plot tracks and ends
+    ihandle = 1;
     for i=trialset
         if (~isfield(dataVals,'bExcl') || ~dataVals(i).bExcl) && dataVals(i).(grouping) == g
+            %plot tracks
             taxis = dataVals(i).ftrack_taxis - dataVals(i).ftrack_taxis(1);
-            htracks(g).f1 = plot(taxis,dataVals(i).f1,'Color',f1color);
+            htracks(g).f1(ihandle) = plot(taxis,dataVals(i).f1,'Color',f1color);
+            set(htracks(g).f1(ihandle),'Tag',num2str(i),'YdataSource','f1')
             hold on;
-            htracks(g).f2 = plot(taxis,dataVals(i).f2,'Color',f2color);
-        end
-    end
-    
-    % plot ends
-    for i=trialset
-        if (~isfield(dataVals,'bExcl') || ~dataVals(i).bExcl) && dataVals(i).(grouping) == g
-            taxis = dataVals(i).ftrack_taxis - dataVals(i).ftrack_taxis(1);
+            htracks(g).f2(ihandle) = plot(taxis,dataVals(i).f2,'Color',f2color);
+            set(htracks(g).f2(ihandle),'Tag',num2str(i),'YdataSource','f2')
+            
+            %plot ends
             x = taxis(end);
-            plot(x,dataVals(i).f1(end),'o','MarkerEdgeColor',f1color,'MarkerFaceColor',get_lightcolor(f1color,1.2),'MarkerSize',5);
-            plot(x,dataVals(i).f2(end),'o','MarkerEdgeColor',f2color,'MarkerFaceColor',get_lightcolor(f2color,1.2),'MarkerSize',5);
+            htracks(g).f1Ends(ihandle) = plot(x,dataVals(i).f1(end),'o','MarkerEdgeColor',f1color,'MarkerFaceColor',get_lightcolor(f1color,1.2),'MarkerSize',5);
+            htracks(g).f2Ends(ihandle) = plot(x,dataVals(i).f2(end),'o','MarkerEdgeColor',f2color,'MarkerFaceColor',get_lightcolor(f2color,1.2),'MarkerSize',5);
+            
+            ihandle = ihandle+1;
         end
     end
     
