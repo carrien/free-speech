@@ -5,7 +5,7 @@ function [ ] = play_tone(w,dur,amp,fs,bRamp,bComplex)
 
 if nargin < 2 || isempty(dur), dur = 1; end
 if nargin < 3 || isempty(amp), amp = 1; end
-if nargin < 4 || isempty(fs), fs = 11025; end
+if nargin < 4 || isempty(fs), fs = 44100; end
 if nargin < 5 || isempty(bRamp), bRamp = 0; end
 if nargin < 6, bComplex = 0; end
 
@@ -31,3 +31,4 @@ if bRamp
     y = y .* env;
 end
 sound(y,fs);
+pause(dur);
