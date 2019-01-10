@@ -123,11 +123,7 @@ for i = 1:length(sortedfiles)
         end
         dataVals(i).cond = expt.allConds(trialnum);
         dataVals(i).token = trialnum;
-        if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params)
-            dataVals(i).bExcl = ~trialparams.event_params.is_good_trial;
-        else
-            dataVals(i).bExcl = 0;
-        end
+        dataVals(i).bExcl = 0;
 
         % warn about short tracks
         if ~dataVals(i).bExcl && sum(~isnan(dataVals(i).f0)) < 20
