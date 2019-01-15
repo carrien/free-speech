@@ -403,9 +403,13 @@ end
 
 function TB_all(src,evt)
     UserData = guidata(src);
+    f1color = [0 0 1]; % blue
+    f2color = [1 0 0]; % red
     for i = 1:length(UserData.htracks)
-        set(UserData.htracks(i).f1(:),'Color','b')
-        set(UserData.htracks(i).f2(:),'Color','r')
+        set(UserData.htracks(i).f1(:),'Color',f1color,'LineWidth',1)
+        set(UserData.htracks(i).f1Ends(:),'MarkerEdgeColor',f1color,'MarkerFaceColor',get_lightcolor(f1color,1.2))
+        set(UserData.htracks(i).f2(:),'Color',f2color,'LineWidth',1)
+        set(UserData.htracks(i).f2Ends(:),'MarkerEdgeColor',f2color,'MarkerFaceColor',get_lightcolor(f2color,1.2))
     end
     errorField = UserData.errorPanel.SelectedObject.String{1};
     UserData.trialset = UserData.errors.(errorField);
