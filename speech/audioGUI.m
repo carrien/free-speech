@@ -66,6 +66,7 @@ for itrial = trials2track
         sigproc_params = [];
         event_params = [];
         plot_params = [];
+        sigmat = [];
     end
     if isempty(sigproc_params)
         if exist('wvp','var') % otherwise, use param file if it exists
@@ -105,7 +106,8 @@ for itrial = trials2track
     %% call wave viewer
     endstate = wave_viewer(y,'fs',fs,'name',sprintf('trial(%d)',itrial), ...
         'nformants',2,'sigproc_params',sigproc_params, ...
-        'plot_params',plot_params,'event_params',event_params);
+        'plot_params',plot_params,'event_params',event_params,...
+        'sigmat',sigmat);
     
     %% save outputs 
     trialparams.sigproc_params = endstate.sigproc_params;
