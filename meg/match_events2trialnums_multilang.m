@@ -108,7 +108,7 @@ for f = 1:length(unique([speak_fileinds listen_fileinds])); % for each file to w
     
     % save each event file
     %dataPath = getMegSubjPath(expt.name,expt.snum);
-    dataPath = fullfile('/Volumes/smng/experiments/',expt.name,'megdata',sid, char(cond)) % switch back to expt.snum
+    dataPath = fullfile(get_megLoadPath('cais','SB'),char(cond)) %fullfile('/Volumes/smng/experiments/',expt.name,'megdata',sid, char(cond)) % switch back to expt.snum
     savefile = fullfile(dataPath,['events_' newEventInfo.name '_' num2str(f-1) '.mat']);
     bSave = savecheck(savefile);
     if bSave
