@@ -65,6 +65,14 @@ for itrial = trials2track
         sigproc_params = [];
         event_params = [];
         plot_params = [];
+        %Check for existence of TextGrids from alignment
+        tgFilename = sprintf('AudioData_%d.TextGrid',itrial);
+        tgPath =  fullfile(dataPath,'PostAlignment',tgFilename);
+        if exist(tgPath,'file')
+            [user_event_times, user_event_names] = get_uev_from_tg_mpraat(tgPath);
+			event_params.user_event_times = user_event_times;
+			event_params.user_event_names = user_event_names;
+        end
     end
     if isempty(sigproc_params)
         if exist('wvp','var') % otherwise, use param file if it exists
