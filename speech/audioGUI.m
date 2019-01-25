@@ -1,4 +1,4 @@
-function [] = audioGUI(dataPath,trialnums,buffertype,figpos,bSaveCheck)
+function [] = audioGUI(dataPath,trialnums,buffertype,figpos,bSaveCheck,tg_UEVs)
 %AUDIOGUI  Wrapper for wave_viewer.
 %   AUDIOGUI(DATAPATH,TRIALNUMS,BUFFERTYPE,FIGPOS,PITCHLIMITS,BSAVECHECK)
 %   sends audio data found in DATAPATH to the wave_viewer analysis program.
@@ -8,6 +8,9 @@ function [] = audioGUI(dataPath,trialnums,buffertype,figpos,bSaveCheck)
 %   structure to use (e.g. 'signalIn'). FIGPOS overrides the default figure
 %   position. BSAVECHECK is a binary variable specifying whether to check
 %   via a user dialog before overwriting existing files (1 = yes, 0 = no).
+%   TG_UEVS is used the same way, and indicates whether or not events from
+%   TextGrid files (generated in the forced alignment process) should be
+%   appended to the currently existing event_params list.
 %
 %CN 2011
 
@@ -16,6 +19,7 @@ if nargin < 2, trialnums = []; end
 if nargin < 3 || isempty(buffertype), buffertype = 'signalIn'; end
 if nargin < 4, figpos = []; end
 if nargin < 5, bSaveCheck = 1; end
+if nargin < 6, tg_UEVs = 0; end
 
 % load data
 load(fullfile(dataPath,'data.mat'),'data');
@@ -57,6 +61,8 @@ for itrial = trials2track
     
     % if trial data exists, load event params and overwrite default params
     savefile = fullfile(dataPath,trialfolder,sprintf('%d.mat',itrial));
+    tgFilename = sprintf('AudioData_%d.TextGrid',itrial);
+    tgPath =  fullfile(dataPath,'PostAlignment',tgFilename);
     if exist(savefile,'file')
         load(savefile);
         if isfield(trialparams,'sigproc_params'), sigproc_params = trialparams.sigproc_params; else, sigproc_params = [];end
@@ -66,16 +72,17 @@ for itrial = trials2track
         sigproc_params = [];
         event_params = [];
         plot_params = [];
-        %Check for existence of TextGrids from alignment
-        tgFilename = sprintf('AudioData_%d.TextGrid',itrial);
-        tgPath =  fullfile(dataPath,'PostAlignment',tgFilename);
-        if exist(tgPath,'file')
-            [user_event_times, user_event_names] = get_uev_from_tg_mpraat(tgPath);
-			event_params.user_event_times = user_event_times;
-			event_params.user_event_names = user_event_names;
-        end
         sigmat = [];
     end
+    
+    % check for existence of TextGrids from alignment and append events if
+    % necessary (tg_UEVs argument needs to be set to 1)
+    if exist(tgPath,'file') && tg_UEVs
+            [tg_user_event_times, tg_user_event_names] = get_uev_from_tg_mpraat(tgPath);
+			event_params.user_event_times = [event_params.user_event_times, tg_user_event_times];
+			event_params.user_event_names = [event_params.user_event_names, tg_user_event_names];
+    end
+    
     if isempty(sigproc_params)
         if exist('wvp','var') % otherwise, use param file if it exists
             sigproc_params = wvp.sigproc_params;
