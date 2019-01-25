@@ -46,8 +46,15 @@ for i = 1:length(sortedfiles)
     filename = sprintf('%d.mat',trialnum);
     load(fullfile(trialPath,filename));
     
-    % skip bad trials, except for labelling them as bad.
+    % skip bad trials, except for adding metadata
     if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params) && ~trialparams.event_params.is_good_trial
+        dataVals(i).word = expt.allWords(trialnum);
+        dataVals(i).vowel = expt.allVowels(trialnum);
+        if isfield(expt,'allColors')
+            dataVals(i).color = expt.allColors(trialnum);
+        end
+        dataVals(i).cond = expt.allConds(trialnum);
+        dataVals(i).token = trialnum;
         dataVals(i).bExcl = 1;
     else
         % find onset
@@ -116,11 +123,7 @@ for i = 1:length(sortedfiles)
         end
         dataVals(i).cond = expt.allConds(trialnum);
         dataVals(i).token = trialnum;
-        if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params)
-            dataVals(i).bExcl = ~trialparams.event_params.is_good_trial;
-        else
-            dataVals(i).bExcl = 0;
-        end
+        dataVals(i).bExcl = 0;
 
         % warn about short tracks
         if ~dataVals(i).bExcl && sum(~isnan(dataVals(i).f0)) < 20

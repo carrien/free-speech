@@ -1,7 +1,7 @@
-function [] = gen_fmtMatrixByCond(dataPath,indBase,indShift,dataValsStr,bMels,bFilt,bSaveCheck)
+function [filename] = gen_fmtMatrixByCond(dataPath,indBase,indShift,dataValsStr,bMels,bFilt,bSaveCheck)
 %GEN_FMTMATRIXBYCOND  Generate a plottable formant matrix from a davaVals object.
-%   GEN_FMTMATRIXBYCOND(DATAPATH,INDBASE,INDSHIFT,DATAVALSSTR,BMELS,BFILT)
-%   Generates a fmtMatrix suitable for plotting by, e.g. plotFmtMatrix_[].
+%   GEN_FMTMATRIXBYCOND(DATAPATH,INDBASE,INDSHIFT,DATAVALSSTR,BMELS,BFILT,BSAVECHECK)
+%   Generates a fmtMatrix suitable for plotting by, e.g., plot_fmtMatrix.
 %   INDBASE and INDSHIFT are cell arrays containing the indices of the
 %   baseline and shift for each condition.  (If the baseline indices are
 %   the same for all conditions, INDBASE may be a cell array of length 1
@@ -16,11 +16,13 @@ if nargin < 7 || isempty(bSaveCheck), bSaveCheck = 1; end
 conds = {indShift.name};
 if length(indBase) ~= length(conds)
     if length(indBase) == 1
+        % if only one baseline, use it for all conditions
         basename = indBase(1).name;
         for c=2:length(conds)
             indBase(c) = indBase(1);
         end
     else
+        % if number of baselines doesn't match number of conditions
         error('Number of baselines must match number of conditions to plot.')
     end
 else
@@ -54,16 +56,7 @@ for c = 1:length(indShift) % for each condition to plot
     rawf2_mean.(baseconds{c}) = nanmean(rawf2.(baseconds{c}),2); %
     
     % calculate trial ending points
-    hashalf.(baseconds{c}) = zeros(size(rawf1.(baseconds{c}),1),1); % hashalf = 1 at each timepoint with fewer than half of trials NaN
-    hasthird.(baseconds{c}) = zeros(size(rawf1.(baseconds{c}),1),1);
-    hasquart.(baseconds{c}) = zeros(size(rawf1.(baseconds{c}),1),1);
-    for t = 1:size(rawf1.(baseconds{c}),1) % for each timepoint
-        raf1 = rawf1.(baseconds{c})(t,:); raf1 = raf1(~isnan(raf1)); % remove NaNs
-        if length(raf1)>length(rawf1.(baseconds{c})(t,:))/2,hashalf.(baseconds{c})(t) = 1;end
-        if length(raf1)>length(rawf1.(baseconds{c})(t,:))/3,hasthird.(baseconds{c})(t) = 1;end
-        if length(raf1)>length(rawf1.(baseconds{c})(t,:))/4,hasquart.(baseconds{c})(t) = 1;end
-    end
-
+    percNaN.(baseconds{c}) = get_percNaN(rawf1.(baseconds{c}));
     
     %% generate array of shifted traces
     if indShift(c).inds
@@ -102,9 +95,7 @@ for c = 1:length(indShift) % for each condition to plot
         diff2d_mean.(conds{c}) = sqrt(diff1_mean.(conds{c}).^2 + diff2_mean.(conds{c}).^2);
         
         % calculate trial ending points
-        hashalf.(conds{c}) = has_nperc(diff1.(conds{c}),50);
-        hasthird.(conds{c}) = has_nperc(diff1.(conds{c}),33.3333);
-        hasquart.(conds{c}) = has_nperc(diff1.(conds{c}),25);
+        percNaN.(conds{c}) = get_percNaN(diff1.(conds{c}));
         
         %% if a perturbation study
         if isfield(indShift,'shiftind')
@@ -182,21 +173,12 @@ for c = 1:length(indShift) % for each condition to plot
     
 end
 
-tstep = mean(diff(dataVals(1).ftrack_taxis)); %#ok<NASGU>
+% get tstep from taxis
+goodtrials = find(~[dataVals.bExcl]);
+[~,tstep] = get_fs_from_taxis(dataVals(goodtrials(1)).ftrack_taxis); %#ok<ASGLU>
 
 %% save data
-% construct filename
-if bMels
-    bMelsStr = '_mels';
-else
-    bMelsStr = [];
-end
-filename = sprintf('fmtMatrix_%s_%s%s.mat',[indShift.name],basename,bMelsStr);
-if length(filename) > 100
-    filename = 'fmtMatrix_singletrial_25closest';
-    fprintf('Warning: Changing filename to %s.mat!\n',filename)
-    pause(1)
-end
+filename = sprintf('fmtMatrix_%s_%s.mat',[indShift.name],basename);
 
 % construct structs
 savefile = fullfile(dataPath,filename);
@@ -222,7 +204,7 @@ else
     bSave = 1;
 end
 if bSave
-    save(savefile,'fmtMatrix','fmtMeans','hashalf','hasthird','hasquart','tstep','bMels','bFilt')
+    save(savefile,'fmtMatrix','fmtMeans','tstep','percNaN','bMels','bFilt')
     if exist('linecolors','var')
         save(savefile,'linecolors','-append')
     end

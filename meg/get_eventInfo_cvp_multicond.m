@@ -19,7 +19,7 @@ periph = cellfun(@(fn) fmtdata.mels.(fn).first50ms.periph33, vowels, 'UniformOut
 periph = cat(2,periph{:});
 
 eventInfo = struct([]);
-conds = {'speak','listen'};
+conds = {'Speak','Listen'};
 for c=1:length(conds)
     thiscond = conds{c};
     if any(strcmp(cond,{thiscond,'both'})) % if condition matches this cond (or is 'both')

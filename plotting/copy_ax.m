@@ -6,8 +6,8 @@ function [ ] = copy_ax(hcopyfrom,hcopyto)
 
 figure(hcopyfrom)
 ax = axis;
-figure(hcopyto)
-axis(ax);
 
+for h=1:length(hcopyto)
+    figure(hcopyto(h))
+    axis(ax);
 end
-

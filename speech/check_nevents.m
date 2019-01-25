@@ -28,7 +28,7 @@ for i = 1:length(sortedTrials)
     
     % skip bad trials
     if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params) && ~trialparams.event_params.is_good_trial
-        sprintf('bad trial')
+        sprintf('bad trial: %d', trialnum)
     else
         if exist('trialparams','var') ...
                 && isfield(trialparams,'event_params') ...
@@ -40,10 +40,14 @@ for i = 1:length(sortedTrials)
         
         n_events = length(user_event_times);
     end
+    if ~exist('n_events','var')
+        sprintf('warning: no events found for trial %d',trialnum)
+    else
         if ~ismember(n_events,nEvents)
             sprintf('%d events found in trial %d (expected %d or fewer)',n_events,trialnum,max(nEvents));
             trialList = [trialList trialnum];
         end
+    end
         % find first syllable vowel onset
         % changed onset_time to onset_time1
     
