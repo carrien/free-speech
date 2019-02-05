@@ -16,7 +16,9 @@ load(fullfile(dataPath,'expt.mat'));
 if exist(fullfile(dataPath,othercond,'dataVals.mat'))
     load(fullfile(dataPath,othercond,'dataVals.mat'));
     exclude = [dataVals.bExcl];
-    excludetrials = find(exclude==1);
+    excludeindices = find(exclude==1);
+    tokens = [dataVals.token];
+    excludetrials = tokens(excludeindices);
 end
 
 eventInfo = struct([]);
