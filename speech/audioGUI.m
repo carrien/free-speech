@@ -1,4 +1,4 @@
-function [] = audioGUI(dataPath,trialnums,buffertype,figpos,bSaveCheck,tg_UEVs)
+function [] = audioGUI(dataPath,trialnums,buffertype,figpos,bSaveCheck)
 %AUDIOGUI  Wrapper for wave_viewer.
 %   AUDIOGUI(DATAPATH,TRIALNUMS,BUFFERTYPE,FIGPOS,PITCHLIMITS,BSAVECHECK)
 %   sends audio data found in DATAPATH to the wave_viewer analysis program.
@@ -8,9 +8,6 @@ function [] = audioGUI(dataPath,trialnums,buffertype,figpos,bSaveCheck,tg_UEVs)
 %   structure to use (e.g. 'signalIn'). FIGPOS overrides the default figure
 %   position. BSAVECHECK is a binary variable specifying whether to check
 %   via a user dialog before overwriting existing files (1 = yes, 0 = no).
-%   TG_UEVS is used the same way, and indicates whether or not events from
-%   TextGrid files (generated in the forced alignment process) should be
-%   appended to the currently existing event_params list.
 %
 %CN 2011
 
@@ -19,7 +16,7 @@ if nargin < 2, trialnums = []; end
 if nargin < 3 || isempty(buffertype), buffertype = 'signalIn'; end
 if nargin < 4, figpos = []; end
 if nargin < 5, bSaveCheck = 1; end
-if nargin < 6, tg_UEVs = 0; end
+
 
 % load data
 load(fullfile(dataPath,'data.mat'),'data');
@@ -79,8 +76,23 @@ for itrial = trials2track
         sigmat = []; %needed in case trial has been marked as bad but not analyzed yet
     end
     % check for existence of TextGrids from alignment and append events if
-    % necessary (tg_UEVs argument needs to be set to 1)
-    if exist(tgPath,'file') && tg_UEVs
+    % necessary
+    if exist(tgPath,'file')
+        % % check to see if UEV's exist, delete and replace textgrid uevs
+        rmTG = [];
+        for i=1:length(event_params.user_event_names)
+            if strncmp(event_params.user_event_names(i),'uev',3) 
+                continue;
+            else
+                rmTG = [rmTG, i]; 
+            end
+        end 
+        rmTG = fliplr(rmTG);
+        for i=1:length(rmTG)
+            event_params.user_event_names(rmTG(i)) = [];
+            event_params.user_event_times(rmTG(i)) = [];
+        end 
+        
             [tg_user_event_times, tg_user_event_names] = get_uev_from_tg_mpraat(tgPath);
 			event_params.user_event_times = [event_params.user_event_times, tg_user_event_times];
 			event_params.user_event_names = [event_params.user_event_names, tg_user_event_names];
