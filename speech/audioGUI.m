@@ -72,6 +72,9 @@ for itrial = trials2track
         sigmat = [];
     end
     
+    if ~exist('sigmat','var')
+        sigmat = []; %needed in case trial has been marked as bad but not analyzed yet
+    end
     % check for existence of TextGrids from alignment and append events if
     % necessary
     if exist(tgPath,'file')
