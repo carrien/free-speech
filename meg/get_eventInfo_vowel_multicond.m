@@ -13,6 +13,12 @@ if nargin < 2 || isempty(cond), cond = 'both'; end
 
 load(fullfile(dataPath,'expt.mat'));
 
+if exist(fullfile(dataPath,othercond,'dataVals.mat'))
+    load(fullfile(dataPath,othercond,'dataVals.mat'));
+    exclude = [dataVals.bExcl];
+    excludetrials = find(exclude==1);
+end
+
 eventInfo = struct([]);
 if strcmpi(othercond,'English')
 conds = {'EnglishSpeak','EnglishListen'};
@@ -28,7 +34,15 @@ for c=1:length(conds)
             thisvowel = expt.vowels{v};
             eventInfo(v+len).name = sprintf('%s_%s',thiscond,thisvowel);
             eventInfo(v+len).color = rand(1,3);
-            eventInfo(v+len).trialinds = expt.inds.vowels.(thisvowel);
+            thisvowelinds = expt.inds.vowels.(thisvowel);
+            if exist('excludetrials','var')
+                trials2rm = intersect(thisvowelinds,excludetrials);
+                    if ~isempty(trials2rm)
+                        thisvowelinds(trials2rm) = [];
+                    end
+            end
+            eventInfo(v+len).trialinds = thisvowelinds;
         end
     end
 end
+
