@@ -1,4 +1,4 @@
-function [trialinds] = match_events2trialnums_multilang(expt,allevents,newEventInfo, cond, sid)
+function [trialinds] = match_events2trialnums_multilang(expt,allevents,newEventInfo, cond, sid,subMegDataPath)
 %MATCH_EVENTS2TRIALNUMS  Match experiment events to trial numbers.
 %   MATCH_EVENTS2TRIALNUMS(EXPT,EVENTS,NEWEVENTINFO)
 %   cond can equal, for example, language
@@ -109,8 +109,8 @@ for f = 1:length(unique([speak_fileinds listen_fileinds])); % for each file to w
     end
     
     % save each event file
-    %dataPath = getMegSubjPath(expt.name,expt.snum);
-    dataPath = fullfile(get_megLoadPath('cais','SB'),char(cond)) %fullfile('/Volumes/smng/experiments/',expt.name,'megdata',sid, char(cond)) % switch back to expt.snum
+    dataPath = subMegDataPath;
+    %dataPath = fullfile(get_megLoadPath('cais',sid),char(cond)) %fullfile('/Volumes/smng/experiments/',expt.name,'megdata',sid, char(cond)) % switch back to expt.snum
     savefile = fullfile(dataPath,['events_' newEventInfo.name '_' num2str(f-1) '.mat']);
     bSave = savecheck(savefile);
     if bSave
