@@ -1,4 +1,4 @@
-function [trialinds] = match_events2trialnums_multilang(expt,allevents,newEventInfo, cond, sid,subMegDataPath)
+function [trialinds] = match_events2trialnums_multilang(expt,allevents,newEventInfo, cond,subMegDataPath)
 %MATCH_EVENTS2TRIALNUMS  Match experiment events to trial numbers.
 %   MATCH_EVENTS2TRIALNUMS(EXPT,EVENTS,NEWEVENTINFO)
 %   cond can equal, for example, language
