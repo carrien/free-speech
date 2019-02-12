@@ -4,7 +4,8 @@ function [eventInfo] = get_eventInfo_cvp(dataPath,cond,othercond)
 %   fdata_vowel.mat to construct eventInfo grouped by center and peripheral
 %   trials. COND determine which events will be tracked and can be 'speak',
 %   'listen', or 'both'. Because fdata_vowel has bad trials already
-%   excluded, only good trials are part of the event structure.
+%   excluded, only good trials are part of the event structure. OTHERCOND
+%   could be language.
 
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
 if nargin < 2 || isempty(cond), cond = 'both'; end
