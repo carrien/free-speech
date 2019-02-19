@@ -13,8 +13,10 @@ if nargin < 2 || isempty(cond), cond = 'both'; end
 
 load(fullfile(dataPath,'expt.mat'));
 
-if exist(fullfile(dataPath,othercond,'dataVals.mat'))
-    load(fullfile(dataPath,othercond,'dataVals.mat'));
+fullfile(dataPath,othercond,'dataVals.mat')
+
+if exist(fullfile(dataPath,'dataVals.mat'))
+    load(fullfile(dataPath,'dataVals.mat'));
     exclude = [dataVals.bExcl];
     excludeindices = find(exclude==1);
     tokens = [dataVals.token];
