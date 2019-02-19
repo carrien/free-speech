@@ -5,7 +5,7 @@ function [trialinds] = match_events2trialnums_multilang_equalizer(expt,allevents
 
 % check for case/Case in speak/Speak--maybe try strcmpi?
 
-if nargin < 6 || isempty(equalized), equalized = 1; end
+if nargin < 6, equalized = 1; end
 
 nwords = length(expt.words);
 eventnames = {allevents.label};
@@ -28,8 +28,8 @@ for w=1:nwords
 end
 speakstim_events = allevents(speakstim_inds);
 listenstim_events = allevents(listenstim_inds);
-speak_events = allevents(speak_inds);
-listen_events = allevents(listen_inds);
+speak_events = allevents(speak_inds); % all LangSpeak{123}
+listen_events = allevents(listen_inds); % all LangListen{123}
 
 % get time of each event
 speakstim_eventtimes = sort([speakstim_events.times]);
