@@ -42,7 +42,7 @@ for c=1:length(conds)
             if exist('excludetrials','var')
                 trials2rm = intersect(thisvowelinds,excludetrials);
                     if ~isempty(trials2rm)
-                        [inds2rm] = ismember(thisvowelinds,trials2rm)
+                        [inds2rm] = ismember(thisvowelinds,trials2rm);
                         thisvowelinds(inds2rm) = [];
                         % TO DO: WHERE INDS ARE EQ TO TRIALS2RM
                     end
