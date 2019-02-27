@@ -10,6 +10,7 @@ if nargin < 1 || isempty(dataPath), dataPath = cd; end
 
 
 subs = dir(dataPath);
-badnames = {'.','..'}
-folds2rm = ismember(subs,badnames)
+badnames = {'.','..'};
+subs = {subs.name};
+folds2rm = ismember(subs,badnames);
 subs(folds2rm) = [];
