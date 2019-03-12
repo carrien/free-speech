@@ -79,10 +79,9 @@ for i = 1:length(sortedfiles)
         end
 
         % find offset
-        if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params) && length(trialparams.event_params.user_event_times) > 1 ...
-                && trialparams.event_params.user_event_times(1) ~= trialparams.event_params.user_event_times(2)
+        if exist('user_event_times','var') && length(user_event_times) > 1 && user_event_times(1) ~= user_event_times(end)
             % find time of user-created offset event
-            offset_time = user_event_times(2); % make sure that user_event_times gets set above (line 44)
+            offset_time = user_event_times(end);
             timediff = sigmat.ampl_taxis - offset_time;
             [~, offsetIndAmp] = min(abs(timediff));
         else
