@@ -13,6 +13,13 @@ logdists = []; grouplogdists = [];
 distdiffs = []; groupdistdiffs = [];
 f0s = []; groupf0s = [];
 
+means.centering = [];
+means.centering_rev = [];
+means.anticentering = [];
+means.anticentering_rev = [];
+means.dinit = [];
+means.dmid = [];
+
 for s=1:length(dataPaths)
     dP = dataPaths{s};
     load(fullfile(dP,'fdata_vowel'));
@@ -41,23 +48,29 @@ for s=1:length(dataPaths)
         % peripheral centering, original (group 1)
         data2add = dist.first50ms.periph.first - dist.first50ms.periph.mid;
         [centering,group] = add2anovars(centering,data2add',group,s,v,1);
+        means.centering = [means.centering mean(data2add)];
         % peripheral centering, time-window reversed (group 2)
         data2add = dist.mid50p.periph.mid - dist.mid50p.periph.first;
         [centering,group] = add2anovars(centering,data2add',group,s,v,2);
+        means.centering_rev = [means.centering_rev mean(data2add)];
         
         % central anti-centering, original (group 1)
         data2add = dist.first50ms.center.first - dist.first50ms.center.mid;
         [anticentering,groupanti] = add2anovars(anticentering,data2add',groupanti,s,v,1);
+        means.anticentering = [means.anticentering mean(data2add)];
         % central anti-centering, time-window reversed (group 2)
         data2add = dist.mid50p.center.mid - dist.mid50p.center.first;
         [anticentering,groupanti] = add2anovars(anticentering,data2add',groupanti,s,v,2);
+        means.anticentering_rev = [means.anticentering_rev mean(data2add)];
         
         % d_init, all trials (group 1)
         data2add = fmtdata.mels.(vow).first50ms.dist;
         [dists,groupdists] = add2anovars(dists,data2add',groupdists,s,v,1);
+        means.dinit = [means.dinit mean(data2add)];
         % d_mid, all trials (group 2)
         data2add = fmtdata.mels.(vow).mid50p.dist;
         [dists,groupdists] = add2anovars(dists,data2add',groupdists,s,v,2);
+        means.dmid = [means.dmid mean(data2add)];
         
         % LOG d_init, all trials (group 1)
         data2add = log(fmtdata.mels.(vow).first50ms.dist);
