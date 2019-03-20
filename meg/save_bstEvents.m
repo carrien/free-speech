@@ -1,6 +1,10 @@
 function [eventFiles] = save_bstEvents(dataFiles,outPath)
 %SAVE_BSTEVENTS  Exports event markers from a list of Brainstorm raw files.
 
+if ~exist(outPath)
+    mkdir(outPath)
+end
+
 eventFiles = cell(1,length(dataFiles));
 for i=1:length(dataFiles)
     [~,filename] = fileparts(dataFiles{i});

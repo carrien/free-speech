@@ -1,60 +1,45 @@
-function [ ] = gen_fmtMatrix_crossSubj(exptName,svec,fmtMatrixFile,bSaveCheck)
-%GEN_FMTMATRIX_CROSSSUBJ  Generate a plottable fmt matrix across subjects.
-%   GEN_FMTMATRIX_CROSSSUBJ(EXPTNAME,SVEC,FMTMATRIXFILE) concatenates
-%   formant matrix data from FMTMATRIXFILE for all the subjects in SVEC,
-%   which can be a vector of subject numbers or a cell array of subject ID
-%   strings.
+function [ ] = gen_fmtMatrix_crossSubj(dataPaths,fmtMatrixFile,outputdir,bSaveCheck)
+%GEN_FMTMATRIX_CROSSSUBJ  Generate plottable fmt matrix across subjects.
+%   GEN_FMTMATRIX_CROSSSUBJ(DATAPATHS,FMTMATRIXFILE,BSAVECHECK)
+%   concatenates formant matrix data from FMTMATRIXFILE for all paths in
+%   DATAPATHS. BSAVECHECK = 1 prompts before overwriting an existing file.
 %
 % cn 11/2014
 
-if nargin < 2 || isempty(svec)
-    exptInfo = get_exptInfo(exptName);
-    svec = exptInfo.snums;
-    if isfield(exptInfo,'basedir')
-        basedir = exptInfo.basedir;
-    end
+if nargin < 3 || isempty(outputdir), outputdir = uigetdir; end
+if ~outputdir, return; end
+if nargin < 4 || isempty(bSaveCheck), bSaveCheck = 1; end
+
+%% construct output filename
+fileprefix = 'fmtMatrix_';
+filesuffix = fmtMatrixFile(length(fileprefix)+1:end);
+[~,filesuffix] = fileparts(filesuffix);
+filename = sprintf('fmtMatrix_%s_%ds.mat',filesuffix,length(dataPaths));
+savefile = fullfile(outputdir,filename);
+
+if bSaveCheck % check for existing file
+    bSave = savecheck(savefile);
+else
+    bSave = 1;
 end
-if nargin < 3 || isempty(fmtMatrixFile)
-    fmtMatrixFile = 'fmtMatrix_EtoIEtoAE_noshift';
-end
-if nargin < 4 || isempty(bSaveCheck)
-    bSaveCheck = 1;
+if ~bSave
+    fprintf('Not saved.\n');
+    return;
 end
 
-if ~exist('basedir','var')
-    basedir = get_acoustLoadPath(exptName);
-end
-switch exptName
-    case 'cat'
-        subdirname = 'pert/formant_analysis';
-    case 'vin'
-        subdirname = 'all';
-    case 'stroop'
-        subdirname = 'Stroop';
-    otherwise
-        subdirname = [];
-end
-if isnumeric(svec)
-    sids = cell(1,length(svec));
-    for s=1:length(svec)
-        sids{s} = sprintf('s%02d',svec(s));
-    end
-else
-    sids = svec;
-end
 ffx = []; rfx = [];
 
 %% concatenate matrices
-fprintf('Adding data from subject');
-for s=1:length(sids) % for each subject
+fprintf('Adding data from folder');
+for dP=1:length(dataPaths) % for each subject
     % load data
-    dataPath = get_acoustLoadPath(exptName,sids{s},subdirname);
+    dataPath = dataPaths{dP};
     load(fullfile(dataPath,fmtMatrixFile));
     analyses = fieldnames(fmtMatrix);
-    bMelsVec(s) = bMels;
-    bFiltVec(s) = bFilt;
+    bMelsVec(dP) = bMels;
+    bFiltVec(dP) = bFilt;
     
-    fprintf(' %s',sids{s});
+    fprintf(' %d',dP);
     for a=1:length(analyses) % for each type of track (diff1, etc.)
         anl = analyses{a};
         conds = fieldnames(fmtMatrix.(anl));
@@ -85,23 +70,12 @@ end
 bMels = unique(bMelsVec);
 bFilt = unique(bFiltVec);
 if length(bMels) > 1
-    warning('Inconsistant frequency scale: the following subjects'' data are in mels: %s',sids{logical(bMelsVec)})
+    warning('Inconsistant frequency scale:\nData from the following folders are in mels:\n%s',dataPaths{logical(bMelsVec)})
 end
 
 %% save
-filesuffix = fmtMatrixFile(11:end);
-[~,filesuffix] = fileparts(filesuffix);
-filename = sprintf('fmtMatrix_%s_%ds.mat',filesuffix,length(svec));
-savefile = fullfile(basedir,filename);
-if bSaveCheck
-    bSave = savecheck(savefile);
-else
-    bSave = 1;
+save(savefile,'ffx','rfx','dataPaths','tstep','bMels','bFilt');
+if exist('linecolors','var')
+    save(savefile,'linecolors','-append')
 end
-if bSave
-    save(savefile,'ffx','rfx','svec','sids','tstep','bMels','bFilt');
-    if exist('linecolors','var')
-        save(savefile,'linecolors','-append')
-    end    
-    fprintf('\n%s created.\n',filename);
-end
+fprintf('\n%s created.\n',filename);

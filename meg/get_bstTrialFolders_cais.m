@@ -12,11 +12,11 @@ if any(strcmp(cond,{'Listen','Speak'})) % if plain speak or listen, return all n
     conddirs = ~cellfun(@isempty, regexp(dirnames,match));
     conddirnames = {d(conddirs).name};
 elseif strcmp(cond,'cvp')
-    conddirnames = {sprintf('%sspeak_center',language), sprintf('%sspeak_periph',language), sprintf('%slisten_center',language), sprintf('%slisten_center',language)};
+    conddirnames = {sprintf('%sSpeak_Center',language), sprintf('%sSpeak_Periph',language), sprintf('%sListen_Center',language), sprintf('%sListen_Periph',language)};
 elseif strcmp(cond,'speak_cvp')
-    conddirnames = {sprintf('%sspeak_center',language), sprintf('%sspeak_periph',language)};
+    conddirnames = {sprintf('%sSpeak_Center',language), sprintf('%sSpeak_Periph',language)};
 elseif strcmp(cond,'listen_cvp')
-    conddirnames = {sprintf('%slisten_center',language), sprintf('%slisten_center',language)};
+    conddirnames = {sprintf('%sListen_Center',language), sprintf('%sListen_Periph',language)};
 end
 
 

@@ -1,9 +1,11 @@
-function [trialinds] = match_events2trialnums_multilang(expt,allevents,newEventInfo, cond,subMegDataPath)
+function [trialinds] = match_events2trialnums_multilang_equalizer(expt,allevents,newEventInfo,cond,subMegDataPath,equalized)
 %MATCH_EVENTS2TRIALNUMS  Match experiment events to trial numbers.
 %   MATCH_EVENTS2TRIALNUMS(EXPT,EVENTS,NEWEVENTINFO)
 %   cond can equal, for example, language
 
 % check for case/Case in speak/Speak--maybe try strcmpi?
+
+if nargin < 6, equalized = 1; end
 
 nwords = length(expt.words);
 eventnames = {allevents.label};
@@ -26,8 +28,8 @@ for w=1:nwords
 end
 speakstim_events = allevents(speakstim_inds);
 listenstim_events = allevents(listenstim_inds);
-speak_events = allevents(speak_inds);
-listen_events = allevents(listen_inds);
+speak_events = allevents(speak_inds); % all LangSpeak{123}
+listen_events = allevents(listen_inds); % all LangListen{123}
 
 % get time of each event
 speakstim_eventtimes = sort([speakstim_events.times]);
@@ -69,6 +71,19 @@ overlaps = setdiff(1:length(listen_trialnums),ia);
 if ~isempty(overlaps)
     error('%d repeat trials found at times %s in files %s',length(overlaps),mat2str(listen_eventtimes(overlaps)),mat2str(listen_fileinds(overlaps)));
 end
+
+if equalized
+    speak_mismatches = setdiff(speak_trialnums,listen_trialnums); % speaks that are not in listens!
+    [~,spkinds2rm] = ismember(speak_mismatches,speak_trialnums);
+    speak_trialnums(spkinds2rm) = [];
+    speak_fileinds(spkinds2rm) = [];
+    listen_mismatches = setdiff(listen_trialnums,speak_trialnums); % listens that are not in speaks
+    [~,lisinds2rm] = ismember(listen_mismatches,listen_trialnums);
+    listen_trialnums(lisinds2rm) = [];
+    listen_fileinds(lisinds2rm) = [];
+end
+
+
 
 % create new event structs
 for f = 1:length(unique([speak_fileinds listen_fileinds])); % for each file to write
@@ -122,3 +137,31 @@ end
 for e=1:length(trialinds)
     trialinds{e} = unique([trialinds{e}{:}])
 end
+
+
+npairs = (length(trialinds))/2;
+tri2rm = cell(1,length(trialinds));
+inds2rm = cell(1,length(trialinds));
+newTrialinds = cell(1,length(trialinds));
+
+for i = 1:npairs
+    mismatches = setdiff(trialinds{i},trialinds{i+npairs}) % speaks that are not in listens!
+    if ~isempty(mismatches)
+        tri2rm{i} = mismatches;
+    end
+    mismatches = setdiff(trialinds{i+npairs},trialinds{i}); % listens that are not in speaks!
+    if ~isempty(mismatches)
+        tri2rm{i+npairs} = mismatches;
+    end
+end
+
+for i = 1:length(trialinds)
+    if ~isempty(tri2rm{i})
+        [~,rminds] = ismember(tri2rm{i},trialinds{i}) % get indices (not trialnums) of trials to be removed.
+        trialinds{i}(rminds) = [];
+        inds2rm{i} = rminds; % indices of trialinds{i} that are getting removed; NOT trial numbers.
+    end
+    newTrialinds{i} = trialinds{i};
+end
+
+

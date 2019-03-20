@@ -46,8 +46,15 @@ for i = 1:length(sortedfiles)
     filename = sprintf('%d.mat',trialnum);
     load(fullfile(trialPath,filename));
     
-    % skip bad trials, except for labelling them as bad.
+    % skip bad trials, except for adding metadata
     if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params) && ~trialparams.event_params.is_good_trial
+        dataVals(i).word = expt.allWords(trialnum);
+        dataVals(i).vowel = expt.allVowels(trialnum);
+        if isfield(expt,'allColors')
+            dataVals(i).color = expt.allColors(trialnum);
+        end
+        dataVals(i).cond = expt.allConds(trialnum);
+        dataVals(i).token = trialnum;
         dataVals(i).bExcl = 1;
     else
         % find onset
@@ -72,10 +79,9 @@ for i = 1:length(sortedfiles)
         end
 
         % find offset
-        if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params) && length(trialparams.event_params.user_event_times) > 1 ...
-                && trialparams.event_params.user_event_times(1) ~= trialparams.event_params.user_event_times(2)
+        if exist('user_event_times','var') && length(user_event_times) > 1 && user_event_times(1) ~= user_event_times(end)
             % find time of user-created offset event
-            offset_time = user_event_times(2); % make sure that user_event_times gets set above (line 44)
+            offset_time = user_event_times(end);
             timediff = sigmat.ampl_taxis - offset_time;
             [~, offsetIndAmp] = min(abs(timediff));
         else
@@ -101,26 +107,22 @@ for i = 1:length(sortedfiles)
         offsetIndfx = get_index_at_time(sigmat.ftrack_taxis,offset_time);
 
         % convert to dataVals struct
-        dataVals(i).f0 = sigmat.pitch(onsetIndf0:offsetIndf0)';
-        dataVals(i).f1 = sigmat.ftrack(1,onsetIndfx:offsetIndfx)';
-        dataVals(i).f2 = sigmat.ftrack(2,onsetIndfx:offsetIndfx)';
-        dataVals(i).int = sigmat.ampl(onsetIndAmp:offsetIndAmp)';
-        dataVals(i).pitch_taxis = sigmat.pitch_taxis(onsetIndf0:offsetIndf0)';
-        dataVals(i).ftrack_taxis = sigmat.ftrack_taxis(onsetIndfx:offsetIndfx)';
-        dataVals(i).ampl_taxis = sigmat.ampl_taxis(onsetIndAmp:offsetIndAmp)';
-        dataVals(i).dur = offset_time - onset_time;
-        dataVals(i).word = expt.allWords(trialnum);
-        dataVals(i).vowel = expt.allVowels(trialnum);
+        dataVals(i).f0 = sigmat.pitch(onsetIndf0:offsetIndf0)';                     % f0 track from onset to offset
+        dataVals(i).f1 = sigmat.ftrack(1,onsetIndfx:offsetIndfx)';                  % f1 track from onset to offset
+        dataVals(i).f2 = sigmat.ftrack(2,onsetIndfx:offsetIndfx)';                  % f2 track from onset to offset
+        dataVals(i).int = sigmat.ampl(onsetIndAmp:offsetIndAmp)';                   % intensity (rms amplitude) track from onset to offset
+        dataVals(i).pitch_taxis = sigmat.pitch_taxis(onsetIndf0:offsetIndf0)';      % pitch time axis
+        dataVals(i).ftrack_taxis = sigmat.ftrack_taxis(onsetIndfx:offsetIndfx)';    % formant time axis
+        dataVals(i).ampl_taxis = sigmat.ampl_taxis(onsetIndAmp:offsetIndAmp)';      % amplitude time axis
+        dataVals(i).dur = offset_time - onset_time;                                 % duration
+        dataVals(i).word = expt.allWords(trialnum);                                 % numerical index to word list (e.g. 2)
+        dataVals(i).vowel = expt.allVowels(trialnum);                               % numerical index to vowel list (e.g. 1)
         if isfield(expt,'allColors')
-            dataVals(i).color = expt.allColors(trialnum);
+            dataVals(i).color = expt.allColors(trialnum);                           % numerical index to color list (e.g. 1)
         end
-        dataVals(i).cond = expt.allConds(trialnum);
-        dataVals(i).token = trialnum;
-        if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params)
-            dataVals(i).bExcl = ~trialparams.event_params.is_good_trial;
-        else
-            dataVals(i).bExcl = 0;
-        end
+        dataVals(i).cond = expt.allConds(trialnum);                                 % numerical index to condition list (e.g. 1)
+        dataVals(i).token = trialnum;                                               % trial number (e.g. 22)
+        dataVals(i).bExcl = 0;                                                      % binary variable: 1 = exclude trial, 0 = don't exclude trial
 
         % warn about short tracks
         if ~dataVals(i).bExcl && sum(~isnan(dataVals(i).f0)) < 20

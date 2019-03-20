@@ -155,10 +155,10 @@ for cnd=1:length(conds)
 end
 
 %% calculate median
-avgfn = fieldnames(fmtdata.(fr).(c));
-avgfn = setdiff(avgfn,'traces');
 for cnd=1:length(conds)
     c = conds{cnd};
+    avgfn = fieldnames(fmtdata.(fr).(c));
+    avgfn = setdiff(avgfn,'traces');
     for avg=1:length(avgfn)
         av = avgfn{avg};
         if isfield(fmtdata.(fr).(c),av)

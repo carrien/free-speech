@@ -60,7 +60,7 @@ htracks = zeros(1,length(conds)); % handles to each track
 for c = 1:length(conds)
     cnd = conds{c};
     linecolor = linecolors.(cnd);
-    errcolor = linecolor + (1-linecolor)./3;
+    errcolor = get_lightcolor(linecolor);
     % plot tracks
     sig = fmtMeans.(toPlot).(cnd);
     htracks(c) = plot(alltime(1:length(sig)), sig', 'LineWidth', 3, 'Color', linecolor); hold on;
@@ -70,15 +70,22 @@ for c = 1:length(conds)
     sig = sig(~isnan(err));
     fill([alltime(1:length(sig)) fliplr(alltime(1:length(sig)))], [sig'+err' fliplr(sig'-err')], errcolor, ...
         'EdgeColor', errcolor, 'FaceAlpha', .5, 'EdgeAlpha', 0);
-    hashalf_s(c) = find(hashalf.(cnd), 1, 'last')*tstep; %#ok<AGROW>
-    %hasquart_s(c) = find(hasquart.(cnd), 1, 'last')*tstep; %#ok<AGROW>
+    if exist('percNaN','var')
+        hashalf_s(c) = find(percNaN.(cnd) <= 50, 1, 'last')*tstep; %#ok<AGROW>
+        hasquart_s(c) = find(percNaN.(cnd) <= 75, 1, 'last')*tstep; %#ok<AGROW>
+    else
+        hashalf_s(c) = find(hashalf.(cnd), 1, 'last')*tstep; %#ok<AGROW>
+        hasquart_s(c) = find(hasquart.(cnd), 1, 'last')*tstep; %#ok<AGROW>
+    end
 end
 if ~strncmp(toPlot,'raw',3)
-    hline(0,'k');
+    hline(0,'k');  % draw y = 0 line (if not plotting raw formants)
 end
-vline(mean(hashalf_s),'k','--');
+vline(mean(hashalf_s),'k','--'); % median survival time
+vline(mean(hasquart_s),'k',':'); % 25% survival time
 legend(htracks, conds, 'Location','SouthEast'); legend boxoff;
 xlabel(xlab, 'FontWeight', 'bold', 'FontSize', 11);
 ylabel(ylab, 'FontWeight', 'bold', 'FontSize', 11);
 set(gca, 'FontSize', 10); set(gca, 'TickLength', [0.0 0.0]);
 title(sprintf('%s %s',slab,toPlot));
+makeFig4Screen;

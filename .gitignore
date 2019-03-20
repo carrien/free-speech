@@ -4,3 +4,6 @@
 
 # text files
 *.txt
+
+# folder metadata
+*.DS_Store
