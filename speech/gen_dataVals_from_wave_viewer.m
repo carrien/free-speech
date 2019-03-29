@@ -99,6 +99,10 @@ for i = 1:length(sortedfiles)
             end
             offset_time = sigmat.ampl_taxis(offsetIndAmp); % or -1?
         end
+        
+        if exist('user_event_times','var')
+            clear user_event_times
+        end
 
         % find onset/offset indices for each track
         onsetIndf0 = get_index_at_time(sigmat.pitch_taxis,onset_time);
