@@ -9,10 +9,10 @@ end
 vowels = {'aa' 'ae' 'ah' 'ay' 'eh' 'ey' 'ih' 'iy' 'ow' 'uw' 'er' 'oe' 'uh'};
 
 aa = ismember(txtcell,{'aa' 'ah' 'a' 'sop' 'sock' 'sod' 'shop' 'shock' 'shot' 'shawl' 'saw'}); % added 'a' because this was the original vowel name for this category. Possibly will need to change it if we ever use the indefinite article.
-ae = ismember(txtcell,{'ae' 'add' 'ad' 'dad' 'rad' 'yallow'});
+ae = ismember(txtcell,{'ae' 'add' 'ad' 'dad' 'rad' 'sad' 'yallow'});
 ah = ismember(txtcell,{'above'});
 ay = ismember(txtcell,{'sigh' 'shy'});
-eh = ismember(txtcell,{'eh' 'E' 'Ed' 'bed' 'dead' 'head' 'ted' 'red' 'glen' 'blend' 'hais' 'eff' 'fait' 'adept' 'meta' 'yellow' 'said'});
+eh = ismember(txtcell,{'eh' 'E' 'Ed' 'bed' 'dead' 'fed' 'head' 'ted' 'red' 'glen' 'blend' 'hais' 'eff' 'fait' 'adept' 'meta' 'yellow' 'said'});
 ey = ismember(txtcell,{'eI' 'grain' 'beta' 'abate'});
 ih = ismember(txtcell,{'ih' 'I' 'rid' 'grin' 'yillow' 'pink' 'bink' 'sip' 'sin' 'shin' 'ship'});
 iy = ismember(txtcell,{'i' 'ee' 'eat' 'reed' 'green' 'bleed' 'creed' 'kreen' 'Yves' 'Eve' 'see' 'seep' 'seat' 'sea' 'sheep' 'sheet' 'she' 'vee' 'vie'});
