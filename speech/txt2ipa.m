@@ -8,20 +8,20 @@ end
 
 vowels = {'aa' 'ae' 'ah' 'ay' 'eh' 'ey' 'ih' 'iy' 'ow' 'uw' 'er' 'oe' 'uh'};
 
-aa = ismember(txtcell,{'aa' 'ah' 'a' 'sop' 'sock' 'sod' 'shop' 'shock' 'shot' 'shawl' 'saw'}); % added 'a' because this was the original vowel name for this category. Possibly will need to change it if we ever use the indefinite article.
-ae = ismember(txtcell,{'ae' 'add' 'ad' 'rad' 'yallow'});
+aa = ismember(txtcell,{'aa' 'ah' 'a' 'bod' 'sop' 'sock' 'sod' 'shop' 'shock' 'shot' 'shawl' 'saw'}); % added 'a' because this was the original vowel name for this category. Possibly will need to change it if we ever use the indefinite article.
+ae = ismember(txtcell,{'ae' 'add' 'ad' 'bad' 'dad' 'rad' 'sad' 'yallow'});
 ah = ismember(txtcell,{'ah' 'above'});
 ay = ismember(txtcell,{'ay' 'sigh' 'shy'});
-eh = ismember(txtcell,{'eh' 'E' 'Ed' 'bed' 'dead' 'head' 'ted' 'red' 'glen' 'blend' 'hais' 'eff' 'adept' 'meta' 'yellow'});
+eh = ismember(txtcell,{'eh' 'E' 'Ed' 'bed' 'dead' 'fed' 'head' 'ted' 'red' 'glen' 'blend' 'hais' 'eff' 'fait' 'adept' 'meta' 'yellow' 'said'});
 ey = ismember(txtcell,{'ey' 'eI' 'grain' 'beta' 'abate'});
 ih = ismember(txtcell,{'ih' 'I' 'rid' 'grin' 'yillow' 'pink' 'bink' 'sip' 'sin' 'shin' 'ship'});
-iy = ismember(txtcell,{'iy' 'i' 'ee' 'eat' 'reed' 'green' 'bleed' 'creed' 'kreen' 'Yves' 'Eve' 'see' 'seep' 'seat' 'sea' 'sheep' 'sheet' 'she'});
+iy = ismember(txtcell,{'iy' 'i' 'bead' 'ee' 'eat' 'reed' 'green' 'bleed' 'creed' 'kreen' 'Yves' 'Eve' 'see' 'seep' 'seat' 'sea' 'sheep' 'sheet' 'she' 'vee' 'vie'});
 ow = ismember(txtcell,{'ow' 'o' 'oh' 'blow' 'bode' 'so' 'sore' 'show' 'shore'});
-uw = ismember(txtcell,{'uw' 'u' 'oo' 'rude' 'groom' 'blue' 'plume' 'plue' 'sue' 'suit' 'soon' 'shoe' 'shoot' 'shoes'});
+uw = ismember(txtcell,{'uw' 'u' 'booed' 'oo' 'rude' 'groom' 'blue' 'plume' 'plue' 'sue' 'suit' 'soon' 'shoe' 'shoot' 'shoes'});
 er = ismember(txtcell,{'er' 'blur'});
-oe = ismember(txtcell,{'oe' 'oeuf'});
+oe = ismember(txtcell,{'oe' 'ceux' 'oeuf'});
 uh = ismember(txtcell,{'uh' 'good'});
-        
+
 vowelinds = [aa; ae; ah; ay; eh; ey; ih; iy; ow; uw; er; oe; uh];
 vowelinds = sum(vowelinds .* repmat([1:size(vowelinds,1)]',1,size(vowelinds,2)),1);
 if any(~vowelinds)
