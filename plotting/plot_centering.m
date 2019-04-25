@@ -12,23 +12,41 @@ if nargin < 1 || isempty(dataPaths), dataPaths = cd; end
 if ischar(dataPaths), dataPaths = {dataPaths}; end
 if nargin < 2 || isempty(condtype), condtype = 'vowel'; end
 if nargin < 3 || isempty(condinds), condinds = [1 2 3]; end
-if nargin < 4 || isempty(plotinds), plotinds = [1 2]; end
+if nargin < 4 || isempty(plotinds), plotinds = 1; end
 if nargin < 5 || isempty(ntile), ntile = 5; end
 if nargin < 6 || isempty(bSave), bSave = 0; end
 
+%% set plotting params
+xpos = 265;
+ypos = 355;
+width = 820;
+height = 299;
+pphColor = [.8 0 0];
+cenColor = [0 .8 0];
+
+if any(plotinds == 4)
+    for c = 1:length(condinds)
+        h(c) = figure;
+    end
+    meandist_init_all{c} = [];
+    meandist_mid_all{c} = [];
+    overlayColor = [.5 .5 .5];
+end
+
+%% plot data
 for s=1:length(dataPaths)
     load(fullfile(dataPaths{s},sprintf('fdata_%s.mat',condtype)));
     conds = fieldnames(fmtdata.mels);
     
-    for cnd = condinds
-        c = conds{cnd}; % current condition name
+    for c = 1:length(condinds)
+        cnd = conds{condinds(c)}; % current condition name
         
-        if ~isfield(fmtdata.mels.(c),'first50ms')
+        if ~isfield(fmtdata.mels.(cnd),'first50ms')
             continue % skip if vowel data doesn't exist
         end
         
-        first = fmtdata.mels.(c).first50ms;
-        mid = fmtdata.mels.(c).mid50p;
+        first = fmtdata.mels.(cnd).first50ms;
+        mid = fmtdata.mels.(cnd).mid50p;
         
         if ntile < 3
             ntiles = median(first.dist);
@@ -37,69 +55,60 @@ for s=1:length(dataPaths)
         end
         cen = first.dist < ntiles(1); % or meddist
         pph = first.dist > ntiles(end);
+        midd = setdiff(1:length(first.dist),union(cen,pph));
         fpph = find(pph);
         fcen = find(cen);
-        
+
+        % F1,F2 in initial time window (all trials)
+        initf1 = first.rawavg.f1;
+        initf1med = first.med.f1;
+        initf1norm = initf1 - initf1med;
+        initf2 = first.rawavg.f2;
+        initf2med = first.med.f2;
+        initf2norm = initf2 - initf2med;
+
+        % F1,F2 in mid time window (all trials)
+        midf1 = mid.rawavg.f1;
+        midf1med = mid.med.f1;
+        midf1norm = midf1 - midf1med;
+        midf2 = mid.rawavg.f2;
+        midf2med = mid.med.f2;
+        midf2norm = midf2 - midf2med;
+
+        % store init and final dists
+        dists_init.(cnd).pph = sqrt(initf1norm(pph).^2 + initf2norm(pph).^2); % per-trial distance to median (init)
+        dists_mid.(cnd).pph = sqrt(midf1norm(pph).^2 + midf2norm(pph).^2);    % per-trial distance to median (mid)
+        dists_init.(cnd).cen = sqrt(initf1norm(cen).^2 + initf2norm(cen).^2);
+        dists_mid.(cnd).cen = sqrt(midf1norm(cen).^2 + midf2norm(cen).^2);
+        dists_init.(cnd).midd = sqrt(initf1norm(midd).^2 + initf2norm(midd).^2);
+        dists_mid.(cnd).midd = sqrt(midf1norm(midd).^2 + midf2norm(midd).^2);
+
+        % calc mean dist for plotting
+        meandist_init.pph = nanmean(dists_init.(cnd).pph); % average distance to median (init)
+        meandist_mid.pph = nanmean(dists_mid.(cnd).pph);   % average distance to median (mid)
+        meandist_init.cen = nanmean(dists_init.(cnd).cen);
+        meandist_mid.cen = nanmean(dists_mid.(cnd).cen);
+        meandist_init.midd = nanmean(dists_init.(cnd).midd);
+        meandist_mid.midd = nanmean(dists_mid.(cnd).midd);
+
         %% init to mid, normalized
-        if sum(plotinds == 1)
+        if any(plotinds == 1)
             figure;
+
+            %%% periphery
             subplot(1,2,1)
-            
-            initf1norm = first.rawavg.f1 - first.med.f1;
-            initf2norm = first.rawavg.f2 - first.med.f2;
-            midf1norm = mid.rawavg.f1 - mid.med.f1;
-            midf2norm = mid.rawavg.f2 - mid.med.f2;
-            
-            dinit.pph = nanmean(sqrt(initf1norm(pph).^2 + initf2norm(pph).^2)); % average distance to median (init)
-            dmid.pph = nanmean(sqrt(midf1norm(pph).^2 + midf2norm(pph).^2));    % average distance to median (mid)
-
-            dinit.cen = nanmean(sqrt(initf1norm(cen).^2 + initf2norm(cen).^2));
-            dmid.cen = nanmean(sqrt(midf1norm(cen).^2 + midf2norm(cen).^2));
-
-
-            midd = setdiff(1:length(initf1norm),union(cen,pph));
-            dinit.midd = nanmean(sqrt(initf1norm(midd).^2 + initf2norm(midd).^2));
-            dmid.midd = nanmean(sqrt(midf1norm(midd).^2 + midf2norm(midd).^2));
-            % simple: just store init and final dists (subtract to get
-            % centering, and also use them to check for changes in
-            % dispersion)
-            dists_init.(c).pph = sqrt(initf1norm(pph).^2 + initf2norm(pph).^2);
-            dists_mid.(c).pph = sqrt(midf1norm(pph).^2 + midf2norm(pph).^2);
-            dists_init.(c).cen = sqrt(initf1norm(cen).^2 + initf2norm(cen).^2);
-            dists_mid.(c).cen = sqrt(midf1norm(cen).^2 + midf2norm(cen).^2);
-            dists_init.(c).midd = sqrt(initf1norm(midd).^2 + initf2norm(midd).^2);
-            dists_mid.(c).midd = sqrt(midf1norm(midd).^2 + midf2norm(midd).^2);
-            % store centering values
-            centering_mean.(c).pph = dinit.pph - dmid.pph;
-            centering_mean.(c).cen = dinit.cen - dmid.cen;
-            centering_mean.(c).midd = dinit.midd - dmid.midd;
-            centering.(c).pph = dists_init.(c).pph - dists_mid.(c).pph;
-            centering.(c).cen = dists_init.(c).cen - dists_mid.(c).cen;
-            centering.(c).midd = dists_init.(c).midd - dists_mid.(c).midd;
-            % store duration values (periph only)
-            if exist('durdata','var')
-                dur.(c).pph = durdata.s.(c)(pph);
-                dur.(c).cen = durdata.s.(c)(cen);
-                dur.(c).midd = durdata.s.(c)(midd);
-            else
-                dur = [];
-            end
-            % formant movement in euclidean space
-            euclmove = sqrt((mid.rawavg.f1-first.rawavg.f1).^2 + (mid.rawavg.f2-first.rawavg.f2).^2);
-            eucl.(c).pph = euclmove(pph);
-            eucl.(c).cen = euclmove(cen);
-            eucl.(c).midd = euclmove(midd);
-                        
             plot(0,0,'ko')
             hold on;
-            plot(initf1norm(pph),initf2norm(pph),'ro')
-            rectangle('Position',[-dinit.pph,-dinit.pph,dinit.pph*2,dinit.pph*2],'Curvature',[1,1],'LineStyle','--')
+            % plot initial formants (open circles)
+            plot(initf1norm(pph),initf2norm(pph),'o', 'Color',pphColor)
+            rectangle('Position',[-meandist_init.pph,-meandist_init.pph,meandist_init.pph*2,meandist_init.pph*2],'Curvature',[1,1],'LineStyle','--')
+            % plot mid formants (dots)
             plot(midf1norm(pph),midf2norm(pph),'k.')
-            rectangle('Position',[-dmid.pph,-dmid.pph,dmid.pph*2,dmid.pph*2],'Curvature',[1,1])
-            
+            rectangle('Position',[-meandist_mid.pph,-meandist_mid.pph,meandist_mid.pph*2,meandist_mid.pph*2],'Curvature',[1,1])
+            % plot lines from initial to mid
             for i=1:length(fpph)
                 plot([initf1norm(fpph(i)) midf1norm(fpph(i))], ...
-                    [initf2norm(fpph(i)) midf2norm(fpph(i))], 'r-')
+                    [initf2norm(fpph(i)) midf2norm(fpph(i))], '-', 'Color',pphColor)
             end
             xlabel('norm F1 (mels)')
             ylabel('norm F2 (mels)')
@@ -109,16 +118,20 @@ for s=1:length(dataPaths)
             axis([-axmax axmax -axmax axmax])
             ax = axis;
             
+            %%% center
             subplot(1,2,2)
             plot(0,0,'ko')
             hold on;
-            plot(initf1norm(cen),initf2norm(cen),'go')
-            rectangle('Position',[-dinit.cen,-dinit.cen,dinit.cen*2,dinit.cen*2],'Curvature',[1,1],'LineStyle','--')
+            % plot initial formants (open circles)
+            plot(initf1norm(cen),initf2norm(cen),'o', 'Color',cenColor)
+            rectangle('Position',[-meandist_init.cen,-meandist_init.cen,meandist_init.cen*2,meandist_init.cen*2],'Curvature',[1,1],'LineStyle','--')
+            % plot mid formants (dots)
             plot(midf1norm(cen),midf2norm(cen),'k.')
-            rectangle('Position',[-dmid.cen,-dmid.cen,dmid.cen*2,dmid.cen*2],'Curvature',[1,1])
+            rectangle('Position',[-meandist_mid.cen,-meandist_mid.cen,meandist_mid.cen*2,meandist_mid.cen*2],'Curvature',[1,1])
+            % plot lines from initial to mid
             for i=1:length(fcen)
                 plot([initf1norm(fcen(i)) midf1norm(fcen(i))], ...
-                    [initf2norm(fcen(i)) midf2norm(fcen(i))], 'g-')
+                    [initf2norm(fcen(i)) midf2norm(fcen(i))], '-', 'Color',cenColor)
             end
             xlabel('norm F1 (mels)')
             ylabel('norm F2 (mels)')
@@ -126,47 +139,28 @@ for s=1:length(dataPaths)
             axis square
             axis(ax);
             
-            set(gcf,'Position',[265 355 820 299],'Name',sprintf('subjind %d %s %d (%s)',s,condtype,cnd,c))
+            set(gcf,'Position',[xpos ypos width height],'Name',sprintf('subjind %d %s %d (%s)',s,condtype,condinds(c),cnd))
         end
         
         %% init to mid, non-normalized
-        if sum(plotinds == 2)
+        if any(plotinds == 2)
             figure;
+            
+            %%% periphery
             subplot(1,2,1)
-            
-            initf1 = first.rawavg.f1;
-            initf1med = first.med.f1;
-            initf2 = first.rawavg.f2;
-            initf2med = first.med.f2;
-            
-            midf1 = mid.rawavg.f1;
-            midf1med = mid.med.f1;
-            midf2 = mid.rawavg.f2;
-            midf2med = mid.med.f2;
-            
-            initf1norm = initf1 - initf1med;
-            initf2norm = initf2 - initf2med;
-            midf1norm = midf1 - midf1med;
-            midf2norm = midf2 - midf2med;
-            
-            dinit.pph = nanmean(sqrt(initf1norm(pph).^2 + initf2norm(pph).^2));
-            dmid.pph = nanmean(sqrt(midf1norm(pph).^2 + midf2norm(pph).^2));
-            
-            dinit.cen = nanmean(sqrt(initf1norm(cen).^2 + initf2norm(cen).^2));
-            dmid.cen = nanmean(sqrt(midf1norm(cen).^2 + midf2norm(cen).^2));
-            
-            % plot per
-            mycolor = 'b';
-            plot(initf1med,initf2med,'*','Color',mycolor)
+            % plot medians
+            plot(initf1med,initf2med,'*','Color',pphColor)
             hold on;
-            plot(midf1med,midf2med,'*','Color',mycolor)
-            plot(initf1(pph),initf2(pph),'o','Color',mycolor)
-            rectangle('Position',[initf1med-dinit.pph,initf2med-dinit.pph,dinit.pph*2,dinit.pph*2],'Curvature',[1,1],'LineStyle','--','EdgeColor',mycolor)
-            plot(midf1(pph),midf2(pph),'.','Color',mycolor)
-            rectangle('Position',[midf1med-dmid.pph,midf2med-dmid.pph,dmid.pph*2,dmid.pph*2],'Curvature',[1,1],'EdgeColor',mycolor)
-            
+            plot(midf1med,midf2med,'*','Color',pphColor)
+            % plot initial formants (open circles)
+            plot(initf1(pph),initf2(pph),'o','Color',pphColor)
+            rectangle('Position',[initf1med-meandist_init.pph,initf2med-meandist_init.pph,meandist_init.pph*2,meandist_init.pph*2],'Curvature',[1,1],'LineStyle','--','EdgeColor',pphColor)
+            % plot mid formants (dots)
+            plot(midf1(pph),midf2(pph),'.','Color',pphColor)
+            rectangle('Position',[midf1med-meandist_mid.pph,midf2med-meandist_mid.pph,meandist_mid.pph*2,meandist_mid.pph*2],'Curvature',[1,1],'EdgeColor',pphColor)
+            % plot lines from initial to mid
             for i=1:length(fpph)
-                plot([initf1(fpph(i)) midf1(fpph(i))],[initf2(fpph(i)) midf2(fpph(i))], '-','Color',mycolor)
+                plot([initf1(fpph(i)) midf1(fpph(i))],[initf2(fpph(i)) midf2(fpph(i))], '-','Color',pphColor)
             end
             xlabel('F1 (mels)')
             ylabel('F2 (mels)')
@@ -174,17 +168,21 @@ for s=1:length(dataPaths)
             axis square
             ax = axis;
             
-            % plot cen
+            %%% center
             subplot(1,2,2)
-            plot(initf1med,initf2med,'*','Color',mycolor)
+            % plot medians
+            plot(initf1med,initf2med,'*','Color',cenColor)
             hold on;
-            plot(midf1med,midf2med,'*','Color',mycolor)
-            plot(initf1(cen),initf2(cen),'o','Color',mycolor)
-            rectangle('Position',[initf1med-dinit.cen,initf2med-dinit.cen,dinit.cen*2,dinit.cen*2],'Curvature',[1,1],'LineStyle','--','EdgeColor',mycolor)
-            plot(midf1(cen),midf2(cen),'.','Color',mycolor)
-            rectangle('Position',[midf1med-dmid.cen,midf2med-dmid.cen,dmid.cen*2,dmid.cen*2],'Curvature',[1,1],'EdgeColor',mycolor)
+            plot(midf1med,midf2med,'*','Color',cenColor)
+            % plot initial formants (open circles)
+            plot(initf1(cen),initf2(cen),'o','Color',cenColor)
+            rectangle('Position',[initf1med-meandist_init.cen,initf2med-meandist_init.cen,meandist_init.cen*2,meandist_init.cen*2],'Curvature',[1,1],'LineStyle','--','EdgeColor',cenColor)
+            % plot mid formants (dots)
+            plot(midf1(cen),midf2(cen),'.','Color',cenColor)
+            rectangle('Position',[midf1med-meandist_mid.cen,midf2med-meandist_mid.cen,meandist_mid.cen*2,meandist_mid.cen*2],'Curvature',[1,1],'EdgeColor',cenColor)
+            % plot lines from initial to mid
             for i=1:length(fcen)
-                plot([initf1(fcen(i)) midf1(fcen(i))],[initf2(fcen(i)) midf2(fcen(i))], '-','Color',mycolor)
+                plot([initf1(fcen(i)) midf1(fcen(i))],[initf2(fcen(i)) midf2(fcen(i))], '-','Color',cenColor)
             end
             xlabel('F1 (mels)')
             ylabel('F2 (mels)')
@@ -192,88 +190,132 @@ for s=1:length(dataPaths)
             axis square
             axis(ax);
             
-            set(gcf,'Position',[265 355 820 299],'Name',sprintf('subjind %d %s %d (%s)',s,condtype,cnd,c))
+            set(gcf,'Position',[xpos ypos width height],'Name',sprintf('subjind %d %s %d (%s)',s,condtype,condinds(c),cnd))
         end
         
         %% periph to median
-        if sum(plotinds == 3)
-            
+        if any(plotinds == 3)
             figure;
+
+            %%% init
             subplot(1,2,1)
-            plot(first.rawavg.f1,first.rawavg.f2,'k.')
+            % plot median
+            plot(initf1med,initf2med,'ko')
             hold on;
-            plot(first.med.f1,first.med.f2,'ko')
-            plot(first.rawavg.f1(cen),first.rawavg.f2(cen),'g.')
-            plot(first.rawavg.f1(pph),first.rawavg.f2(pph),'r.')
+            % plot initial formants
+            plot(initf1,initf2,'k.')
+            plot(initf1(cen),initf2(cen),'.', 'Color',cenColor)
+            plot(initf1(pph),initf2(pph),'.', 'Color',pphColor)
+            % plot vector to median
             for i=1:length(fpph)
-                plot([first.rawavg.f1(fpph(i)) first.med.f1], ...
-                    [first.rawavg.f2(fpph(i)) first.med.f2], 'r--')
+                plot([initf1(fpph(i)) initf1med], ...
+                    [initf2(fpph(i)) initf2med], '--', 'Color',pphColor)
             end
             xlabel('F1 (mels)')
             ylabel('F2 (mels)')
             box off
-            %axis([650 900 1410 1580])
-            %set(gca,'YTick',1420:40:1580)
             
+            %%% mid
             subplot(1,2,2)
-            plot(mid.rawavg.f1,mid.rawavg.f2,'k.')
-            hold on;
+            % plot median
             plot(mid.med.f1,mid.med.f2,'ko')
-            plot(mid.rawavg.f1(cen),mid.rawavg.f2(cen),'g.')
-            plot(mid.rawavg.f1(pph),mid.rawavg.f2(pph),'r.')
+            hold on;
+            % plot mid formants
+            plot(midf1,midf2,'k.')
+            plot(midf1(cen),midf2(cen),'.', 'Color',cenColor)
+            plot(midf1(pph),midf2(pph),'.', 'Color',pphColor)
+            % plot vector to median
             for i=1:length(fpph)
-                plot([mid.rawavg.f1(fpph(i)) mid.med.f1], ...
-                    [mid.rawavg.f2(fpph(i)) mid.med.f2], 'r--')
+                plot([midf1(fpph(i)) mid.med.f1], ...
+                    [midf2(fpph(i)) mid.med.f2], '--', 'Color',pphColor)
             end
             xlabel('F1 (mels)')
             ylabel('F2 (mels)')
             box off
-            %axis([650 900 1410 1580])
-            set(gca,'YTick',1420:40:1580)
-            set(gcf,'Position',[265 355 820 299])
+
+            set(gcf,'Position',[xpos ypos width height])
         end
         
         %% init to mid, normalized, all subj overlaid
-        if sum(plotinds == 4)
-            if ~exist('dinit_all','var'), dinit_all = []; dmid_all = []; end
-            if ~exist('h','var'), h = figure; end
-            dinit_all = [dinit_all dinit.pph];
-            dmid_all = [dmid_all dmid.pph];
-            figure(h)
-            plot(initf1norm(pph),initf2norm(pph),'ro')
+        if any(plotinds == 4)
+            figure(h(c))
+            % plot initial formants (open circles)
+            plot(initf1norm(pph),initf2norm(pph),'o', 'Color',pphColor)
             hold on;
-            plot(midf1norm(pph),midf2norm(pph),'k.')
+            % plot mid formants (dots)
+            %plot(midf1norm(pph),midf2norm(pph),'k.')
+            % plot lines from initial to mid
             for i=1:length(fpph)
                 plot([initf1norm(fpph(i)) midf1norm(fpph(i))], ...
-                    [initf2norm(fpph(i)) midf2norm(fpph(i))], 'm-')
+                    [initf2norm(fpph(i)) midf2norm(fpph(i))], 'Color',overlayColor)
             end
             
+            % store per-subject per-condition average distance
+            meandist_init_all{c} = [meandist_init_all{c} meandist_init.pph];
+            meandist_mid_all{c} = [meandist_mid_all{c} meandist_mid.pph];
         end
         
     end
     
-    % save centering info per subject
+    %% save centering info per subject
     centfilename = fullfile(dataPaths{s},sprintf('centering_cvp_%dtile.mat',ntile));
     if bSave
         bSave = savecheck(centfilename);
     end
     if bSave
-        save(centfilename,'centering','centering_mean','dists_init','dists_mid','dur','eucl');
+        % centering values
+        centering_mean.(cnd).pph = meandist_init.pph - meandist_mid.pph;
+        centering_mean.(cnd).cen = meandist_init.cen - meandist_mid.cen;
+        centering_mean.(cnd).midd = meandist_init.midd - meandist_mid.midd;
+        centering.(cnd).pph = dists_init.(cnd).pph - dists_mid.(cnd).pph;
+        centering.(cnd).cen = dists_init.(cnd).cen - dists_mid.(cnd).cen;
+        centering.(cnd).midd = dists_init.(cnd).midd - dists_mid.(cnd).midd;
+        % formant movement in euclidean space
+        euclmove = sqrt((midf1-initf1).^2 + (midf2-initf2).^2);
+        eucl.(cnd).pph = euclmove(pph);
+        eucl.(cnd).cen = euclmove(cen);
+        eucl.(cnd).midd = euclmove(midd);
+
+        save(centfilename,'centering','centering_mean','dists_init','dists_mid','eucl');
+
+        if exist('durdata','var')
+            % store duration values (periph only)
+            dur.(cnd).pph = durdata.s.(cnd)(pph);
+            dur.(cnd).cen = durdata.s.(cnd)(cen);
+            dur.(cnd).midd = durdata.s.(cnd)(midd);
+            save(centfilename,'dur','-append');
+        end
+
+        fprintf('Saved %s\n',centfilename);
     end
     
 end
 
-    if sum(plotinds == 4)
-        di = nanmean(dinit_all);
-        dm = nanmean(dmid_all);
-        figure(h);
+%% overlay init to mid norm summary (circles) for all subjects
+if any(plotinds == 4)
+    maxax = 200;
+    tick = -maxax:maxax/2:maxax;
+
+    for c = 1:length(condinds)
+        cnd = conds{condinds(c)};
+        di = nanmean(meandist_init_all{c});
+        dm = nanmean(meandist_mid_all{c});
+
+        figure(h(c));
         plot(0,0,'ko')
         hold on;
-        rectangle('Position',[-di,-di,di*2,di*2],'Curvature',[1,1],'LineStyle','--')
-        rectangle('Position',[-dm,-dm,dm*2,dm*2],'Curvature',[1,1])
+        rectangle('Position',[-di,-di,di*2,di*2],'Curvature',[1,1],'LineStyle','--','LineWidth',2)
+        rectangle('Position',[-dm,-dm,dm*2,dm*2],'Curvature',[1,1],'LineWidth',2)
         xlabel('norm F1 (mels)')
         ylabel('norm F2 (mels)')
         box off
+        axis([-maxax maxax -maxax maxax]);
         axis square
+        set(gca,'XTick',tick);
+        set(gca,'YTick',tick);
+        makeFig4Screen;
+
+        set(gcf,'Name',sprintf('All-subject overlay, %s %d (%s)',condtype,condinds(c),cnd))
     end
 
+end
