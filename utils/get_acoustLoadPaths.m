@@ -1,7 +1,7 @@
 function [dataPaths] = get_acoustLoadPaths(exptName,svec,varargin)
-%GET_ACOUSTLOADPATHS  Get paths for multiple subjects in an experiment.
+%GET_ACOUSTLOADPATHS  Get load paths for multiple subjects in an experiment.
 %   DATAPATHS = GET_ACOUSTLOADPATHS(EXPTNAME,SVEC,VARARGIN) returns the
-%   cell array DATAPATHS of paths to data for multiple subjects in an
+%   cell array DATAPATHS of load paths to data for multiple subjects in an
 %   experiment. SVEC can either be a vector of numerical IDs or a cell
 %   array of character IDs.
 

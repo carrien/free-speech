@@ -1,5 +1,9 @@
 function [dataPaths] = get_acoustLocalPaths(exptName,svec,varargin)
-%GET_ACOUSTLOCALPATHS  Get path to acoustic data for multiple subjects.
+%GET_ACOUSTLOCALPATHS  Get local path for multiple subjects in an experiment.
+%   DATAPATHS = GET_ACOUSTLOCALPATHS(EXPTNAME,SVEC,VARARGIN) returns the
+%   cell array DATAPATHS of local paths to data for multiple subjects in an
+%   experiment. SVEC can either be a vector of numerical IDs or a cell
+%   array of character IDs.
 
 dataPaths = cell(1,length(svec));
 
