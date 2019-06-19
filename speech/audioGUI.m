@@ -62,9 +62,36 @@ for itrial = trials2track
     tgPath =  fullfile(dataPath,'PostAlignment',tgFilename);
     if exist(savefile,'file')
         load(savefile);
+        run_get_tgs = 1;
         if isfield(trialparams,'sigproc_params'), sigproc_params = trialparams.sigproc_params; else, sigproc_params = [];end
         if isfield(trialparams,'plot_params'), plot_params = trialparams.plot_params; else, plot_params = []; end
-        if isfield(trialparams,'event_params'), event_params = trialparams.event_params; else, event_params = []; end
+        if isfield(trialparams,'event_params'), event_params = trialparams.event_params;
+            % if ~any events that do not begin with uev, then run get
+            % events from tgs
+            if ~isempty(event_params.user_event_names)
+                for ev = 1:length(event_params.user_event_names)
+                    if strncmp(event_params.user_event_names(ev),'uev',3)
+                        continue
+                    else
+                        run_get_tgs = 0;
+                        break
+                    end
+                end    
+            end
+        else
+            event_params = [];
+        end
+        if (exist(tgPath,'file') && (run_get_tgs == 1))
+            [tg_user_event_times, tg_user_event_names] = get_uev_from_tg_mpraat(tgPath);
+            if ~isfield(event_params,'user_event_times')
+                event_params.user_event_times = [];
+                event_params.user_event_names = [];
+            end
+            event_params.user_event_times = [event_params.user_event_times, tg_user_event_times];
+            event_params.user_event_names = [event_params.user_event_names, tg_user_event_names];
+        end
+        
+        
     else
         sigproc_params = [];
         event_params = [];
