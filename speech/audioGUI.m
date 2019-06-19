@@ -70,6 +70,26 @@ for itrial = trials2track
         event_params = [];
         plot_params = [];
         sigmat = [];
+        if exist(tgPath,'file')
+            % % check to see if UEV's exist, delete and replace textgrid uevs
+            %         rmTG = [];
+            %         for i=1:length(event_params.user_event_names)
+            %             if strncmp(event_params.user_event_names(i),'uev',3)
+            %                 continue;
+            %             else
+            %                 rmTG = [rmTG, i];
+            %             end
+            %         end
+            %         rmTG = fliplr(rmTG);
+            %         for i=1:length(rmTG)
+            %             event_params.user_event_names(rmTG(i)) = [];
+            %             event_params.user_event_times(rmTG(i)) = [];
+            %         end
+            
+            [tg_user_event_times, tg_user_event_names] = get_uev_from_tg_mpraat(tgPath);
+            event_params.user_event_times = [event_params.user_event_times, tg_user_event_times];
+            event_params.user_event_names = [event_params.user_event_names, tg_user_event_names];
+        end
     end
     
     if ~exist('sigmat','var')
@@ -77,26 +97,7 @@ for itrial = trials2track
     end
     % check for existence of TextGrids from alignment and append events if
     % necessary
-    if exist(tgPath,'file')
-        % % check to see if UEV's exist, delete and replace textgrid uevs
-        rmTG = [];
-        for i=1:length(event_params.user_event_names)
-            if strncmp(event_params.user_event_names(i),'uev',3) 
-                continue;
-            else
-                rmTG = [rmTG, i]; 
-            end
-        end 
-        rmTG = fliplr(rmTG);
-        for i=1:length(rmTG)
-            event_params.user_event_names(rmTG(i)) = [];
-            event_params.user_event_times(rmTG(i)) = [];
-        end 
-        
-            [tg_user_event_times, tg_user_event_names] = get_uev_from_tg_mpraat(tgPath);
-			event_params.user_event_times = [event_params.user_event_times, tg_user_event_times];
-			event_params.user_event_names = [event_params.user_event_names, tg_user_event_names];
-    end
+
     
     if isempty(sigproc_params)
         if exist('wvp','var') % otherwise, use param file if it exists
