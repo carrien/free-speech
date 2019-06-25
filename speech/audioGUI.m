@@ -41,7 +41,7 @@ end
 
 % load sigproc_params and plot_params, if they exist
 wvpfile = fullfile(dataPath,'wave_viewer_params.mat');
-if (exist(wvpfile,'file') == 2)    
+if (exist(wvpfile,'file') == 2)
     wvp = load(wvpfile);
 end
 
@@ -49,7 +49,7 @@ end
 for itrial = trials2track
     %% prepare inputs
     y = data(itrial).(buffertype);
-
+    
     if isfield([data.params],'fs')
         fs = data(itrial).params.fs;
     else
@@ -68,15 +68,17 @@ for itrial = trials2track
         if isfield(trialparams,'event_params'), event_params = trialparams.event_params;
             % if ~any events that do not begin with uev, then run get
             % events from tgs
-            if ~isempty(event_params.user_event_names)
-                for ev = 1:length(event_params.user_event_names)
-                    if strncmp(event_params.user_event_names(ev),'uev',3)
-                        continue
-                    else
-                        run_get_tgs = 0;
-                        break
+            if isfield(trialparams.event_params,'user_event_names')
+                if ~isempty(event_params.user_event_names)
+                    for ev = 1:length(event_params.user_event_names)
+                        if strncmp(event_params.user_event_names(ev),'uev',3)
+                            continue
+                        else
+                            run_get_tgs = 0;
+                            break
+                        end
                     end
-                end    
+                end
             end
         else
             event_params = [];
@@ -124,7 +126,7 @@ for itrial = trials2track
     end
     % check for existence of TextGrids from alignment and append events if
     % necessary
-
+    
     
     if isempty(sigproc_params)
         if exist('wvp','var') % otherwise, use param file if it exists
@@ -134,7 +136,7 @@ for itrial = trials2track
         else % otherwise, get defaults
             sigproc_params = get_sigproc_defaults;
         end
-    end    
+    end
     if isempty(plot_params) %separate out where to look for plot_params and sigproc_params
         if exist('wvp','var') % otherwise, use param file if it exists
             plot_params = wvp.plot_params;
@@ -143,7 +145,7 @@ for itrial = trials2track
         else % otherwise, get defaults
             plot_params = get_plot_defaults;
         end
-    end    
+    end
     
     % optionally overwrite figure position
     if ~isempty(figpos), plot_params.figpos = figpos; end
@@ -167,7 +169,7 @@ for itrial = trials2track
         'plot_params',plot_params,'event_params',event_params,...
         'sigmat',sigmat);
     
-    %% save outputs 
+    %% save outputs
     trialparams.sigproc_params = endstate.sigproc_params;
     trialparams.plot_params = endstate.plot_params;
     trialparams.event_params = endstate.event_params;
@@ -178,7 +180,7 @@ for itrial = trials2track
     sigmat.pitch_taxis = endstate.pitch_axinfo.params{1}.taxis;
     sigmat.ampl = endstate.ampl_axinfo.dat{1};
     sigmat.ampl_taxis = endstate.ampl_axinfo.params{1}.taxis;
-        
+    
     if bSaveCheck, bSave = savecheck(savefile); else, bSave = 1; end
     if bSave, save(savefile,'sigmat','trialparams'); end
     
