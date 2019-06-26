@@ -95,6 +95,7 @@ for itrial = trials2track
         
         
     else
+        % if trial doesn't already exist...
         sigproc_params = [];
         event_params = [];
         plot_params = [];
@@ -116,8 +117,10 @@ for itrial = trials2track
             %         end
             
             [tg_user_event_times, tg_user_event_names] = get_uev_from_tg_mpraat(tgPath);
-            event_params.user_event_times = [event_params.user_event_times, tg_user_event_times];
-            event_params.user_event_names = [event_params.user_event_names, tg_user_event_names];
+            %...if trial doesn't already exist,
+            %event_params.user_event_times won't exist yet either.
+            event_params.user_event_times = [tg_user_event_times];
+            event_params.user_event_names = [tg_user_event_names];
         end
     end
     
