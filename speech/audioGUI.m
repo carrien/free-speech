@@ -41,7 +41,7 @@ end
 
 % load sigproc_params and plot_params, if they exist
 wvpfile = fullfile(dataPath,'wave_viewer_params.mat');
-if (exist(wvpfile,'file') == 2)    
+if (exist(wvpfile,'file') == 2)
     wvp = load(wvpfile);
 end
 
@@ -49,7 +49,7 @@ end
 for itrial = trials2track
     %% prepare inputs
     y = data(itrial).(buffertype);
-
+    
     if isfield([data.params],'fs')
         fs = data(itrial).params.fs;
     else
@@ -62,14 +62,66 @@ for itrial = trials2track
     tgPath =  fullfile(dataPath,'PostAlignment',tgFilename);
     if exist(savefile,'file')
         load(savefile);
+        run_get_tgs = 1;
         if isfield(trialparams,'sigproc_params'), sigproc_params = trialparams.sigproc_params; else, sigproc_params = [];end
         if isfield(trialparams,'plot_params'), plot_params = trialparams.plot_params; else, plot_params = []; end
-        if isfield(trialparams,'event_params'), event_params = trialparams.event_params; else, event_params = []; end
+        if isfield(trialparams,'event_params'), event_params = trialparams.event_params;
+            % if ~any events that do not begin with uev, then run get
+            % events from tgs
+            if isfield(trialparams.event_params,'user_event_names')
+                if ~isempty(event_params.user_event_names)
+                    for ev = 1:length(event_params.user_event_names)
+                        if strncmp(event_params.user_event_names(ev),'uev',3)
+                            continue
+                        else
+                            run_get_tgs = 0;
+                            break
+                        end
+                    end
+                end
+            end
+        else
+            event_params = [];
+        end
+        if (exist(tgPath,'file') && (run_get_tgs == 1))
+            [tg_user_event_times, tg_user_event_names] = get_uev_from_tg_mpraat(tgPath);
+            if ~isfield(event_params,'user_event_times')
+                event_params.user_event_times = [];
+                event_params.user_event_names = [];
+            end
+            event_params.user_event_times = [event_params.user_event_times, tg_user_event_times];
+            event_params.user_event_names = [event_params.user_event_names, tg_user_event_names];
+        end
+        
+        
     else
+        % if trial doesn't already exist...
         sigproc_params = [];
         event_params = [];
         plot_params = [];
         sigmat = [];
+        if exist(tgPath,'file')
+            % % check to see if UEV's exist, delete and replace textgrid uevs
+            %         rmTG = [];
+            %         for i=1:length(event_params.user_event_names)
+            %             if strncmp(event_params.user_event_names(i),'uev',3)
+            %                 continue;
+            %             else
+            %                 rmTG = [rmTG, i];
+            %             end
+            %         end
+            %         rmTG = fliplr(rmTG);
+            %         for i=1:length(rmTG)
+            %             event_params.user_event_names(rmTG(i)) = [];
+            %             event_params.user_event_times(rmTG(i)) = [];
+            %         end
+            
+            [tg_user_event_times, tg_user_event_names] = get_uev_from_tg_mpraat(tgPath);
+            %...if trial doesn't already exist,
+            %event_params.user_event_times won't exist yet either.
+            event_params.user_event_times = [tg_user_event_times];
+            event_params.user_event_names = [tg_user_event_names];
+        end
     end
     
     if ~exist('sigmat','var')
@@ -77,26 +129,7 @@ for itrial = trials2track
     end
     % check for existence of TextGrids from alignment and append events if
     % necessary
-    if exist(tgPath,'file')
-        % % check to see if UEV's exist, delete and replace textgrid uevs
-        rmTG = [];
-        for i=1:length(event_params.user_event_names)
-            if strncmp(event_params.user_event_names(i),'uev',3) 
-                continue;
-            else
-                rmTG = [rmTG, i]; 
-            end
-        end 
-        rmTG = fliplr(rmTG);
-        for i=1:length(rmTG)
-            event_params.user_event_names(rmTG(i)) = [];
-            event_params.user_event_times(rmTG(i)) = [];
-        end 
-        
-            [tg_user_event_times, tg_user_event_names] = get_uev_from_tg_mpraat(tgPath);
-			event_params.user_event_times = [event_params.user_event_times, tg_user_event_times];
-			event_params.user_event_names = [event_params.user_event_names, tg_user_event_names];
-    end
+    
     
     if isempty(sigproc_params)
         if exist('wvp','var') % otherwise, use param file if it exists
@@ -106,7 +139,7 @@ for itrial = trials2track
         else % otherwise, get defaults
             sigproc_params = get_sigproc_defaults;
         end
-    end    
+    end
     if isempty(plot_params) %separate out where to look for plot_params and sigproc_params
         if exist('wvp','var') % otherwise, use param file if it exists
             plot_params = wvp.plot_params;
@@ -115,7 +148,7 @@ for itrial = trials2track
         else % otherwise, get defaults
             plot_params = get_plot_defaults;
         end
-    end    
+    end
     
     % optionally overwrite figure position
     if ~isempty(figpos), plot_params.figpos = figpos; end
@@ -139,7 +172,7 @@ for itrial = trials2track
         'plot_params',plot_params,'event_params',event_params,...
         'sigmat',sigmat);
     
-    %% save outputs 
+    %% save outputs
     trialparams.sigproc_params = endstate.sigproc_params;
     trialparams.plot_params = endstate.plot_params;
     trialparams.event_params = endstate.event_params;
@@ -150,7 +183,7 @@ for itrial = trials2track
     sigmat.pitch_taxis = endstate.pitch_axinfo.params{1}.taxis;
     sigmat.ampl = endstate.ampl_axinfo.dat{1};
     sigmat.ampl_taxis = endstate.ampl_axinfo.params{1}.taxis;
-        
+    
     if bSaveCheck, bSave = savecheck(savefile); else, bSave = 1; end
     if bSave, save(savefile,'sigmat','trialparams'); end
     

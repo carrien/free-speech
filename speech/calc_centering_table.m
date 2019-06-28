@@ -14,7 +14,7 @@ function [centering_table_pph,anti_table,centering_table_all] = calc_centering_t
 %     'JL' 'CN' 'SB'},[],{'pre' 'post'})
 
 if nargin < 3 || isempty(fdatafile), fdatafile = 'fdata_vowel'; end
-if nargin < 4 || isempty(subFolders), subFolders = {'1'}; end
+if nargin < 4 || isempty(subFolders), subFolders = {1}; end
 
 avgfn = {'first50ms','mid50p'};
 centering = []; group = [];
@@ -35,7 +35,7 @@ dataPaths = fullfile(basepath, subs); % you'll need "subs" later to get the subj
 for s=1:length(dataPaths)
     for f = 1:length(subFolders)
         stage = subFolders{f};
-        if strcmpi(stage, '1')
+        if stage == 1
             subDataPath = dataPaths{s}
         else
         dP = dataPaths{s};
