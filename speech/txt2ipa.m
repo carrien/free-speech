@@ -19,7 +19,7 @@ iy = ismember(txtcell,{'iy' 'i' 'bead' 'ee' 'eat' 'reed' 'green' 'bleed' 'creed'
 ow = ismember(txtcell,{'ow' 'o' 'oh' 'blow' 'bode' 'so' 'sore' 'show' 'shore'});
 uw = ismember(txtcell,{'uw' 'u' 'booed' 'oo' 'rude' 'groom' 'blue' 'plume' 'plue' 'sue' 'suit' 'soon' 'shoe' 'shoot' 'shoes'});
 er = ismember(txtcell,{'er' 'blur'});
-oe = ismember(txtcell,{'oe' 'ceux' 'oeuf'});
+oe = ismember(txtcell,{'oe' 'ceux' 'oeuf' 'neuf'});
 uh = ismember(txtcell,{'uh' 'good'});
 xx = ismember(txtcell,{'xx' '*' '**' '***'});
 
