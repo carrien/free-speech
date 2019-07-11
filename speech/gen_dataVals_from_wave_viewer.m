@@ -58,15 +58,43 @@ for i = 1:length(sortedfiles)
         dataVals(i).bExcl = 1;
     else
         % find onset
-        if exist('trialparams','var') & isfield(trialparams,'event_params') & ~isempty(trialparams.event_params) & trialparams.event_params.user_event_times %#ok<AND2>
-            % find time of user-created onset event
-            user_event_times = sort(trialparams.event_params.user_event_times);
-            onset_time = user_event_times(1);
+        if exist('trialparams','var') & isfield(trialparams,'event_params') & ~isempty(trialparams.event_params) & ~isempty(trialparams.event_params.user_event_times) %#ok<AND2>
+            % disregard if earliest is sil or sp
+            %             if (strcmpi(uevnames{1},'silStart'))% || (strcmpi(uevnames{1},'spStart'))
+            %                 trialparams.event_params.user_event_times(1) = [];
+            %                 trialparams.event_params.user_event_names = trialparams.event_params.user_event_names{2:end};
+            %             end
+            if strcmpi(expt.name, 'brut')
+                uevnames = trialparams.event_params.user_event_names;
+                vow = expt.listVowels{trialnum};
+                if strcmpi(vow,'oe')
+                    vow = 'ah';
+                end
+                onset_name = [upper(vow) 'Start'];
+                uevind = find(contains(uevnames,onset_name));
+%                if ~exist('uevind','var') || isempty(uevind)
+                    if strcmpi(expt.listWords{trialnum}, 'hais')
+                        vow = 'ey';
+                    elseif strcmpi(expt.listWords{trialnum},'oeuf')
+                        vow = 'ah';
+                    end
+                    onset_name = [upper(vow) 'Start'];
+                    uevind = find(contains(uevnames,onset_name));
+%                end                
+                if exist('uevind','var')
+                    onset_time = trialparams.event_params.user_event_times(uevind);
+                end
+                sprintf('trialnumber %d, word %s',trialnum, expt.listWords{trialnum})
+            else
+                % find time of user-created onset event
+                user_event_times = sort(trialparams.event_params.user_event_times);
+                onset_time = user_event_times(1);
+            end
             timediff = sigmat.ampl_taxis - onset_time;
-            [~, onsetIndAmp] = min(abs(timediff));
+            [~, onsetIndAmp] = min(abs(timediff));            
         else
             % use amplitude threshold to find onset index
-            if exist('trialparams','var') && ~isempty(trialparams.sigproc_params) 
+            if exist('trialparams','var') && ~isempty(trialparams.sigproc_params)
                 % use trial-specific amplitude threshold
                 onsetIndAmp = find(sigmat.ampl > trialparams.sigproc_params.ampl_thresh4voicing);
             else % use wave_viewer_params default amplitude threshold
@@ -77,16 +105,22 @@ for i = 1:length(sortedfiles)
             end
             onset_time = sigmat.ampl_taxis(onsetIndAmp);
         end
-
+        
         % find offset
         if exist('user_event_times','var') && length(user_event_times) > 1 && user_event_times(1) ~= user_event_times(end)
             % find time of user-created offset event
             offset_time = user_event_times(end);
             timediff = sigmat.ampl_taxis - offset_time;
             [~, offsetIndAmp] = min(abs(timediff));
+        elseif exist('uevind','var')
+            offind = uevind+1;
+            offset_time = trialparams.event_params.user_event_times(offind);
+            timediff = sigmat.ampl_taxis - offset_time;
+            [~, offsetIndAmp] = min(abs(timediff));
+            
         else
             % find first sub-threshold amplitude value after onset
-            if exist('trialparams','var') && ~isempty(trialparams.sigproc_params) 
+            if exist('trialparams','var') && ~isempty(trialparams.sigproc_params)
                 % use trial-specific amplitude threshold
                 offsetIndAmp = find(sigmat.ampl(onsetIndAmp:end) < trialparams.sigproc_params.ampl_thresh4voicing);
             else % use wave_viewer_params default amplitude threshold
@@ -103,13 +137,18 @@ for i = 1:length(sortedfiles)
         if exist('user_event_times','var')
             clear user_event_times
         end
+        
+        if exist('uevind','var')
+            clear uevind
+        end
 
+        
         % find onset/offset indices for each track
         onsetIndf0 = get_index_at_time(sigmat.pitch_taxis,onset_time);
         offsetIndf0 = get_index_at_time(sigmat.pitch_taxis,offset_time);
         onsetIndfx = get_index_at_time(sigmat.ftrack_taxis,onset_time);
         offsetIndfx = get_index_at_time(sigmat.ftrack_taxis,offset_time);
-
+        
         % convert to dataVals struct
         dataVals(i).f0 = sigmat.pitch(onsetIndf0:offsetIndf0)';                     % f0 track from onset to offset
         dataVals(i).f1 = sigmat.ftrack(1,onsetIndfx:offsetIndfx)';                  % f1 track from onset to offset
@@ -127,7 +166,7 @@ for i = 1:length(sortedfiles)
         dataVals(i).cond = expt.allConds(trialnum);                                 % numerical index to condition list (e.g. 1)
         dataVals(i).token = trialnum;                                               % trial number (e.g. 22)
         dataVals(i).bExcl = 0;                                                      % binary variable: 1 = exclude trial, 0 = don't exclude trial
-
+        
         % warn about short tracks
         if ~dataVals(i).bExcl && sum(~isnan(dataVals(i).f0)) < 20
             shortTracks = [shortTracks dataVals(i).token];
