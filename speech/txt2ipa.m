@@ -6,7 +6,7 @@ elseif ischar(txt), txtcell = {txt}; % if string, convert to cell array
 else, error('Input must be a text string or cell array of strings.')
 end
 
-vowels = {'aa' 'ae' 'ah' 'ay' 'eh' 'ey' 'ih' 'iy' 'ow' 'uw' 'er' 'oe' 'ou' 'uh' 'uu' 'xx'};
+vowels = {'aa' 'ae' 'ah' 'ay' 'eh' 'ey' 'ih' 'iy' 'ow' 'uw' 'er' 'oe' 'ou' 'uh' 'xx', 'os', 'uu'};
 
 aa = ismember(txtcell,{'aa' 'ah' 'a' 'bod' 'sop' 'sock' 'sod' 'shop' 'shock' 'shot' 'shawl' 'saw'}); % added 'a' because this was the original vowel name for this category. Possibly will need to change it if we ever use the indefinite article.
 ae = ismember(txtcell,{'ae' 'add' 'ad' 'bad' 'bat' 'dad' 'pat' 'rad' 'sad' 'sat' 'yallow'});
@@ -24,8 +24,10 @@ ou = ismember(txtcell,{'ceux'});
 uh = ismember(txtcell,{'uh' 'good'});
 uu = ismember(txtcell,{'uu'});
 xx = ismember(txtcell,{'xx' '*' '**' '***'});
+os = ismember(txtcell,{'os'});
+uu = ismember(txtcell,{'uu'});
 
-vowelinds = [aa; ae; ah; ay; eh; ey; ih; iy; ow; uw; er; oe; ou; uh; uu; xx];
+vowelinds = [aa; ae; ah; ay; eh; ey; ih; iy; ow; uw; er; oe; ou; uh; xx; os; uu;];
 vowelinds = sum(vowelinds .* repmat([1:size(vowelinds,1)]',1,size(vowelinds,2)),1);
 if any(~vowelinds)
     notfound = unique(txtcell(~vowelinds));
