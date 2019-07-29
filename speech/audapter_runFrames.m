@@ -37,3 +37,6 @@ for n = 1:length(sigInCell)
 end
 
 dataOut = AudapterIO('getData');
+if isfield(data,'ost_stat')
+    dataOut.ost_stat = data.ost_stat; %use original OST tracking
+end
