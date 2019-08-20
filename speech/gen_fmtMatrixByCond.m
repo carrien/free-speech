@@ -41,6 +41,9 @@ for i=1:length(indShift)
     indBase(i).inds = setdiff(indBase(i).inds,badtrials);
 end
 
+%get sampling rate
+fs = get_fs_from_taxis(dataVals(indBase(1).inds(1)).ftrack_taxis);
+
 %% generate traces (each with its own baseline)
 fprintf('Subject directory: %s\n',dataPath);
 for c = 1:length(indShift) % for each condition to plot
@@ -93,6 +96,14 @@ for c = 1:length(indShift) % for each condition to plot
         diff2_mean.(conds{c}) = a-b;        
         diff2d.(conds{c}) = sqrt(diff1.(conds{c}).^2 + diff2.(conds{c}).^2);
         diff2d_mean.(conds{c}) = sqrt(diff1_mean.(conds{c}).^2 + diff2_mean.(conds{c}).^2);
+        
+         % normalize by 25-100 ms after vowel onset
+        onsetMeanf1 = nanmean(diff1.(conds{c})(floor(fs*0.025):ceil(fs*0.1),:),1);
+        normDiff1.(conds{c}) = diff1.(conds{c}) - onsetMeanf1;
+        normDiff1_mean.(conds{c}) = nanmean(normDiff1.(conds{c}),2);
+        onsetMeanf2 = nanmean(diff2.(conds{c})(floor(fs*0.025):ceil(fs*0.1),:),1);
+        normDiff2.(conds{c}) = diff2.(conds{c}) - onsetMeanf2;
+        normDiff2_mean.(conds{c}) = nanmean(normDiff2.(conds{c}),2);
         
         % calculate trial ending points
         percNaN.(conds{c}) = get_percNaN(diff1.(conds{c}));
@@ -186,6 +197,8 @@ fmtMatrix.rawf1 = rawf1; fmtMeans.rawf1 = rawf1_mean;
 fmtMatrix.rawf2 = rawf2; fmtMeans.rawf2 = rawf2_mean;
 fmtMatrix.diff1 = diff1; fmtMeans.diff1 = diff1_mean;
 fmtMatrix.diff2 = diff2; fmtMeans.diff2 = diff2_mean;
+fmtMatrix.normDiff1 = normDiff1; fmtMeans.normDiff1 = normDiff1_mean; 
+fmtMatrix.normDiff2 = normDiff2; fmtMeans.normDiff2 = normDiff2_mean; 
 fmtMatrix.diff2d = diff2d; fmtMeans.diff2d = diff2d_mean;
 if isfield(indShift,'shiftind')
     fmtMatrix.percdiff1 = percdiff1; fmtMeans.percdiff1 = percdiff1_mean;
