@@ -64,15 +64,16 @@ for i = 1:length(sortedfiles)
             %                 trialparams.event_params.user_event_times(1) = [];
             %                 trialparams.event_params.user_event_names = trialparams.event_params.user_event_names{2:end};
             %             end
-            if strcmpi(expt.name, 'brut')
-                uevnames = trialparams.event_params.user_event_names;
-                vow = expt.listVowels{trialnum};
-                if strcmpi(vow,'oe')
-                    vow = 'ah';
-                end
-                onset_name = [upper(vow) 'Start'];
-                uevind = find(contains(uevnames,onset_name));
-%                if ~exist('uevind','var') || isempty(uevind)
+            if isfield(expt,'name')
+                if strcmpi(expt.name, 'brut')
+                    uevnames = trialparams.event_params.user_event_names;
+                    vow = expt.listVowels{trialnum};
+                    if strcmpi(vow,'oe')
+                        vow = 'ah';
+                    end
+                    onset_name = [upper(vow) 'Start'];
+                    uevind = find(contains(uevnames,onset_name));
+                    %                if ~exist('uevind','var') || isempty(uevind)
                     if strcmpi(expt.listWords{trialnum}, 'hais')
                         vow = 'ey';
                     elseif strcmpi(expt.listWords{trialnum},'oeuf')
@@ -80,11 +81,12 @@ for i = 1:length(sortedfiles)
                     end
                     onset_name = [upper(vow) 'Start'];
                     uevind = find(contains(uevnames,onset_name));
-%                end                
-                if exist('uevind','var')
-                    onset_time = trialparams.event_params.user_event_times(uevind);
+                    %                end
+                    if exist('uevind','var')
+                        onset_time = trialparams.event_params.user_event_times(uevind);
+                    end
+                    sprintf('trialnumber %d, word %s',trialnum, expt.listWords{trialnum})
                 end
-                sprintf('trialnumber %d, word %s',trialnum, expt.listWords{trialnum})
             else
                 % find time of user-created onset event
                 user_event_times = sort(trialparams.event_params.user_event_times);
