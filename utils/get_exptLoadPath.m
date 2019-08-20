@@ -5,7 +5,8 @@ if nargin < 1, exptName = []; end
 if ispc
     basePath = '\\wcs-cifs.waisman.wisc.edu\wc\smng\experiments\';
 elseif ismac
-    basePath = '/Volumes/wc/experiments/';
+%     basePath = '/Volumes/wc/experiments/';
+    basePath = '/Volumes/smng/experiments/';
 elseif isunix
     basePath = '/mnt/smng/experiments/'; %% placeholder
 else

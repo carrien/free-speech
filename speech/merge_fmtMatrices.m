@@ -1,10 +1,13 @@
-function [] = merge_fmtMatrices(dataPath,plotfile,conds2merge,mergednames)
+function [] = merge_fmtMatrices(dataPath,plotfile,conds2merge,mergednames,bSaveCheck)
 %MERGE_FMTMATRICES  Merges conditions within a plotfile.
 %   MERGE_FMTMATRICES(DATAPATH,PLOTFILE,CONDS2MERGE,MERGEDNAMES) combines
 %   conditions in a plotfile to be plotted as one condition. CONDS2MERGE is
 %   an array of cell arrays, each consisting of a pair of condition names
 %   (strings). MERGEDNAMES is an array of new condition names for each
 %   pair.
+if nargin < 5 || isempty(bSaveCheck)
+    bSaveCheck = 1;
+end
 
 fmtData = load(fullfile(dataPath,plotfile)); % e.g. fmtMatrix_shiftUpshiftDown_noShift.mat
 fmtMatrix = fmtData.fmtMatrix;
@@ -58,7 +61,12 @@ fmtData.fmtMatrix = fmtMatrix;
 fmtData.fmtMeans = fmtMeans;
 
 savefile = fullfile(dataPath,sprintf('fmtMatrix_%s_merged.mat',cell2mat(mergednames)));
-bSave = savecheck(savefile);
+if bSaveCheck
+    bSave = savecheck(savefile);
+else
+    bSave = 1;
+end
+
 if bSave
     save(savefile,'-struct','fmtData')
     fprintf('%s created.\n',savefile);
