@@ -86,11 +86,11 @@ for i = 1:length(sortedfiles)
                         onset_time = trialparams.event_params.user_event_times(uevind);
                     end
                     sprintf('trialnumber %d, word %s',trialnum, expt.listWords{trialnum})
-                end
-            else
+                else
                 % find time of user-created onset event
                 user_event_times = sort(trialparams.event_params.user_event_times);
                 onset_time = user_event_times(1);
+                end
             end
             timediff = sigmat.ampl_taxis - onset_time;
             [~, onsetIndAmp] = min(abs(timediff));            
