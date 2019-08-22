@@ -81,6 +81,13 @@ for i = 1:length(sortedfiles)
                     end
                     onset_name = [upper(vow) 'Start'];
                     uevind = find(contains(uevnames,onset_name));
+                    if isempty(uevind)
+                        if strcmpi(expt.listWords{trialnum},'oeuf')
+                            onset_name='spnStart'; % Sarah needs to figure out why this is happening and fix it
+                            uevind = find(contains(uevnames,onset_name));
+                        end
+                    end
+                    
                     %                end
                     if exist('uevind','var')
                         onset_time = trialparams.event_params.user_event_times(uevind);
@@ -93,7 +100,7 @@ for i = 1:length(sortedfiles)
                 onset_time = user_event_times(1);
             end
             timediff = sigmat.ampl_taxis - onset_time;
-            [~, onsetIndAmp] = min(abs(timediff));            
+            [~, onsetIndAmp] = min(abs(timediff));
         else
             % use amplitude threshold to find onset index
             if exist('trialparams','var') && ~isempty(trialparams.sigproc_params)
@@ -143,7 +150,7 @@ for i = 1:length(sortedfiles)
         if exist('uevind','var')
             clear uevind
         end
-
+        
         
         % find onset/offset indices for each track
         onsetIndf0 = get_index_at_time(sigmat.pitch_taxis,onset_time);
