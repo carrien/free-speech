@@ -64,42 +64,42 @@ for i = 1:length(sortedfiles)
             %                 trialparams.event_params.user_event_times(1) = [];
             %                 trialparams.event_params.user_event_names = trialparams.event_params.user_event_names{2:end};
             %             end
-            if isfield(expt,'name')
-                if (strcmpi(expt.name, 'brut') || strcmpi(expt.name,'port'))
-                    uevnames = trialparams.event_params.user_event_names;
-                    vow = expt.listVowels{trialnum};
-                    if strcmpi(vow,'oe')
-                        vow = 'ah';
-                    end
-                    onset_name = [upper(vow) 'Start'];
-                    uevind = find(contains(uevnames,onset_name));
-                    %                if ~exist('uevind','var') || isempty(uevind)
-                    if (strcmpi(expt.listWords{trialnum}, 'hais') || strcmpi(expt.listWords{trialnum},'fait'))
-                        vow = 'ey';
-                    elseif strcmpi(expt.listWords{trialnum},'oeuf')
-                        vow = 'ah';
-                    elseif strcmpi(expt.listWords{trialnum},'neuf')
-                        vow = 'uw';
-                    end
-                    onset_name = [upper(vow) 'Start'];
-                    uevind = find(contains(uevnames,onset_name));
-                    if isempty(uevind)
-                        if (strcmpi(expt.listWords{trialnum},'oeuf') || strcmpi(expt.listWords{trialnum},'neuf'))
-                            onset_name='spnStart'; % Sarah needs to figure out why this is happening and fix it
-                            uevind = find(contains(uevnames,onset_name));
-                        end
-                    end
-                    
-                    %                end
-                    if exist('uevind','var')
-                        onset_time = trialparams.event_params.user_event_times(uevind);
-                    end
-                    sprintf('trialnumber %d, word %s',trialnum, expt.listWords{trialnum})
+            if (isfield(expt,'name') && (strcmpi(expt.name,'brut') || strcmpi(expt.name,'port')))
+                % if (strcmpi(expt.name, 'brut') || strcmpi(expt.name,'port'))
+                uevnames = trialparams.event_params.user_event_names;
+                vow = expt.listVowels{trialnum};
+                if strcmpi(vow,'oe')
+                    vow = 'ah';
                 end
+                onset_name = [upper(vow) 'Start'];
+                uevind = find(contains(uevnames,onset_name));
+                %                if ~exist('uevind','var') || isempty(uevind)
+                if (strcmpi(expt.listWords{trialnum}, 'hais') || strcmpi(expt.listWords{trialnum},'fait'))
+                    vow = 'ey';
+                elseif strcmpi(expt.listWords{trialnum},'oeuf')
+                    vow = 'ah';
+                elseif strcmpi(expt.listWords{trialnum},'neuf')
+                    vow = 'uw';
+                end
+                onset_name = [upper(vow) 'Start'];
+                uevind = find(contains(uevnames,onset_name));
+                if isempty(uevind)
+                    if (strcmpi(expt.listWords{trialnum},'oeuf') || strcmpi(expt.listWords{trialnum},'neuf'))
+                        onset_name='spnStart'; % Sarah needs to figure out why this is happening and fix it
+                        uevind = find(contains(uevnames,onset_name));
+                    end
+                end
+                
+                %                end
+                if exist('uevind','var')
+                    onset_time = trialparams.event_params.user_event_times(uevind);
+                end
+                sprintf('trialnumber %d, word %s',trialnum, expt.listWords{trialnum})
+                % end
             else
-                    % find time of user-created onset event
-                    user_event_times = sort(trialparams.event_params.user_event_times);
-                    onset_time = user_event_times(1);
+                % find time of user-created onset event
+                user_event_times = sort(trialparams.event_params.user_event_times);
+                onset_time = user_event_times(1);
             end
             timediff = sigmat.ampl_taxis - onset_time;
             [~, onsetIndAmp] = min(abs(timediff));
