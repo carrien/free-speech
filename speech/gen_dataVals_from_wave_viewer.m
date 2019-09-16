@@ -65,7 +65,7 @@ for i = 1:length(sortedfiles)
             %                 trialparams.event_params.user_event_names = trialparams.event_params.user_event_names{2:end};
             %             end
             if isfield(expt,'name')
-                if strcmpi(expt.name, 'brut')
+                if (strcmpi(expt.name, 'brut') || strcmpi(expt.name,'port'))
                     uevnames = trialparams.event_params.user_event_names;
                     vow = expt.listVowels{trialnum};
                     if strcmpi(vow,'oe')
@@ -74,15 +74,17 @@ for i = 1:length(sortedfiles)
                     onset_name = [upper(vow) 'Start'];
                     uevind = find(contains(uevnames,onset_name));
                     %                if ~exist('uevind','var') || isempty(uevind)
-                    if strcmpi(expt.listWords{trialnum}, 'hais')
+                    if (strcmpi(expt.listWords{trialnum}, 'hais') || strcmpi(expt.listWords{trialnum},'fait'))
                         vow = 'ey';
                     elseif strcmpi(expt.listWords{trialnum},'oeuf')
                         vow = 'ah';
+                    elseif strcmpi(expt.listWords{trialnum},'neuf')
+                        vow = 'uw';
                     end
                     onset_name = [upper(vow) 'Start'];
                     uevind = find(contains(uevnames,onset_name));
                     if isempty(uevind)
-                        if strcmpi(expt.listWords{trialnum},'oeuf')
+                        if (strcmpi(expt.listWords{trialnum},'oeuf') || strcmpi(expt.listWords{trialnum},'neuf'))
                             onset_name='spnStart'; % Sarah needs to figure out why this is happening and fix it
                             uevind = find(contains(uevnames,onset_name));
                         end
