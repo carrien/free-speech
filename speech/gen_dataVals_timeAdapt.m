@@ -50,10 +50,10 @@ for i = 1:length(sortedTrialnums)
     load(fullfile(trialPath,filename));
     
     word = expt.allWords(trialnum);
-    if isfield(expt,'allColors') 
-        trialWord = expt.listWords{trialnum};
+    if isfield(expt,'listWords') 
+        condWord = expt.listWords{trialnum};
     else
-        trialWord = [];
+        condWord = [];
     end
     
     % get user-created events
@@ -73,8 +73,8 @@ for i = 1:length(sortedTrialnums)
     % find word onset
     if n_events
         % find time of first user-created event (beginning of word/consonant stricture) 
-        wordOnset = user_event_times(1);
-        onsetIndAmp = get_index_at_time(sigmat.ampl_taxis,wordOnset);
+        wordOnsetTime = user_event_times(1);
+        wordOnsetIndAmp = get_index_at_time(sigmat.ampl_taxis,wordOnsetTime);
     else % RK not sure what to do with this else here. There needs to be an event... 
         % use amplitude threshold to find suprathreshold indices
         if exist('trialparams','var') && ~isempty(trialparams.sigproc_params)
@@ -85,15 +85,15 @@ for i = 1:length(sortedTrialnums)
         end
         % set onset to first suprathreshold index
         if amplInds
-            onsetIndAmp = amplInds(1) + 1;
+            wordOnsetIndAmp = amplInds(1) + 1;
         else
-            onsetIndAmp = 1; % set trial BAD here? reason: no onset found?
+            wordOnsetIndAmp = 1; % set trial BAD here? reason: no onset found?
         end
-        wordOnset = sigmat.ampl_taxis(onsetIndAmp);
+        wordOnsetTime = sigmat.ampl_taxis(wordOnsetIndAmp);
     end
     
     % find vowel onset: diverges from dataVals_VOT here. assumes 4 events for stops and 3 for fricatives
-    if strcmp(trialWord,'car') || strcmp(trialWord, 'gar')
+    if strcmp(condWord,'car') || strcmp(condWord, 'gar')
         % find time of second user-created event
         if n_events > 1 && user_event_times(1) ~= user_event_times(2)
             burstTime = user_event_times(2);
@@ -101,13 +101,18 @@ for i = 1:length(sortedTrialnums)
             
             vowelOnsetTime = user_event_times(3); 
             vowelOnsetIndAmp = get_index_at_time(sigmat.ampl_taxis,vowelOnsetTime); 
-            offsetEventInd = 4;            
+            offsetEventInd = 4;
+            
+            % Stop closure duration
+            closureDur = burstTime - wordOnsetTime; 
+            vot = vowelOnsetTime - burstTime; 
         else
             % check if bad trial
             if ~trialparams.event_params.is_good_trial
                 % if bad trial, don't throw error; use word onset as vowel onset
-                burstTime = wordOnset;
-                burstIndAmp = onsetIndAmp;
+                burstTime = wordOnsetTime;
+                burstIndAmp = wordOnsetIndAmp;
+                closureDur = 18; 
                 offsetEventInd = 2;
             else
                 % if good trial, error
@@ -119,19 +124,27 @@ for i = 1:length(sortedTrialnums)
                 error('Voice onset event not set for trial %d (%s found).',trialnum,n_event_str)
             end
         end
-    elseif strcmp(trialWord,'czar') || strcmp(trialWord, 'saw') % the fricatives
+    elseif strcmp(condWord,'czar') || strcmp(condWord, 'saw') % the fricatives
         if n_events > 1 && user_event_times(1) ~= user_event_times(2)
-            burstTime = NaN; % Doing this so it doesn't error or give you a holdover value 
+            burstTime = 0; % Doing this so it doesn't error or give you a holdover value
+            burstIndAmp = 0; 
+            
             vowelOnsetTime = user_event_times(2);
             vowelOnsetIndAmp = get_index_at_time(sigmat.ampl_taxis,vowelOnsetTime);
             offsetEventInd = 3;
+            
+            % Fricative stricture duration
+            closureDur = vowelOnsetTime - wordOnsetTime; 
+            vot = NaN; 
+            
         else
             % check if bad trial
             if ~trialparams.event_params.is_good_trial
                 % if bad trial, don't throw error; use word onset as vowel onset
-                burstTime = wordOnset;
-                burstIndAmp = onsetIndAmp;
+                burstTime = wordOnsetTime;
+                burstIndAmp = wordOnsetIndAmp;
                 offsetEventInd = 2;
+                closureDur = 5; 
             else
                 % if good trial, error
                 if n_events
@@ -145,8 +158,8 @@ for i = 1:length(sortedTrialnums)
         
     else
         % use word onset as vowel onset
-        burstTime = wordOnset;
-        burstIndAmp = onsetIndAmp;
+        burstTime = wordOnsetTime;
+        burstIndAmp = wordOnsetIndAmp;
         offsetEventInd = 2;
     end
     
@@ -182,13 +195,14 @@ for i = 1:length(sortedTrialnums)
     dataVals(i).f0 = sigmat.pitch(onsetIndf0:offsetIndf0)';
     dataVals(i).f1 = sigmat.ftrack(1,onsetIndfx:offsetIndfx)';
     dataVals(i).f2 = sigmat.ftrack(2,onsetIndfx:offsetIndfx)';
-    dataVals(i).int = sigmat.ampl(onsetIndAmp:offsetIndAmp)';
+    dataVals(i).int = sigmat.ampl(wordOnsetIndAmp:offsetIndAmp)';
     dataVals(i).pitch_taxis = sigmat.pitch_taxis(onsetIndf0:offsetIndf0)';
     dataVals(i).ftrack_taxis = sigmat.ftrack_taxis(onsetIndfx:offsetIndfx)';
-    dataVals(i).ampl_taxis = sigmat.ampl_taxis(onsetIndAmp:offsetIndAmp)';
-    dataVals(i).dur = offsetTime - wordOnset;
-    dataVals(i).vot = burstTime - wordOnset; % timeAdapt edit
-    dataVals(i).closureDur = offsetTime - vowelOnsetTime; % timeAdapt addition 
+    dataVals(i).ampl_taxis = sigmat.ampl_taxis(wordOnsetIndAmp:offsetIndAmp)';
+    dataVals(i).dur = offsetTime - wordOnsetTime;
+    dataVals(i).closureDur = closureDur; % timeAdapt addition
+    dataVals(i).vot = vot; % timeAdapt edit
+    dataVals(i).vowelDur = offsetTime - vowelOnsetTime; % timeAdapt addition 
     dataVals(i).word = word;
     dataVals(i).vowel = expt.allVowels(trialnum);
     dataVals(i).color = expt.allColors(trialnum);
