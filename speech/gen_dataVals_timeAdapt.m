@@ -98,7 +98,7 @@ for i = 1:length(sortedTrialnums)
     if strcmp(condWord,'car') || strcmp(condWord, 'gar')
         % find time of second user-created event
         if n_events > 1 && user_event_times(1) ~= user_event_times(2)
-            closureTime = user_event_time(2); 
+            closureTime = user_event_times(2); 
             closureIndAmp = get_index_at_time(sigmat.ampl_taxis,closureTime);
             
             burstTime = user_event_times(3);
@@ -115,7 +115,7 @@ for i = 1:length(sortedTrialnums)
             % Calculations for stop trials
             v1Dur = closureTime - vowel1OnsetTime; 
             closureDur = burstTime - closureTime; 
-            vot = vowel2Onsettime - burstTime; 
+            vot = vowel2OnsetTime - burstTime; 
             v2Dur = vowel2OffsetTime - vowel2OnsetTime; 
 
         else
