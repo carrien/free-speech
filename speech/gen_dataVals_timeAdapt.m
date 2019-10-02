@@ -139,7 +139,7 @@ for i = 1:length(sortedTrialnums)
         
     elseif strcmp(condWord,'czar') || strcmp(condWord, 'saw') % the fricatives
         if n_events > 1 && user_event_times(1) ~= user_event_times(2)
-            closureTime = user_event_time(2); 
+            closureTime = user_event_times(2); 
             closureIndAmp = get_index_at_time(sigmat.ampl_taxis,closureTime);
            
             burstTime = 0; % Doing this so it doesn't error or give you a holdover value
@@ -164,7 +164,7 @@ for i = 1:length(sortedTrialnums)
                 % if bad trial, don't throw error; use word onset as vowel onset
                 burstTime = vowel1OnsetTime;
                 burstIndAmp = vowel1OnsetIndAmp;
-                offsetEventInd = 1;
+                offsetEventInd = 2;
                 closureDur = NaN; 
             else
                 % if good trial, error
