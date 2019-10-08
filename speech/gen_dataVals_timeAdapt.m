@@ -71,7 +71,7 @@ for i = 1:length(sortedTrialnums)
         warning('%d events found in trial %d (expected %d or fewer)',n_events,trialnum,max_events);
         fprintf('ignoring event %d\n',max_events+1:n_events)
     end
-    
+
     % find word onset
     if n_events
         % find time of first user-created event (beginning of word/consonant stricture) 
@@ -97,7 +97,7 @@ for i = 1:length(sortedTrialnums)
     % find vowel onset: diverges from dataVals_VOT here. assumes 5 events for stops and 4 for fricatives
     if strcmp(condWord,'car') || strcmp(condWord, 'gar')
         % find time of second user-created event
-        if n_events > 1 && user_event_times(1) ~= user_event_times(2)
+        if n_events > 1 && user_event_times(1) ~= user_event_times(2) && bPrecheck == 0
             closureTime = user_event_times(2); 
             closureIndAmp = get_index_at_time(sigmat.ampl_taxis,closureTime);
             
@@ -117,7 +117,7 @@ for i = 1:length(sortedTrialnums)
             closureDur = burstTime - closureTime; 
             vot = vowel2OnsetTime - burstTime; 
             v2Dur = vowel2OffsetTime - vowel2OnsetTime; 
-
+            
         else
             % check if bad trial
             if ~trialparams.event_params.is_good_trial
