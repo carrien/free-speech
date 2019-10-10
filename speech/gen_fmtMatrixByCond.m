@@ -148,14 +148,20 @@ for c = 1:length(indShift) % for each condition to plot
             magShift = sqrt(shiftvec(1)^2 + shiftvec(2)^2);
             %display(sprintf('%s magShift = %2f; sdist = %2f',conds{c},magShift,subjInfo.sdist))
             
-            % get percentage differences
+            % get diff as a percentage of shift
             percdiff1.(conds{c}) = diff1.(conds{c}).*(100/shiftvec(1));
             percdiff1_mean.(conds{c}) = diff1_mean.(conds{c}).*(100/abs(shiftvec(1)));
             percdiff2.(conds{c}) = diff2.(conds{c}).*(100/shiftvec(2));
             percdiff2_mean.(conds{c}) = diff2_mean.(conds{c}).*(100/abs(shiftvec(2)));
             percdiff2d.(conds{c}) = diff2d.(conds{c}).*(100/magShift);
             percdiff2d_mean.(conds{c}) = diff2d_mean.(conds{c}).*(100/magShift);
-            
+
+            % get diff as a fraction of raw formant values
+            fracdiff1.(conds{c}) = diff1.(conds{c})./tiledMeanBaseF1;
+            fracdiff1_mean.(conds{c}) = diff1_mean.(conds{c})./rawf1_mean.(baseconds{c});
+            fracdiff2.(conds{c}) = diff2.(conds{c})./tiledMeanBaseF2;
+            fracdiff2_mean.(conds{c}) = diff2_mean.(conds{c})./rawf2_mean.(baseconds{c});
+
             % calculate dot products (projection and efficiency)
             fprintf('Calculating dot products: %s\n',conds{c})
             for t = 1:size(diff1.(conds{c}),1) % for each timepoint
@@ -204,6 +210,8 @@ if isfield(indShift,'shiftind')
     fmtMatrix.percdiff1 = percdiff1; fmtMeans.percdiff1 = percdiff1_mean;
     fmtMatrix.percdiff2 = percdiff2; fmtMeans.percdiff2 = percdiff2_mean;
     fmtMatrix.percdiff2d = percdiff2d; fmtMeans.percdiff2d = percdiff2d_mean;
+    fmtMatrix.fracdiff1 = fracdiff1; fmtMeans.fracdiff1 = fracdiff1_mean;
+    fmtMatrix.fracdiff2 = fracdiff2; fmtMeans.fracdiff2 = fracdiff2_mean;
     fmtMatrix.proj = proj; fmtMeans.proj = proj_mean;
     fmtMatrix.percproj = percproj; fmtMeans.percproj = percproj_mean;
     fmtMatrix.effproj = effproj; fmtMeans.effproj = effproj_mean;
