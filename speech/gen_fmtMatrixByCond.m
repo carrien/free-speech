@@ -158,9 +158,9 @@ for c = 1:length(indShift) % for each condition to plot
 
             % get diff as a fraction of raw formant values
             fracdiff1.(conds{c}) = diff1.(conds{c})./tiledMeanBaseF1;
-            fracdiff1_mean.(conds{c}) = diff1_mean.(conds{c})./rawf1_mean.(baseconds{c});
+            fracdiff1_mean.(conds{c}) = diff1_mean.(conds{c})./mean(tiledMeanBaseF1,2);
             fracdiff2.(conds{c}) = diff2.(conds{c})./tiledMeanBaseF2;
-            fracdiff2_mean.(conds{c}) = diff2_mean.(conds{c})./rawf2_mean.(baseconds{c});
+            fracdiff2_mean.(conds{c}) = diff2_mean.(conds{c})./mean(tiledMeanBaseF2,2);
 
             % calculate dot products (projection and efficiency)
             fprintf('Calculating dot products: %s\n',conds{c})

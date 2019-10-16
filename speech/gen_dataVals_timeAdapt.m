@@ -95,9 +95,9 @@ for i = 1:length(sortedTrialnums)
     end
     
     % find vowel onset: diverges from dataVals_VOT here. assumes 5 events for stops and 4 for fricatives
-    if strcmp(condWord,'car') || strcmp(condWord, 'gar')
+    if strcmp(condWord,'car') || strcmp(condWord, 'gar') || strcmp(condWord, 'god') || strcmp(condWord, 'cod')
         % find time of second user-created event
-        if n_events > 1 && user_event_times(1) ~= user_event_times(2) && bPrecheck == 0
+        if n_events > 1 && user_event_times(1) ~= user_event_times(2)
             closureTime = user_event_times(2); 
             closureIndAmp = get_index_at_time(sigmat.ampl_taxis,closureTime);
             
@@ -137,7 +137,7 @@ for i = 1:length(sortedTrialnums)
             end
         end
         
-    elseif strcmp(condWord,'czar') || strcmp(condWord, 'saw') % the fricatives
+    elseif strcmp(condWord,'czar') || strcmp(condWord, 'saw') || strcmp(condWord, 'sea') || strcmp(condWord, 'Z') % the fricatives
         if n_events > 1 && user_event_times(1) ~= user_event_times(2)
             closureTime = user_event_times(2); 
             closureIndAmp = get_index_at_time(sigmat.ampl_taxis,closureTime);
@@ -227,9 +227,9 @@ for i = 1:length(sortedTrialnums)
     dataVals(i).v1Dur = v1Dur; % timeAdapt addition 
     dataVals(i).v2Dur = v2Dur; 
     dataVals(i).word = word;
-    dataVals(i).vowel = expt.allVowels(trialnum);
-    dataVals(i).color = expt.allColors(trialnum);
-    dataVals(i).cond = expt.allConds(trialnum);
+    dataVals(i).vowel = expt.allVowels(mod(trialnum, length(expt.allVowels)) + 1); % normally just trialnum (next two as well) 
+    dataVals(i).color = expt.allColors(mod(trialnum, length(expt.allVowels)) + 1);
+    dataVals(i).cond = expt.allConds(mod(trialnum, length(expt.allVowels)) + 1);
     dataVals(i).token = trialnum;
     if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params)
         dataVals(i).bExcl = ~trialparams.event_params.is_good_trial;
