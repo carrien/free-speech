@@ -227,8 +227,8 @@ for i = 1:length(sortedTrialnums)
     dataVals(i).v1Dur = v1Dur; % timeAdapt addition 
     dataVals(i).v2Dur = v2Dur; 
     dataVals(i).word = word;
-    dataVals(i).vowel = expt.allVowels(mod(trialnum, length(expt.allVowels)) + 1); % normally just trialnum (next two as well) 
-    dataVals(i).color = expt.allColors(mod(trialnum, length(expt.allVowels)) + 1);
+%     dataVals(i).vowel = expt.allVowels(mod(trialnum, length(expt.allVowels)) + 1); % normally just trialnum (next two as well) 
+%     dataVals(i).color = expt.allColors(mod(trialnum, length(expt.allVowels)) + 1);
     dataVals(i).cond = expt.allConds(mod(trialnum, length(expt.allVowels)) + 1);
     dataVals(i).token = trialnum;
     if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params)
