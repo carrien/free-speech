@@ -10,7 +10,7 @@ if nargin < 1 || isempty(dataPath), dataPath = cd; end
 if nargin < 2 || isempty(trialdir), trialdir = 'trials'; end
 if nargin < 3 || isempty(bSaveCheck), bSaveCheck = 1; end
 
-max_events = 3; % three events for VOT study: word onset, voice onset, word offset
+max_events = 4; % up to four events for VOT study: word onset, voice onset, vowel onset, and vowel offset
 
 % set output file
 savefile = fullfile(dataPath,sprintf('dataVals%s.mat',trialdir(7:end)));
@@ -65,6 +65,7 @@ for i = 1:length(sortedTrialnums)
         % find time of first user-created event
         onset_time = user_event_times(1);
         onsetIndAmp = get_index_at_time(sigmat.ampl_taxis,onset_time);
+        offsetEventInd = n_events;  % last event is offset
     else
         % use amplitude threshold to find suprathreshold indices
         if exist('trialparams','var') && ~isempty(trialparams.sigproc_params)
@@ -88,14 +89,12 @@ for i = 1:length(sortedTrialnums)
         if n_events > 1 && user_event_times(1) ~= user_event_times(2)
             vowelOnset_time = user_event_times(2);
             vowelOnsetIndAmp = get_index_at_time(sigmat.ampl_taxis,vowelOnset_time);
-            offsetEventInd = 3;
         else
             % check if bad trial
             if ~trialparams.event_params.is_good_trial
                 % if bad trial, don't throw error; use word onset as vowel onset
                 vowelOnset_time = onset_time;
                 vowelOnsetIndAmp = onsetIndAmp;
-                offsetEventInd = 2;
             else
                 % if good trial, error
                 if n_events
@@ -110,7 +109,6 @@ for i = 1:length(sortedTrialnums)
         % use word onset as vowel onset
         vowelOnset_time = onset_time;
         vowelOnsetIndAmp = onsetIndAmp;
-        offsetEventInd = 2;
     end
     
     % find offset
