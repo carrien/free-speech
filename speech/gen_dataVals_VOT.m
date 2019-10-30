@@ -1,4 +1,4 @@
-function [] = gen_dataVals_VOT(dataPath,trialdir)
+function [] = gen_dataVals_VOT(dataPath,trialdir,bSaveCheck)
 %GEN_DATAVALS_VOT  Scrape subject trial files for data and save.
 %   GEN_DATAVALS_VOT(DATAPATH,TRIALDIR) scrapes the files from a subject's
 %   DATAPATH/TRIALDIR directory and collects formant data into the single
@@ -8,12 +8,17 @@ function [] = gen_dataVals_VOT(dataPath,trialdir)
 
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
 if nargin < 2 || isempty(trialdir), trialdir = 'trials'; end
+if nargin < 3 || isempty(bSaveCheck), bSaveCheck = 1; end
 
 max_events = 3; % three events for VOT study: word onset, voice onset, word offset
 
 % set output file
 savefile = fullfile(dataPath,sprintf('dataVals%s.mat',trialdir(7:end)));
-bSave = savecheck(savefile);
+if bSaveCheck
+    bSave = savecheck(savefile);
+else
+    bSave = 1;
+end
 if ~bSave, return; end
 
 % load expt files
@@ -35,7 +40,7 @@ for i = 1:length(sortedTrialnums)
     load(fullfile(trialPath,filename));
     
     word = expt.allWords(trialnum);
-    if isfield(expt,'allColors') 
+    if isfield(expt,'listColors') 
         colorname = expt.listColors{trialnum};
     else
         colorname = [];
