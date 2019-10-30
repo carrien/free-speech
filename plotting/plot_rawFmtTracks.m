@@ -24,11 +24,14 @@ f1color = [0 0 1]; % blue
 f2color = [1 0 0]; % red
 
 groups = unique([dataVals.(grouping)]);
+nCols = 4;
 for g = groups
-    hsub(g) = subplot(1,length(groups),g,'Parent',parent);
+    hsub(g) = subplot(floor(length(groups)/nCols), nCols, g, 'Parent', parent);
+%     hsub(g) = subplot(1,length(groups),g,'Parent',parent);
     % plot tracks and ends
     ihandle = 1;
     for i=trialset
+%         disp(i)
         if (~isfield(dataVals,'bExcl') || ~dataVals(i).bExcl) && dataVals(i).(grouping) == g
             %plot tracks
             taxis = dataVals(i).ftrack_taxis - dataVals(i).ftrack_taxis(1);
