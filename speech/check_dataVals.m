@@ -1,4 +1,4 @@
-function errors = check_dataVals(dataPath,bCalc,dataVals)
+function errors = check_dataVals(dataPath,bCalc,buffertype,dataVals)
 %check formant data for errors and return trial numbers where errors are
 %detected. Types of errors:
 %             * jumpTrials in F1/F2 trajectory
@@ -14,12 +14,14 @@ function errors = check_dataVals(dataPath,bCalc,dataVals)
 %                   yesCalc:  option to calculate dataVals using
 %                       gen_dataVals_from_wave_viewer function (1) or not (0).
 %                       Defualt is 0 if not specified.
+%                   buffertype: 'signalIn' or 'signalOut'
 %                   dataVals: dataVals stored as a variable
 %
 % rewritten to include GUI JAN 2019
 
 if nargin < 1 || isempty(dataPath), dataPath = pwd; end
 if nargin < 2 || isempty(bCalc), bCalc = 1; end
+if nargin < 3 || isempty(buffertype), buffertype = 'signalIn'; end
 
 %% create GUI
 f = figure('Visible','on','Units','Normalized','Position',[.1 .1 .8 .8]);
@@ -27,7 +29,7 @@ f = figure('Visible','on','Units','Normalized','Position',[.1 .1 .8 .8]);
 UserData = guihandles(f);
 UserData.dataPath = dataPath;
 UserData.f = f;
-
+UserData.buffertype = buffertype;
 
 %% create warning field in GUI
 UserData.xPosMax = 0.975;
@@ -49,7 +51,7 @@ UserData.warnText = uicontrol(UserData.warnPanel,'style','text',...
             'FontUnits','Normalized','FontSize',.3);
         
 %% load data if needed
-if nargin < 3
+if nargin < 4
     [dataVals,expt] = load_dataVals(UserData,dataPath,bCalc);
 else
     load(fullfile(dataPath,'expt')); 
@@ -200,10 +202,17 @@ function [dataVals,expt] = load_dataVals(UserData,dataPath,bCalc)
     set(UserData.warnPanel,'HighlightColor','yellow')
     set(UserData.warnText,'String',outstring)
     %if yesCalc == 1, generate dataVals
-    if bCalc
-        gen_dataVals_from_wave_viewer(dataPath);
+    if strcmp(UserData.buffertype,'signalIn')
+        trialdir = 'trials';
+        dataValsID = 'dataVals';
+    else
+        trialdir = sprintf('trials_%s',UserData.buffertype);
+        dataValsID = sprintf('dataVals%s.mat',trialdir(7:end));
     end
-    load(fullfile(dataPath,'dataVals'))
+    if bCalc
+        gen_dataVals_from_wave_viewer(dataPath,trialdir);
+    end
+    load(fullfile(dataPath,dataValsID))
     load(fullfile(dataPath,'expt'))
     set(UserData.warnText,'String',[])
     set(UserData.warnPanel,'HighlightColor',[1 1 1])
