@@ -110,7 +110,7 @@ end
 
 function launch_GUI(src,evt)
     UserData = guidata(src);
-    audioGUI(UserData.dataPath,UserData.trialset,[],[],0)
+    audioGUI(UserData.dataPath,UserData.trialset,UserData.buffertype,[],0)
 end
 
 function reload_dataVals(src,evt)
