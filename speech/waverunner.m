@@ -57,6 +57,7 @@ for itrial = trials2track
     % if trial data exists, load it
     savefile = fullfile(dataPath,trialfolder,sprintf('%d.mat',itrial));
     if (exist(savefile,'file') == 2)
+        bCopyParams = 0;
         saveddata = load(savefile);
         trialparams = saveddata.trialparams;        % load saved trial params
         if isfield(trialparams,'sigproc_params')      % if sigproc_params exists, use existing values
@@ -70,11 +71,7 @@ for itrial = trials2track
     elseif ~strcmp(buffertype,'signalIn') 
         if exist(fullfile(dataPath,trialfolderSigIn,sprintf('%d.mat',itrial)),'file') && ~exist(fullfile(dataPath,trialfolder,sprintf('%d.mat',itrial)),'file')
             bCopyParams = 1;
-        else
-            bCopyParams = 0;
-        end
-        copyfile = fullfile(dataPath,trialfolderSigIn,sprintf('%d.mat',itrial));
-        if bCopyParams && (exist(copyfile,'file') == 2)
+            copyfile = fullfile(dataPath,trialfolderSigIn,sprintf('%d.mat',itrial));
             saveddata = load(copyfile);
             trialparams = saveddata.trialparams;        % load saved trial params
             if isfield(trialparams,'sigproc_params')      % if sigproc_params exists, use existing values
@@ -85,18 +82,25 @@ for itrial = trials2track
                     end
                 end
             end
+            
+            %calculate lag between input and output signals
+            [r,lags] = xcorr(data(itrial).signalOut,data(itrial).signalIn);
+            [rmax,imax] = max(r);
+            offsetMs = lags(imax)/data(itrial).params.sr;
             if isfield(trialparams,'event_params')      % if event_params exists, copy them
                 fieldns = fieldnames(trialparams.event_params);
                 for i=1:length(fieldns)                     % use previously saved params
                     if ~sum(strcmp(fieldns{i},params2overwrite))
                         event_params.(fieldns{i}) = trialparams.event_params.(fieldns{i});
                         if strcmp(fieldns{i},'user_event_times')
-                            event_params.(fieldns{i}) = event_params.(fieldns{i})+0.008; %account for delay between in and out signals
+                            event_params.(fieldns{i}) = event_params.(fieldns{i})+offsetMs; %account for delay between in and out signals
                         end
                     end
                 end
             end
-        end   
+        else
+            bCopyParams = 0;
+        end
     else clear sigmat trialparams
     end
     
