@@ -51,7 +51,7 @@ UserData.warnText = uicontrol(UserData.warnPanel,'style','text',...
             'FontUnits','Normalized','FontSize',.3);
         
 %% load data if needed
-if nargin < 3
+if nargin < 4
     [dataVals,expt] = load_dataVals(UserData,dataPath,bCalc);
 else
     load(fullfile(dataPath,'expt')); 
@@ -206,8 +206,8 @@ function [dataVals,expt] = load_dataVals(UserData,dataPath,bCalc)
         trialdir = 'trials';
         dataValsID = 'dataVals';
     else
-        trialdir = sprintf('trials_%s',buffertype);
-        dataValsId = sprintf('dataVals%s.mat',trialdir(7:end));
+        trialdir = sprintf('trials_%s',UserData.buffertype);
+        dataValsID = sprintf('dataVals%s.mat',trialdir(7:end));
     end
     if bCalc
         gen_dataVals_from_wave_viewer(dataPath,trialdir);
