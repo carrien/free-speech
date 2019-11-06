@@ -26,7 +26,7 @@ f2color = [1 0 0]; % red
 groups = unique([dataVals.(grouping)]);
 nCols = 4;
 for g = groups
-    hsub(g) = subplot(floor(length(groups)/nCols), nCols, g, 'Parent', parent);
+    hsub(g) = subplot(ceil(length(groups)/nCols), nCols, g, 'Parent', parent);
 %     hsub(g) = subplot(1,length(groups),g,'Parent',parent);
     % plot tracks and ends
     ihandle = 1;
