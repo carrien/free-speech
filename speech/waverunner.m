@@ -84,9 +84,16 @@ for itrial = trials2track
             end
             
             %calculate lag between input and output signals
-            [r,lags] = xcorr(data(itrial).signalOut,data(itrial).signalIn);
+            cutoffSamp1 = find(isnan(data(itrial).signalOut), 1 );
+            if ~isempty(cutoffSamp1)
+                endSamp = cutoffSamp1-1;
+            else
+                endSamp = length(data(itrial).signalOut);
+            end
+            [r,lags] = xcorr(data(itrial).signalOut(1:endSamp),data(itrial).signalIn(1:endSamp));
             [rmax,imax] = max(r);
             offsetMs = lags(imax)/data(itrial).params.sr;
+            
             if isfield(trialparams,'event_params')      % if event_params exists, copy them
                 fieldns = fieldnames(trialparams.event_params);
                 for i=1:length(fieldns)                     % use previously saved params
