@@ -363,34 +363,36 @@ end
 
 %% calculate near and far trials using projection on shiftvec
 if isfield(expt,'shifts')
-    shiftnames = expt.conds(end-length(expt.shifts.hz)+1:end);
+    shiftscales = fieldnames(expt.shifts);
+    nshifts = length(expt.shifts.(shiftscales{1}));
+    shiftnames = expt.conds(end-nshifts+1:end);
     for cnd=1:length(conds)
         c = conds{cnd};
         for avg=1:length(avgfn)
             av = avgfn{avg};
-            
-            if isfield(fmtdata.(fr).(c),av)
-                for shf=1:length(shiftnames)
-                    s = shiftnames{shf};
-                    fr = 'hz';
-                    shiftvec = expt.shifts.(fr){shf};
-                    magShift = sqrt(shiftvec(1)^2 + shiftvec(2)^2);
-                    
-                    f1s = fmtdata.(fr).(c).(av).rawavg.f1; % formants only, since that's what we shift
-                    f2s = fmtdata.(fr).(c).(av).rawavg.f2;
-                    for i = 1:length(f1s)   % projection on shift vector
-                        fmtdata.(fr).(c).(av).shiftproj.(s).all(i) = dot([f1s(i) f2s(i)],shiftvec)/magShift;
+            for fqs=1:length(shiftscales)
+                fr=shiftscales{fqs};
+                if isfield(fmtdata.(fr).(c),av)
+                    for shf=1:length(shiftnames)
+                        s = shiftnames{shf};
+                        shiftvec = expt.shifts.(fr){shf};
+                        magShift = sqrt(shiftvec(1)^2 + shiftvec(2)^2);
+                        
+                        f1s = fmtdata.(fr).(c).(av).rawavg.f1; % formants only, since that's what we shift
+                        f2s = fmtdata.(fr).(c).(av).rawavg.f2;
+                        for i = 1:length(f1s)   % projection on shift vector
+                            fmtdata.(fr).(c).(av).shiftproj.(s).all(i) = dot([f1s(i) f2s(i)],shiftvec)/magShift;
+                        end
+                        shiftprojmed = nanmedian(fmtdata.(fr).(c).(av).shiftproj.(s).all);
+                        
+                        near50 = fmtdata.(fr).(c).(av).shiftproj.(s).all < shiftprojmed;
+                        far50 = fmtdata.(fr).(c).(av).shiftproj.(s).all >= shiftprojmed;
+                        
+                        fmtdata.(fr).(c).(av).shiftproj.(s).near50 = trialinds.(c)(near50);
+                        fmtdata.(fr).(c).(av).shiftproj.(s).far50 = trialinds.(c)(far50);
                     end
-                    shiftprojmed = nanmedian(fmtdata.(fr).(c).(av).shiftproj.(s).all);
-                    
-                    near50 = fmtdata.(fr).(c).(av).shiftproj.(s).all < shiftprojmed;
-                    far50 = fmtdata.(fr).(c).(av).shiftproj.(s).all >= shiftprojmed;
-                    
-                    fmtdata.(fr).(c).(av).shiftproj.(s).near50 = trialinds.(c)(near50);
-                    fmtdata.(fr).(c).(av).shiftproj.(s).far50 = trialinds.(c)(far50);
                 end
             end
-            
         end
     end
 end

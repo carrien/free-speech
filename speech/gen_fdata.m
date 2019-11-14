@@ -11,10 +11,10 @@ if nargin < 2 || isempty(condtype), condtype = 'vowel'; end
 if nargin < 3 || isempty(dataValsStr), dataValsStr = 'dataVals'; end
 if nargin < 4 || isempty(bSaveCheck), bSaveCheck = 1;end
 
-load(fullfile(dataPath,'expt.mat'));
-load(fullfile(dataPath,dataValsStr));
+load(fullfile(dataPath,'expt.mat'),'expt');
+load(fullfile(dataPath,dataValsStr),'dataVals');
 
-[fmtdata,f0data,ampldata,durdata,trialinds] = calc_fdata(expt,dataVals,condtype); %#ok<ASGLU>
+[fmtdata,f0data,ampldata,durdata,trialinds] = calc_fdata(expt,dataVals,condtype);
 
 savefile = fullfile(dataPath,sprintf('fdata_%s%s.mat',condtype,dataValsStr(9:end)));
 if bSaveCheck
