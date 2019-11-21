@@ -57,7 +57,7 @@ for g = 1:length(groups)
     else
         titlesuffix = [];
     end
-    title(sprintf('%s %d%s',grouping,g,titlesuffix))
+    title(sprintf('%s %d%s',grouping,groups(g),titlesuffix))
     xlabel('time (s)')
     ylabel('frequency (Hz)')
     box off;
