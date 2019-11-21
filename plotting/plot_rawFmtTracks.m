@@ -25,7 +25,7 @@ f2color = [1 0 0]; % red
 
 groups = unique([dataVals.(grouping)]);
 nCols = 4;
-for g = groups
+for g = 1:length(groups)
     hsub(g) = subplot(ceil(length(groups)/nCols), nCols, g, 'Parent', parent);
 %     hsub(g) = subplot(1,length(groups),g,'Parent',parent);
     % plot tracks and ends
@@ -62,5 +62,5 @@ for g = groups
     ylabel('frequency (Hz)')
     box off;
     
-    makeFig4Screen([],0);    
+    makeFig4Screen([],[],0);    
 end
