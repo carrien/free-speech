@@ -64,15 +64,14 @@ for i = 1:length(sortedfiles)
             %                 trialparams.event_params.user_event_times(1) = [];
             %                 trialparams.event_params.user_event_names = trialparams.event_params.user_event_names{2:end};
             %             end
-            if (isfield(expt,'name') && (strcmpi(expt.name,'brut') || strcmpi(expt.name,'port')))
+            if (isfield(expt,'name') && (strcmpi(expt.name,'brut') || strcmpi(expt.name,'port')|| strcmpi(expt.name,'brutGerman')|| strcmpi(expt.name,'portGerman')))
                 % if (strcmpi(expt.name, 'brut') || strcmpi(expt.name,'port'))
                 uevnames = trialparams.event_params.user_event_names;
                 vow = expt.listVowels{trialnum};
                 if strcmpi(vow,'oe')
                     vow = 'ah';
                 end
-                onset_name = [upper(vow) 'Start'];
-                uevind = find(contains(uevnames,onset_name));
+
                 %                if ~exist('uevind','var') || isempty(uevind)
                 if (strcmpi(expt.listWords{trialnum}, 'hais') || strcmpi(expt.listWords{trialnum},'fait'))
                     vow = 'ey';
@@ -83,6 +82,9 @@ for i = 1:length(sortedfiles)
                 end
                 onset_name = [upper(vow) 'Start'];
                 uevind = find(contains(uevnames,onset_name));
+                if size(uevind,2) > 1 % added for German; if something goes wrong check here.
+                    uevind = uevind(1)
+                end
                 if isempty(uevind)
                     if (strcmpi(expt.listWords{trialnum},'oeuf') || strcmpi(expt.listWords{trialnum},'neuf'))
                         onset_name='spnStart'; % Sarah needs to figure out why this is happening and fix it
@@ -101,6 +103,9 @@ for i = 1:length(sortedfiles)
                 user_event_times = sort(trialparams.event_params.user_event_times);
                 onset_time = user_event_times(1);
             end
+%             if size(onset_time,2) > 1 % added for german; check with Sarah if there are problems.
+%                 onset_time = onset_time(1);
+%             end
             timediff = sigmat.ampl_taxis - onset_time;
             [~, onsetIndAmp] = min(abs(timediff));
         else
