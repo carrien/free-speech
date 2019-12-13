@@ -112,11 +112,13 @@ for i = 1:length(sortedTrialnums)
         manipTargetDur = vot; 
     else
         cClosureDur = cDur; 
-        vot = NaN;
-        
+       
         manipTargetDur = cDur; 
         if strcmp(condWord, 'gapper')
            bSpirant = 1;  
+           vot = 0; 
+        else
+            vot = NaN; 
         end
     end
     
