@@ -78,15 +78,7 @@ for i = 1:length(sortedTrialnums)
         warning('No events for trial %d\n',trialnum); 
     end
     n_events = length(user_event_times);
-    if n_events > max_events
-        warning('%d events found in trial %d (expected %d)',n_events,trialnum,max_events);
-        fprintf('ignoring event %d\n',max_events+1:n_events)
-    elseif n_events < max_events
-        warning('Only %d events found in trial %d (expected %d)',n_events,trialnum,max_events);
-        fprintf('Check for empty values.\n')
-        errorTrialsIn(e) = trialnum; 
-        e = e+1; 
-    end
+
     
     % event times 
     v1Start_time = user_event_times(strcmp(user_event_names,'v1Start')); 
@@ -120,6 +112,16 @@ for i = 1:length(sortedTrialnums)
         else
             vot = NaN; 
         end
+    end
+    
+    if n_events > max_events
+        warning('%d events found in trial %d (expected %d)',n_events,trialnum,max_events);
+        fprintf('ignoring event %d\n',max_events+1:n_events)
+    elseif n_events < max_events && bSpirant == 0
+        warning('Only %d events found in trial %d (expected %d)',n_events,trialnum,max_events);
+        fprintf('Check for empty values.\n')
+        errorTrialsIn(e) = trialnum; 
+        e = e+1; 
     end
     
     % find onset/offset indices for each track
