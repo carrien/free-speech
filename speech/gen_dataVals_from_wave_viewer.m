@@ -71,7 +71,7 @@ for i = 1:length(sortedfiles)
                 if strcmpi(vow,'oe')
                     vow = 'ah';
                 end
-
+                
                 %                if ~exist('uevind','var') || isempty(uevind)
                 if (strcmpi(expt.listWords{trialnum}, 'hais') || strcmpi(expt.listWords{trialnum},'fait'))
                     vow = 'ey';
@@ -103,9 +103,9 @@ for i = 1:length(sortedfiles)
                 user_event_times = sort(trialparams.event_params.user_event_times);
                 onset_time = user_event_times(1);
             end
-%             if size(onset_time,2) > 1 % added for german; check with Sarah if there are problems.
-%                 onset_time = onset_time(1);
-%             end
+            %             if size(onset_time,2) > 1 % added for german; check with Sarah if there are problems.
+            %                 onset_time = onset_time(1);
+            %             end
             timediff = sigmat.ampl_taxis - onset_time;
             [~, onsetIndAmp] = min(abs(timediff));
         else
