@@ -155,7 +155,8 @@ for itrial = trials2track
             sigmat = tracks;
         end
         trialparams.sigproc_params = sigproc_params;    % only overwrite sigproc_params (leave event/plot_params if they exist)
-        if bCopyParams %overwrite event_params if copying from signalIn to signalOut
+
+        if exist('bCopyParams','var') & bCopyParams == 1 %overwrite event_params if copying from signalIn to signalOut
             trialparams.event_params = event_params;
         end
         save(savefile,'sigmat','trialparams');
