@@ -23,7 +23,7 @@ else % if colors are specified as RBG values
     nColors = size(colorSpec,1);
 end
 if nColors == 1 || nColors~=nConds
-    if nColors ~= nConds
+    if nColors > 1
         warning('Number of colors does not match number of conditions. Using single color for plotting.')
     end
     colorSpec = repmat(colorSpec,nConds,1);
