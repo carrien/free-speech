@@ -40,7 +40,9 @@ for i = 1:length(sortedTrialnums)
     load(fullfile(trialPath,filename));
     
     word = expt.allWords(trialnum);
-    if isfield(expt,'listColors') 
+    if isequal(expt.conds, {'neutralWord'})
+        colorname = expt.listWords{trialnum};
+    elseif isfield(expt,'listColors') 
         colorname = expt.listColors{trialnum};
     else
         colorname = [];
