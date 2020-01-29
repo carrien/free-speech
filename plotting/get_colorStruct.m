@@ -6,8 +6,8 @@ if nargin < 2 || isempty(colors), colors = get_colors(length(conds)); end
 for c=1:length(conds)
     cnd = conds{c};
     if iscell(colors)
-    colorStruct.(cnd) = colors{c};
+        colorStruct.(cnd) = colors{c};
     else
-    colorStruct.(cnd) = colors(c,:);
+        colorStruct.(cnd) = colors(c,:);
     end
 end

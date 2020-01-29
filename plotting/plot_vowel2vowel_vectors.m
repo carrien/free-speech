@@ -1,9 +1,12 @@
-function [] = plot_vowel2vowel_vectors(dataPath,startVowels,endVowels,freqscale,avgfn,condtype)
+function [] = plot_vowel2vowel_vectors(dataPath,startConds,endConds,freqscale,avgfn,condtype,colors,bPlotCond)
 %PLOT_FMTDATA_VOWELS  Plot vowel production space.
 %   PLOT_FMTDATA_VOWELS(DATAPATH,FREQSCALE,AVGFN,CONDTYPE) plots the
 %   vowel production space from the fdata_vowel file found in DATAPATH.
 
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
+
+if nargin < 2 || isempty(startConds), startConds = {'red' 'green' 'blue'}; end
+if nargin < 3 || isempty(endConds), endConds = {{'rid' 'rad'},{'grin' 'grain'},{'bleed' 'blow'}}; end
 
 if nargin < 4 || isempty(freqscale), freqscale = {'hz','mels'};
 elseif ischar(freqscale), freqscale = {freqscale};
@@ -14,6 +17,8 @@ elseif ischar(avgfn), avgfn = {avgfn};
 end
 
 if nargin < 6 || isempty(condtype), condtype = 'vowel'; end
+
+if nargin < 8, bPlotCond = 0; end
 
 % load formant data
 load(fullfile(dataPath,sprintf('fdata_%s.mat',condtype)));
@@ -28,33 +33,49 @@ end
 
 for f = 1:length(freqscale)
     frq = freqscale{f};
-    vowels = fieldnames(fmtdata.(frq));
-    colors = get_colors(length(vowels));
+    conds = fieldnames(fmtdata.(frq));
+    
+    if nargin < 7
+        colors = get_colorStruct(conds);
+    elseif ~isstruct(colors)
+        colors = get_colorStruct(conds,colors);
+    end
     for a = 1:length(avgfn)
         avg = avgfn{a};
         figure;
-        for v = 1:length(vowels)
-            vow = vowels{v};
-            f1 = fmtdata.(frq).(vow).(avg).rawavg.f1;
-            f2 = fmtdata.(frq).(vow).(avg).rawavg.f2;
-            plot(f1, f2, '.', 'Color',colors(v,:), 'MarkerSize',15);
+        for c = 1:length(conds)
+            cnd = conds{c};
+            % get formants
+            f1 = fmtdata.(frq).(cnd).(avg).rawavg.f1;
+            f2 = fmtdata.(frq).(cnd).(avg).rawavg.f2;
+            % get median formants
+            medf1 = fmtdata.(frq).(cnd).(avg).med.f1;
+            medf2 = fmtdata.(frq).(cnd).(avg).med.f2;
+            % get token closest to median
+            [~,minind] = min(fmtdata.(frq).(cnd).(avg).dist);
+            medindf1 = fmtdata.(frq).(cnd).(avg).rawavg.f1(minind);
+            medindf2 = fmtdata.(frq).(cnd).(avg).rawavg.f2(minind);
+            
+            % plot words or points
+            if bPlotCond
+                text(f1, f2, cnd, 'Color',colors.(cnd), 'FontSize',14);
+            else
+                plot(f1, f2, '.', 'Color',colors.(cnd), 'MarkerSize',15);
+                hold on;
+                text(medf1, medf2, cnd, 'FontSize',16, 'HorizontalAlignment','center', 'VerticalAlignment','bottom')
+            end
             hold on;
-            medf1 = fmtdata.(frq).(vow).(avg).med.f1;
-            medf2 = fmtdata.(frq).(vow).(avg).med.f2;
-            plot(medf1, medf2, 'o', 'Color',colors(v,:), 'MarkerSize',2);
-            text(medf1, medf2, vow, 'HorizontalAlignment','center', 'VerticalAlignment','bottom')
-            [~,minind] = min(fmtdata.(frq).(vow).(avg).dist);
-            medindf1 = fmtdata.(frq).(vow).(avg).rawavg.f1(minind);
-            medindf2 = fmtdata.(frq).(vow).(avg).rawavg.f2(minind);
+            % plot median
+            plot(medf1, medf2, 'o', 'Color',colors.(cnd), 'MarkerSize',2);
             plot(medindf1, medindf2, 'o', 'Color',[.6 .6 .6], 'MarkerSize',8);
             
-            if any(strcmp(startVowels,vow))
-                vowLog = strcmp(startVowels,vow);
-                for v2 = 1:length(endVowels{vowLog})
-                    vow2 = endVowels{vowLog}{v2};
+            if any(strcmp(startConds,cnd))
+                vowLog = strcmp(startConds,cnd);
+                for v2 = 1:length(endConds{vowLog})
+                    vow2 = endConds{vowLog}{v2};
                     medf1vow2 = fmtdata.(frq).(vow2).(avg).med.f1;
                     medf2vow2 = fmtdata.(frq).(vow2).(avg).med.f2;
-                    plot([medf1 medf1vow2], [medf2 medf2vow2], 'Color',colors(v,:), 'LineWidth',1.5);
+                    plot([medf1 medf1vow2], [medf2 medf2vow2], 'Color',colors.(cnd), 'LineWidth',1.5);
                 end
             end
         end

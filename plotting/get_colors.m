@@ -1,6 +1,8 @@
 function [colors] = get_colors(nlines)
 %GET_COLORS  Get default colors for plotting.
 
+if nargin < 1, nlines = 6; end
+
 colors = [ ...
     .8 0 0; ...     %r
     1 .6 0; ...     %o

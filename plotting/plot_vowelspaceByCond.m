@@ -1,25 +1,52 @@
-function [] = plot_vowelspaceByCond(exptName,snum,subdirname,condtype)
-%UNTITLED2 Summary of this function goes here
-%   Detailed explanation goes here
+function [h] = plot_vowelspaceByCond(dataPath,condtype,conds,avgfn,colors,bPlotCond)
+%PLOT_VOWELSPACEBYCOND  Plot 2D vowel formant space by condition.
+%   PLOT_VOWELSPACEBYCOND
 
-load(fullfile(getAcoustSubjPath(exptName,snum,subdirname),sprintf('fdata_%s.mat',condtype)));
-conds = fieldnames(fmtdata.mels);
-anl = {'first50ms','mid50p'};
-colors = setcolors;
+if nargin < 1 || isempty(dataPath), dataPath = cd; end
+if nargin < 2 || isempty(condtype), condtype = 'word'; end
+if nargin < 4 || isempty(avgfn), avgfn = 'mid50p'; end
+if nargin < 6, bPlotCond = 0; end
 
-for a = 1:length(anl)
-    figure;
-    for c = 1:length(conds)
-        conddata = fmtdata.mels.(conds{c});
-        f1 = conddata.(anl{a}).rawavg.f1;
-        f2 = conddata.(anl{a}).rawavg.f2;
-        plot(f1,f2,'.','Color',colors(c,:))
-        hold on;
-        ell = FitEllipse(f1,f2);
-        plot(ell(:,1),ell(:,2),'Color',colors(c,:));
-    end
-    xlabel('F1 (mels)')
-    ylabel('F2 (mels)')
-    title(anl{a})
-    legend(conds)
+% load data
+fdataFile = sprintf('fdata_%s.mat',condtype);
+load(fullfile(dataPath,fdataFile),'fmtdata');
+
+if nargin < 3 || isempty(conds)
+    conds = fieldnames(fmtdata.mels);
 end
+
+% set colors
+if nargin < 5 || isempty(colors)
+    colors = get_colorStruct(conds);
+elseif ~isstruct(colors)
+    colors = get_colorStruct(conds,colors);
+end
+
+% plot vowel space
+h = figure;
+hdata = cell(1,length(conds));
+for c = 1:length(conds)
+    % for each condition
+    cnd = conds{c};
+    f1 = fmtdata.mels.(cnd).(avgfn).rawavg.f1;
+    f2 = fmtdata.mels.(cnd).(avgfn).rawavg.f2;
+    if bPlotCond
+        hdata{c} = text(f1,f2,cnd,'Color',colors.(cnd),'FontSize',14,'HorizontalAlignment','center');
+    else
+        hdata{c} = plot(f1,f2,'.','Color',colors.(cnd));
+    end
+    hold on;
+    ell = FitEllipse(f1,f2);
+    plot(ell(:,1),ell(:,2),'Color',colors.(cnd));
+end
+if ~bPlotCond
+    legend(hdata,conds)
+end
+
+xlabel('F1 (mels)')
+ylabel('F2 (mels)')
+if length(avgfn) > 1
+    title(avgfn)
+end
+
+makeFig4Screen;

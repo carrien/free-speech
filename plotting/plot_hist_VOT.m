@@ -7,8 +7,8 @@ if nargin < 1 || isempty(dataPath), dataPath = cd; end
 if nargin < 2 || isempty(color), color = 'pink'; end
 
 % load data
-load(fullfile(dataPath,'expt.mat'));
-load(fullfile(dataPath,'dataVals.mat'));
+load(fullfile(dataPath,'expt.mat'),'expt');
+load(fullfile(dataPath,'dataVals.mat'),'dataVals');
 
 % get trials of given color
 trialinds = expt.inds.colors.(color);

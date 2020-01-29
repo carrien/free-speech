@@ -40,7 +40,7 @@ data_err = struct('ffx',ffx_err,'rfx',rfx_err);
 if ~exist('tstep','var'), tstep = .003; end
 alltime = 0:tstep:1;
 conds = fieldnames(ffx.rawf1);
-stop_ms = 350;
+stop_ms = 250;
 stop = ms2samps(stop_ms,1/tstep)*ones(1,length(conds)); % crop axis to here
 
 % calculate significance at each timepoint (assumes 2 conds)
@@ -136,7 +136,6 @@ for f=1:length(fx)
         %title(sprintf('%s %s',slab,toPlot));
         %set(gca,'XTick',(0:.1:alltime(stop(c)))); set(gca, 'TickLength', [0.0 0.0]);
 
-        yax = axis;
         ymin = -30; %ax(3);
         ymax = 30; %ax(4);
         
@@ -171,12 +170,12 @@ for f=1:length(fx)
             h1.(fx{f}).(toPlot)(h1.(fx{f}).(toPlot)==0) = NaN;
             h2.(fx{f}).(toPlot)(h2.(fx{f}).(toPlot)==0) = NaN;
             
-            plot(t,h.(fx{f}).(toPlot)*(yax(2)-2),'g')
-            plot(t,h1.(fx{f}).(toPlot)*(yax(2)-1.5),'Color',linecolors.(conds{1}))
-            plot(t,h2.(fx{f}).(toPlot)*(yax(2)-1),'Color',linecolors.(conds{2}))
+            plot(t,h.(fx{f}).(toPlot)*(ymax-5),'g','LineWidth',2)
+            plot(t,h1.(fx{f}).(toPlot)*(ymax-4),'Color',linecolors.(conds{1}),'LineWidth',2)
+            plot(t,h2.(fx{f}).(toPlot)*(ymax-3),'Color',linecolors.(conds{2}),'LineWidth',2)
             
-            plot(t,h_fdr*(yax(2)-2.2),'m')
-            plot(t,h_fdr10*(yax(2)-2.4),'c')
+            plot(t,h_fdr*(ymax-2),'m-','LineWidth',2)
+            plot(t,h_fdr10*(ymax-1),'c-','LineWidth',2)
         end
     end
 end

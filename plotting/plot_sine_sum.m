@@ -23,7 +23,7 @@ linestyles = {'--',':','-.'};
 
 %% plot overlay
 figure;
-sinewaves = zeros(nsines,round(dur*fs));
+sinewaves = zeros(nsines,floor(dur*fs));
 h_sin = gobjects(1,nsines);
 for s=1:nsines
     [sinewaves(s,:),t] = get_sine(w(s),amps(s),phaseoffsets(s),dur,fs);
