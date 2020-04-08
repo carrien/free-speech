@@ -2,7 +2,7 @@ function [str] = sprint_tstat(p,stats,pmin)
 %SPRINT_TSTAT  Print t-statistic in formatted string.
 %   SPRINT_TSTAT(P,STATS)
 
-if nargin < 3, pmin = 0; end
+if nargin < 3, pmin = 0.0001; end
 
 tstr = sprintf('t(%d) = %.4f',stats.df,stats.tstat);
 if p < pmin
