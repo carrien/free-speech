@@ -23,7 +23,7 @@ function [obs,group] = add2anovars(obs,new_obs,group,varargin)
 %     end
 % end
 
-if isempty(group)
+if nargin < 3 || isempty(group)
     group = cell(1,length(varargin));
 end
 
