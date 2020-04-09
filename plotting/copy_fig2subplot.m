@@ -18,7 +18,10 @@ for ifig = 1:length(hfig2copy)
     haxcp = copyobj(hax, hnewfig);
     pause(1);
     set(haxcp,'Position',get(temp_ax,'Position'));
-    set(haxcp,'Colormap',get(hax,'Colormap'));
+    try
+        set(haxcp,'Colormap',get(hax,'Colormap'));
+    catch
+    end
     delete(temp_ax);
     
     % close original figure
