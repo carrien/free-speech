@@ -17,7 +17,9 @@ p = set_missingField(p,'sfmtsColor','m',0);
 p = set_missingField(p,'sfmtsLineWidth',1.5,0);
 p = set_missingField(p,'bOutline',1,0);
 p = set_missingField(p,'figpos',[35 700 2510 150],0);
-
+p = set_missingField(p,'fmtCenColor','y',0);
+p = set_missingField(p,'fmtCenLineWidth',1,0);
+p = set_missingField(p,'fmtCenLineStyle','--',0);
 fs = data(1).params.sr;
 frameLen = data(1).params.frameLen;
 
@@ -57,12 +59,17 @@ for nax = 1:length(data)
     data(nax).fmts(zs,:) = NaN;
     data(nax).sfmts(zs,:) = NaN;
     tAxis = 0 : frameLen : frameLen * (size(data(nax).fmts, 1) - 1);
+    if isfield(p,'fmtCen')
+        plot(tAxis/fs,repmat(p.fmtCen,length(tAxis),1),'LineStyle',p.fmtCenLineStyle,'Color',p.fmtCenColor,'LineWidth',p.fmtCenLineWidth)
+    end
     if p.bOutline
         plot(tAxis/fs,data(nax).fmts(:, 1 : 2), 'Color','w','LineWidth',p.fmtsLineWidth+.5);
         plot(tAxis/fs,data(nax).sfmts(:, 1 : 2), 'Color','w','LineWidth',p.sfmtsLineWidth+.5);
     end
     plot(tAxis/fs,data(nax).fmts(:, 1 : 2), 'Color',p.fmtsColor,'LineWidth',p.fmtsLineWidth);
     plot(tAxis/fs,data(nax).sfmts(:, 1 : 2), 'Color',p.sfmtsColor,'LineWidth',p.sfmtsLineWidth);
+    
+
     
     xlabel('time (s)')
     ylabel('frequency (Hz)')
