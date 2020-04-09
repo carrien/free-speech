@@ -59,6 +59,9 @@ for nax = 1:length(data)
     data(nax).fmts(zs,:) = NaN;
     data(nax).sfmts(zs,:) = NaN;
     tAxis = 0 : frameLen : frameLen * (size(data(nax).fmts, 1) - 1);
+    if isfield(p,'fmtCen')
+        plot(tAxis/fs,repmat(p.fmtCen,length(tAxis),1),'LineStyle',p.fmtCenLineStyle,'Color',p.fmtCenColor,'LineWidth',p.fmtCenLineWidth)
+    end
     if p.bOutline
         plot(tAxis/fs,data(nax).fmts(:, 1 : 2), 'Color','w','LineWidth',p.fmtsLineWidth+.5);
         plot(tAxis/fs,data(nax).sfmts(:, 1 : 2), 'Color','w','LineWidth',p.sfmtsLineWidth+.5);
@@ -66,9 +69,7 @@ for nax = 1:length(data)
     plot(tAxis/fs,data(nax).fmts(:, 1 : 2), 'Color',p.fmtsColor,'LineWidth',p.fmtsLineWidth);
     plot(tAxis/fs,data(nax).sfmts(:, 1 : 2), 'Color',p.sfmtsColor,'LineWidth',p.sfmtsLineWidth);
     
-    if isfield(p,'fmtCen')
-        plot(tAxis/fs,repmat(p.fmtCen,length(tAxis),1),'LineStyle',p.fmtCenLineStyle,'Color',p.fmtCenColor,'LineWidth',p.fmtCenLineWidth)
-    end
+
     
     xlabel('time (s)')
     ylabel('frequency (Hz)')
