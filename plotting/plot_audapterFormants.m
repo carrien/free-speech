@@ -4,7 +4,10 @@ function [h] = plot_audapterFormants(data,p)
 
 if nargin < 2, p = struct; end
 
+screenSize = get(0,'ScreenSize');
+
 %% set params
+p = set_missingField(p,'bWave',1,0);
 p = set_missingField(p,'bSpec',1,0);
 p = set_missingField(p,'nfft',4096,0);
 p = set_missingField(p,'thresh_gray',.65,0);
@@ -16,7 +19,7 @@ p = set_missingField(p,'fmtsLineWidth',3,0);
 p = set_missingField(p,'sfmtsColor','m',0);
 p = set_missingField(p,'sfmtsLineWidth',1.5,0);
 p = set_missingField(p,'bOutline',1,0);
-p = set_missingField(p,'figpos',[35 700 2510 150],0);
+p = set_missingField(p,'figpos',[10 700 screenSize(3)-20 175],0);
 p = set_missingField(p,'fmtCenColor','y',0);
 p = set_missingField(p,'fmtCenLineWidth',1,0);
 p = set_missingField(p,'fmtCenLineStyle','--',0);
@@ -24,10 +27,31 @@ fs = data(1).params.sr;
 frameLen = data(1).params.frameLen;
 
 %% plot
+
+if p.bWave
+    nrows = 3;
+else
+    nrows = 1;
+end
+ncols = length(data);
 h = figure('Position',p.figpos);
-for nax = 1:length(data)
-    subplot(1,length(data),nax)
+
+for nax = 1:ncols
+    subplot(nrows,ncols,nax)
     hold on;
+    
+    if p.bWave
+        % plot waveform
+        plot(data(nax).signalIn, 'Color','k');
+        ymax = .25; %max(abs(data(nax).signalIn));
+        axis tight;
+        set(gca,'YLim',[-ymax ymax]);
+        set(gca,'XColor','none');
+        set(gca,'YColor','none');
+        
+        subplot(nrows,ncols,[nax+ncols:ncols:nrows*ncols])
+        hold on;
+    end
     
     % plot spectrogram
     if p.bSpec        
@@ -48,10 +72,10 @@ for nax = 1:length(data)
         set(gca, 'XLim', [t(1), t(end)]);
         
         my_colormap('my_gray',1,p.thresh_gray,p.max_gray);
-        %     colormap(flipud(gray));
-        %     min_vals = min(log10(abs(s)));
-        %     max_vals = max(log10(abs(s)));
-        %     caxis([min(min_vals(~isinf(min_vals)))-10 max(max_vals(~isinf(max_vals)))+10])
+        %colormap(flipud(gray));
+        %min_vals = min(log10(abs(s)));
+        %max_vals = max(log10(abs(s)));
+        %caxis([min(min_vals(~isinf(min_vals)))-10 max(max_vals(~isinf(max_vals)))+10])
     end
     
     % plot formants
@@ -71,7 +95,11 @@ for nax = 1:length(data)
     
 
     
-    xlabel('time (s)')
-    ylabel('frequency (Hz)')
+    xlabel('time (s)')    
+    if nax==1
+        ylabel('frequency (Hz)')
+    else
+        set(gca, 'YTickLabel', '');
+    end
     
 end
