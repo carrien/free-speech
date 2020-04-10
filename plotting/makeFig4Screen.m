@@ -8,15 +8,21 @@ if nargin < 3 || isempty(minChildLineWidth), minChildLineWidth = 1; end
 if isa(hax,'matlab.ui.Figure')
     children = get(hax,'Children');
     for c = 1:length(children)
-        makeFig4Screen(children(c));
+        if isa(children(c),'matlab.graphics.axis.Axes')
+            makeFig4Screen(children(c));
+        end
     end
     return;
 end
 
 % defaults
 hax.LineWidth = 1;
-hax.XColor = [0 0 0];
-hax.YColor = [0 0 0];
+if isequal(hax.XColor,[.15 .15 .15]) % default
+    hax.XColor = [0 0 0];
+end
+if isequal(hax.YColor,[.15 .15 .15])
+    hax.YColor = [0 0 0];
+end
 hax.FontName = 'Helvetica';
 hax.FontSize = 14;
 box off;
