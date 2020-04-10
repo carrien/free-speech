@@ -1,20 +1,35 @@
-function [h] = plot_pairedData(dataMeansByCond, colorSpec)
-% plotMeanStroopRT(reaction_times)
-% This function creates a plot of the mean reaction time by condition for
-% the Stroop conditions (congruent, incongruent vowel, and incongruent
-% color).
-%
-% INPUT:
-% reaction_times: This is a structure containing the reaction time data. It
-% is generated as output by the function calc_RT.m
+function [h] = plot_pairedData(dataMeansByCond,colorSpec,p)
+%PLOT_PAIREDDATA  Plots mean data connected by lines across conditions.
+%   PLOT_PAIREDDATA(DATAMEANSBYCOND, COLORSPEC)
+
 if nargin < 2 || isempty(colorSpec)
     colorSpec = [0 0 0];
 end
+if nargin < 3, p = struct; end
 
+%% validate equal number of data points per condition
 conds = fieldnames(dataMeansByCond);
 nConds = length(conds);
+for c=1:nConds
+    cond = conds{c};
+    if ~exist('nObsPerCond','var')
+        nObsPerCond = length(dataMeansByCond.(cond));
+    elseif nObsPerCond ~= length(dataMeansByCond.(cond))
+        warning('Different numbers of observations found across conditions.');
+    end
+end
 
-%get number of colors and check if they match number of conditions
+%% set params
+
+% linestyles
+% p.subjMarker = '.';
+% p.subjMarkerSize = 12;
+% p.subjLineWidth = 1;
+% p.avgMarker = 'o';
+% p.avgMarkerSize = 8;
+% p.avgLineWidth = 3;
+
+%% colors
 if iscell(colorSpec(1)) %if colors are specified as character strings
     warning('Colors must be entered as RBG values, not character strings.')
     warning('Plotting with default colors.')
@@ -29,28 +44,33 @@ if nColors == 1 || nColors~=nConds
     colorSpec = repmat(colorSpec,nConds,1);
 end
 
+% individual subject data
+p.subjColor = colorSpec + 0.3;
+p.subjColor(p.subjColor > 1) = 1;
+p.lineColor = [.7 .7 .7 .5]; % alpha = 0.5
 
-cond_data = cell(1,length(conds));
+%% plot
+
+h = figure;
+hold on;
+
 cond_means = zeros(length(dataMeansByCond.(conds{1})),length(conds));
 cond_ses = zeros(length(dataMeansByCond),length(conds));
 
-% Make a bar plot of the mean reaction times
-h = figure;
-%bar(nanmean(cond_means,1));
-
-hold on;
-
-% individual subject data
-subjColor = colorSpec + 0.4;
-subjColor(subjColor > 1) = 1;
-lineColor = .7*ones(1,3);
-% subjColor = .7*ones(1,3);
-subjMarkerSize = 12;
+if p.jitterFrac
+    jitters = (rand(nObsPerCond,1)-0.5)*p.jitterFrac;
+end
 
 % lines
 for c=1:nConds-1
     cond = conds{c}; nextcond = conds{c+1};
-    plot([c c+1],[dataMeansByCond.(cond)' dataMeansByCond.(nextcond)'],'-','Color',lineColor,'LineWidth',1);
+    if p.jitterFrac
+        for o=1:nObsPerCond
+            plot([c c+1]+jitters(o),[dataMeansByCond.(cond)(o) dataMeansByCond.(nextcond)(o)],'-','Color',p.lineColor,'LineWidth',p.subjLineWidth);
+        end
+    else
+        plot([c c+1],[dataMeansByCond.(cond)' dataMeansByCond.(nextcond)'],'-','Color',p.lineColor,'LineWidth',p.subjLineWidth);
+    end
 end
 
 % dots
@@ -62,25 +82,23 @@ for c=1:nConds
     %cond_ses(:,c) = nanstd(cond_data,0,1) / sqrt(length(cond_data));
     cond_se(c) = nanstd(cond_data,0,1) / sqrt(length(cond_means(:,c)));
     cond_ci(c) = calcci(cond_data');
-    plot(c,dataMeansByCond.(cond),'.','Color',subjColor(c,:),'MarkerSize',subjMarkerSize)
+    if p.jitterFrac
+        %plot(c+jitters,dataMeansByCond.(cond),p.subjMarker,'Color',p.subjColor(c,:),'MarkerSize',p.subjMarkerSize)
+        scatter(c+jitters,dataMeansByCond.(cond),p.subjMarkerSize,'MarkerFaceColor',p.subjColor(c,:),'MarkerFaceAlpha',p.subjAlpha,'MarkerEdgeColor','none')
+    else
+        plot(c,dataMeansByCond.(cond),p.subjMarker,'Color',p.subjColor(c,:),'MarkerSize',p.subjMarkerSize)
+    end
 end
-
-
 
 % average data and errorbars
 hold on
-avgColor = [0 0 0]; %[.2 0 .5];
-avgMarkerSize = 8;
-plot(1:nConds,nanmean(cond_means,1),'-','Color',avgColor,'LineWidth',3)
+p.avgColor = [0 0 0]; %[.2 0 .5];
+plot(1:nConds,nanmean(cond_means,1),'-','Color',p.avgColor,'LineWidth',p.avgLineWidth)
 for c = 1:nConds
-    plot(c,nanmean(cond_means(:,c)),'o','Color',colorSpec(c,:),'MarkerFace',colorSpec(c,:),'MarkerSize',avgMarkerSize)
-    errorbar(c,nanmean(cond_means(:,c)), cond_ci(c),'Color',colorSpec(c,:),'LineWidth',3)
-%     plot(1:size(cond_means,2),nanmean(cond_means,1),'o','Color',avgColor,'MarkerFace',avgColor,'MarkerSize',avgMarkerSize)
+    plot(c,nanmean(cond_means(:,c)),p.avgMarker,'Color',colorSpec(c,:),'MarkerFace',colorSpec(c,:),'MarkerSize',p.avgMarkerSize)
+    errorbar(c,nanmean(cond_means(:,c)), cond_ci(c),'Color',colorSpec(c,:),'LineWidth',p.avgLineWidth)
 end
 
-%errorbar(nanmean(cond_means,1), nanmean(cond_ses,1),'Color',avgColor,'LineWidth',3);
-%errorbar(nanmean(cond_means,1), cond_se,'Color',avgColor,'LineWidth',3);
-% errorbar(nanmean(cond_means,1), cond_ci,'Color',avgColor,'LineWidth',3);
 set(gca,'XTick',1:nConds,'XTickLabel',conds)
 %YTick = get(gca,'YTick');
 %set(gca,'YTick',min(YTick):200:max(YTick))
