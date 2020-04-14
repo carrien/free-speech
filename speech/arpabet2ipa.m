@@ -5,7 +5,7 @@ if nargin < 2, brackets = []; end
 
 switch arpabet
     case 'aa'
-        ipa = 'a';
+        ipa = char(593); %'a';
     case 'iy'
         ipa = 'i';
     case 'uw'

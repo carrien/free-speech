@@ -1,5 +1,5 @@
-function [meanf1,meanf2] = calc_avgVowelSpace_crossSubj(dataPaths,fdataFile,avgFn)
-%GET_AVGVOWELSPACE_CROSSSUBJ  Calculate average vowel space across subjects.
+function [meanF1,meanF2] = calc_avgVowelSpace_crossSubj(dataPaths,fdataFile,avgFn)
+%CALC_AVGVOWELSPACE_CROSSSUBJ  Calculate average vowel space across subjects.
 %   CALC_AVGVOWELSPACE_CROSSSUBJ(DATAPATHS,FDATAFILE,AVGFN) returns the
 %   average F1-F2 space across subjects whose data are in DATAPATHS.
 %   FDATAFILE is the name of the fdata file to load (e.g. fdata_cond).
@@ -10,11 +10,12 @@ function [meanf1,meanf2] = calc_avgVowelSpace_crossSubj(dataPaths,fdataFile,avgF
 if nargin < 2 || isempty(fdataFile), fdataFile = 'fdata_word'; end
 if nargin < 3, avgFn = 'mid50p'; end
 
-% For each subject
+% load fdata for each subject
 for s = 1:length(dataPaths)
-    dataPath = dataPaths{s};
-    
+    dataPath = dataPaths{s}; 
     load(fullfile(dataPath,fdataFile),'fmtdata')
+    
+    % get word-specific median formants
     words = fieldnames(fmtdata.mels);
     for w = 1:length(words)
         word = words{w};
@@ -33,10 +34,11 @@ for s = 1:length(dataPaths)
     
 end
 
+% average across all subjects
 for w = 1:length(words)
     word = words{w};
-    allf1s.(word) = [f1.(word)];
-    meanf1.(word) = nanmean(allf1s.(word));
-    allf2s.(word) = [f2.(word)];
-    meanf2.(word) = nanmean(allf2s.(word));
+    allF1s.(word) = [f1.(word)];
+    meanF1.(word) = nanmean(allF1s.(word));
+    allF2s.(word) = [f2.(word)];
+    meanF2.(word) = nanmean(allF2s.(word));
 end

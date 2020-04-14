@@ -1,13 +1,28 @@
-function [] = makeFig4Screen(hax,p,bChildLineWidth)
+function [hax] = makeFig4Screen(hax,p,minChildLineWidth)
 
 if nargin < 1 || isempty(hax), hax = gca; end
 if nargin < 2 || isempty(p), p = struct; end
-if nargin < 3 || isempty(bChildLineWidth), bChildLineWidth = 1; end
+if nargin < 3 || isempty(minChildLineWidth), minChildLineWidth = 1; end
+
+% if input is figure handle, run recursively on child axes
+if isa(hax,'matlab.ui.Figure')
+    children = get(hax,'Children');
+    for c = 1:length(children)
+        if isa(children(c),'matlab.graphics.axis.Axes')
+            makeFig4Screen(children(c));
+        end
+    end
+    return;
+end
 
 % defaults
 hax.LineWidth = 1;
-hax.XColor = [0 0 0];
-hax.YColor = [0 0 0];
+if isequal(hax.XColor,[.15 .15 .15]) % default
+    hax.XColor = [0 0 0];
+end
+if isequal(hax.YColor,[.15 .15 .15])
+    hax.YColor = [0 0 0];
+end
 hax.FontName = 'Helvetica';
 hax.FontSize = 14;
 box off;
@@ -20,10 +35,10 @@ for fn = 1:length(fields)
     hax.(fieldname) = p.(fieldname);
 end
 
-if bChildLineWidth
+if minChildLineWidth
     for c = 1:length(hax.Children)
-        if isprop(hax.Children(c),'LineWidth') && hax.Children(c).LineWidth < 1
-            hax.Children(c).LineWidth = 1;
+        if isprop(hax.Children(c),'LineWidth') && hax.Children(c).LineWidth < minChildLineWidth
+            hax.Children(c).LineWidth = minChildLineWidth;
         end
     end
 end
