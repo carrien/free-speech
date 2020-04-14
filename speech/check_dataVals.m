@@ -280,6 +280,19 @@ function UserData = generate_menus(UserData)
         groupTypes(strcmp(groupTypes,'cond')) = [];
         groupTypes(strcmp(groupTypes,'token')) = [];
         groupTypes(strcmp(groupTypes,'bExcl')) = [];
+        
+        % Additions for timeAdapt dataVal structure (RK 4/14)
+        groupTypes(strcmp(groupTypes,'totalDur')) = [];
+        groupTypes(strcmp(groupTypes,'v1Dur')) = [];
+        groupTypes(strcmp(groupTypes,'cDur')) = [];
+        groupTypes(strcmp(groupTypes,'cClosureDur')) = [];
+        groupTypes(strcmp(groupTypes,'vot')) = [];
+        groupTypes(strcmp(groupTypes,'v2Dur')) = [];
+        groupTypes(strcmp(groupTypes,'pDur')) = [];
+        groupTypes(strcmp(groupTypes,'erDur')) = [];
+        groupTypes(strcmp(groupTypes,'manipTargetDur')) = [];
+        groupTypes(strcmp(groupTypes,'spirantize')) = [];
+        
     groupButtonYSep = 0.05;
     groupButtonXSep = 0.05;
     groupButtonYSpan = 1 - 2*groupButtonYSep;
