@@ -40,7 +40,7 @@ data_err = struct('ffx',ffx_err,'rfx',rfx_err);
 if ~exist('tstep','var'), tstep = .003; end
 alltime = 0:tstep:1;
 conds = fieldnames(ffx.rawf1);
-stop_ms = 250;
+stop_ms = 300;
 stop = ms2samps(stop_ms,1/tstep)*ones(1,length(conds)); % crop axis to here
 
 % calculate significance at each timepoint (assumes 2 conds)
