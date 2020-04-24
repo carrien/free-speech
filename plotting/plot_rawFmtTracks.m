@@ -24,15 +24,22 @@ f1color = [0 0 1]; % blue
 f2color = [1 0 0]; % red
 
 groups = unique([dataVals.(grouping)]);
-nCols = 4;
+
+% RPK for non-compressed display with fewer words 
+if length(groups) < 4
+    nCols = length(groups); 
+else
+    nCols = 4;
+end
 for g = 1:length(groups)
+    groupId = groups(g); 
     hsub(g) = subplot(ceil(length(groups)/nCols), nCols, g, 'Parent', parent);
 %     hsub(g) = subplot(1,length(groups),g,'Parent',parent);
     % plot tracks and ends
     ihandle = 1;
-    for i=trialset
+    for i=trialset % set of trials (jump, short, late, etc.) 
 %         disp(i)
-        if (~isfield(dataVals,'bExcl') || ~dataVals(i).bExcl) && dataVals(i).(grouping) == g
+        if (~isfield(dataVals,'bExcl') || ~dataVals(i).bExcl) && dataVals(i).(grouping) == groupId
             %plot tracks
             taxis = dataVals(i).ftrack_taxis - dataVals(i).ftrack_taxis(1);
             htracks(g).f1(ihandle) = plot(taxis,dataVals(i).f1,'Color',f1color);
@@ -53,11 +60,11 @@ for g = 1:length(groups)
     % figure labels
     if exist('expt','var')
         groupnames = expt.(sprintf('%ss',grouping));
-        titlesuffix = sprintf(': %s',groupnames{g});
+        titlesuffix = sprintf(': %s',groupnames{groupId});
     else
         titlesuffix = [];
     end
-    title(sprintf('%s %d%s',grouping,groups(g),titlesuffix))
+    title(sprintf('%s %d%s',grouping,groupId,titlesuffix))
     xlabel('time (s)')
     ylabel('frequency (Hz)')
     box off;
