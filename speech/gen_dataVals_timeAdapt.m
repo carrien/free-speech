@@ -156,6 +156,7 @@ for i = 1:length(sortedTrialnums)
 
         dataVals(i).dur = pStart_time - v2Start_time; % for dataVals tracking. this is only the ash dur
         dataVals(i).totalDur = erEnd_time - v1Start_time;
+        dataVals(i).wordDur = erEnd_time - cStart_time; 
         dataVals(i).v1Dur = v1Dur; % timeAdapt addition 
         dataVals(i).cDur = cDur; % timeAdapt addition 
         dataVals(i).cClosureDur = cClosureDur; % timeAdapt addition 
@@ -175,6 +176,7 @@ for i = 1:length(sortedTrialnums)
     else % bad trials get all NaNs
         dataVals(i).dur = NaN; 
         dataVals(i).totalDur = NaN;
+        dataVals(i).wordDur = NaN; 
         dataVals(i).v1Dur = NaN; % timeAdapt addition 
         dataVals(i).cDur = NaN; % timeAdapt addition 
         dataVals(i).cClosureDur = NaN; % timeAdapt addition 
@@ -291,8 +293,8 @@ for i = 1:length(sortedTrialnums)
 
         
         dataVals(i).dur = pStart_time - v2Start_time; % for check_dataVals 
-        dataVals(i).vowel = 'ae'; 
         dataVals(i).totalDur = erEnd_time - v1Start_time;
+        dataVals(i).wordDur = erEnd_time - cStart_time; 
         dataVals(i).v1Dur = v1Dur; % timeAdapt addition 
         dataVals(i).cDur = cDur; % timeAdapt addition 
         dataVals(i).cClosureDur = cClosureDur; % timeAdapt addition 
@@ -310,6 +312,7 @@ for i = 1:length(sortedTrialnums)
     else
         dataVals(i).dur = NaN; 
         dataVals(i).totalDur = NaN;
+        dataVals(i).wordDur = NaN; 
         dataVals(i).v1Dur = NaN; % timeAdapt addition 
         dataVals(i).cDur = NaN; % timeAdapt addition 
         dataVals(i).cClosureDur = NaN; % timeAdapt addition 
