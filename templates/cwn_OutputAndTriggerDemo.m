@@ -1,4 +1,4 @@
-function cwn_OutputAndTriggerDemo(inputDevice, outputDevice, numTrials, maxTrialDur, triggerLevel)
+function outputData = cwn_OutputAndTriggerDemo(inputDevice, outputDevice, outputDevice2, numTrials, maxTrialDur, triggerLevel)
 % Function description
 %
 % % Input arguments:
@@ -17,14 +17,12 @@ function cwn_OutputAndTriggerDemo(inputDevice, outputDevice, numTrials, maxTrial
 % level, the triggered events will occur. Enter a number from 0 to 1.
 %
 % 
-% TODO save data somewhere that can be returned
-% TODO properly implement playing audio as triggered event
+
 % TODO fix implementation of chooseAudioDevice in input arg handling
 % TODO implement master/slave method. See BasicAMAndMixScheduleDemo
-% Scheduling
-% TODO use original method of timestamping
-% TODO record all of user's input during trial and store it somewhere
-% TODO try 'reqlatencyclass' (4th param of 'Open') at 1, 2, 3, 4
+    % TODO properly implement playing audio as triggered event    
+        % TODO remove sloppy triggerOccurred variable
+% Add scheduling. (Wait until end of trialDur to go to next trial?)
 
 
 %% Input arg handling
@@ -58,6 +56,9 @@ if nrchannels < 2
     nrchannels = 2;
 end
 
+% Allocate space for outputData
+outputData.recordedaudio{numTrials} = [];
+
 % Perform basic initialization of the sound driver. Recommend doing this at
 % start of each experiment. Call w/ 1st parameter == 1 for low latency
 % mode (Not sure if that actually changes anything though).
@@ -66,7 +67,10 @@ InitializePsychSound(1);
 % Open the device (i.e., create the object) for outputting sound to participant
 try
     % Try with the 'freq'uency we wanted:
-    paOutputHandle = PsychPortAudio('Open', outputDevice, [], 2, freq, nrchannels);
+    %paOutputHandle = PsychPortAudio('Open', outputDevice, [], 2, freq, nrchannels);
+        % TODO remove after implementing parent/child
+    % TODO add description for parent 'Open' call
+    paOutputHandle = PsychPortAudio('Open', outputDevice, 1+8, 1, freq, nrchannels);
 catch
     % Failed. Retry with default frequency as suggested by device:
     fprintf(['\nCould not open device at wanted playback frequency of %i Hz.' ...
@@ -74,8 +78,16 @@ catch
     fprintf('Sound may sound a bit out of tune, ...\n\n');
 
     psychlasterror('reset');
-    paOutputHandle = PsychPortAudio('Open', outputDevice, [], 2, [], nrchannels);
+    %paOutputHandle = PsychPortAudio('Open', outputDevice, [], 2, [], nrchannels);
+        % TODO remove after implementing parent/child
+    paOutputHandle = PsychPortAudio('Open', outputDevice, 1+8, 1, freq, nrchannels);
 end
+
+% Get what frequency we are actually using:
+s = PsychPortAudio('GetStatus', paOutputHandle);
+freq = s.SampleRate;
+
+
 
 % Fill the audio playback buffer with the audio data 'wavedata':
 PsychPortAudio('FillBuffer', paOutputHandle, wavedata);
@@ -93,29 +105,30 @@ paInputHandle = PsychPortAudio('Open', inputDevice, 2, 0, [], 2, [], 0.02);
 trialDur = 5;
 PsychPortAudio('GetAudioData', paInputHandle, trialDur*2);
 
-for i = 1:numTrials
+for trialNum = 1:numTrials
+    % We'll be adding to this throughout the trial
+    recordedaudio = [];
     fprintf('\nGet ready to talk!\n')
     WaitSecs(1);
     
     % Start recording. Continue recording indefinitely.
-    tStim = PsychPortAudio('Start', paInputHandle, 0, 0, 1);
+    tCaptureStart = PsychPortAudio('Start', paInputHandle, 0, 0, 1);
     
     %Prompt user
-    fprintf('>>>Say something!<<<\n')
-    %tStim = GetSecs; % mark the time of stimulus presentation
+    fprintf('----->Say something!<-----\n')
+    %tCaptureStart = GetSecs; % mark the time of stimulus presentation
     
     % Wait in a polling loop until some sound event of sufficient loudness
     % is captured:
     level = 0;
 
     % also check for if n seconds have passed
-    tMaxEnd = tStim + maxTrialDur;
+    tMaxEnd = tCaptureStart + maxTrialDur;
     
     % Repeat as long as below trigger-threshold:
     while level < triggerLevel && GetSecs < tMaxEnd
         % Fetch current audiodata:
-        [audiodata, offset, overflow, tCaptureStart]= PsychPortAudio('GetAudioData', paInputHandle);
-        tTrigger = GetSecs;
+        [audiodata, offset, overflow]= PsychPortAudio('GetAudioData', paInputHandle);
 
         % Compute maximum signal amplitude in this chunk of data:
         if ~isempty(audiodata)
@@ -124,19 +137,28 @@ for i = 1:numTrials
             level = 0;
         end
 
+        % Add audio data from this loop to our running total
+        recordedaudio = [recordedaudio audiodata];
+        
         % Below trigger-threshold?
         if level < triggerLevel
             % Wait for five milliseconds before next scan:
-            WaitSecs(0.005);
+            WaitSecs(0.001);
         end
+        
     end
     
     %% Because the trigger occurred, do X Y Z ...
     if level > triggerLevel  
         triggerOccurred = 1;
+        idx = find((abs(sum(audiodata(1,:))) >= triggerLevel),1,'first');
+        
+        % Compute absolute event time:
+        tTrigger = tCaptureStart + ((offset + idx - 1) / freq);
+        
         fprintf(['I heard that! \n' ...
             , 'The trigger happened at %.4f, which was ' ...
-            , '%.4f seconds after the stimulus.\n'],tTrigger, tTrigger-tStim)
+            , '%.4f seconds after the stimulus.\n'],tTrigger, tTrigger-tCaptureStart)
         %
         %
         % Doing a very messy version of triggering audio
@@ -145,10 +167,11 @@ for i = 1:numTrials
         [y, freq] = psychwavread([PsychtoolboxRoot 'PsychDemos\SoundFiles\clap.wav']);
         wavedata = y';
         nrchannels = size(wavedata,1);
-        paOutputHandle2 = PsychPortAudio('Open', 11, [], 2, freq, nrchannels);
+            %TODO use 'freq' from file, or default (5th param == [])?
+        paOutputHandle2 = PsychPortAudio('Open', outputDevice2, [], 1, [], nrchannels);
         PsychPortAudio('FillBuffer', paOutputHandle2, wavedata);
         clapStart = PsychPortAudio('Start', paOutputHandle2, 1, 0, 1);
-        fprintf('clapStart happened at %.4f, which is %.4f ms after tTrigger', ...
+        fprintf('clapStart happened at %.4f, which is %.4f ms after tTrigger\n', ...
             clapStart, (clapStart-tTrigger)*1000);
         %
         %
@@ -165,12 +188,23 @@ for i = 1:numTrials
     PsychPortAudio('Stop', paInputHandle);
 
     % Fetch all remaining audio data out of the buffer - Needs to be empty
-    % before next trial:
-    PsychPortAudio('GetAudioData', paInputHandle);
-
+    % before next trial.
+    audiodata = PsychPortAudio('GetAudioData', paInputHandle);
+    
+    % Put the last scraps of audio in recordedaudio, then put it all in the
+    % outputData file that gets returned by the function
+    recordedaudio = [recordedaudio audiodata];
+    outputData.recordedaudio{trialNum} = recordedaudio;
+    
+    % Hopefully this never happens, but check just in case.
+    if overflow == 1
+        warning(["Overflow occurred. Insufficient buffer between trials. " ...
+            "Some recorded audio may have been lost."])
+    end
+    
     %Prep participant for next trial
-    fprintf('Trial %d of %d is complete\n', i, numTrials)
-    WaitSecs(5);
+    fprintf('Trial %d of %d is complete\n', trialNum, numTrials)
+    WaitSecs(1.5);
     
     % The very messy audio triggering handles are closed here 
     if triggerOccurred == 1     % TODO remove sloppy triggerOccurred variable
