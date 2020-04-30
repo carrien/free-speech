@@ -1,4 +1,4 @@
-function outputData = cwn_OutputAndTriggerDemo(inputDevice, outputDevice, outputDevice2, numTrials, maxTrialDur, triggerLevel)
+function outputData = cwn_OutputAndTriggerDemo(inputDevice, outputDevice, numTrials, maxTrialDur, triggerLevel)
 % Function description
 %
 % % Input arguments:
@@ -23,7 +23,13 @@ function outputData = cwn_OutputAndTriggerDemo(inputDevice, outputDevice, output
     % TODO properly implement playing audio as triggered event    
         % TODO remove sloppy triggerOccurred variable
 % Add scheduling. (Wait until end of trialDur to go to next trial?)
-
+% TODO change funk.wav to noise. See mtbabble.wav somewhere? Can ask Sarah
+% TODO in 'Open' input device call, change 8th param from 0.02 to something
+% lower. That is the suggested latency. See what happens with []?
+% TODO instead of trigger occurred for closing the child output device,
+% should schedule a 'Close' action at end of wavedataTrigger playback
+% TODO figure out why the timestamps are showing up wrong for
+% tTriggerConsequent-tTrigger
 
 %% Input arg handling
 if nargin < 1 || isempty(inputDevice)
@@ -39,23 +45,33 @@ if nargin < 4 || isempty(maxTrialDur), maxTrialDur = 4; end % in seconds
 if nargin < 5 || isempty(triggerLevel), triggerLevel = 0.15; end % from 0-1
 
 
-%%      
-wavfilename = [PsychtoolboxRoot 'PsychDemos\SoundFiles\funk.wav'];
+%% Set up audio files that will play during expt
+wavfilenameNoise = [PsychtoolboxRoot 'PsychDemos\SoundFiles\funk.wav'];
 
 % Read WAV file from filesystem:
-[y, freq] = audioread(wavfilename);
-wavedata = y';
-nrchannels = size(wavedata,1); % Number of rows == number of channels.
+[y, freq] = audioread(wavfilenameNoise);
+wavedataNoise = y';
+nrchannels = size(wavedataNoise,1); % Number of rows == number of channels.
 
-% Make sure we have always 2 channels stereo output.
-% Why? Because some low-end and embedded soundcards
-% only support 2 channels, not 1 channel, and we want
-% to be robust in our demos.
+% Make sure we always use 2 channels stereo output.
 if nrchannels < 2
-    wavedata = [wavedata ; wavedata];
-    nrchannels = 2;
+    wavedataNoise = [wavedataNoise ; wavedataNoise];
 end
 
+% Repeat process for any other sounds you know you'll be playing during
+% expt
+wavfilenameTrigger = [PsychtoolboxRoot 'PsychDemos\SoundFiles\clap.wav'];
+
+[y, freq] = psychwavread(wavfilenameTrigger);
+wavedataTrigger = y';
+nrchannels = size(wavedataTrigger,1);
+
+if nrchannels < 2
+    wavedataNoise = [wavedataNoise ; wavedataNoise];
+    nrchannels = 2; % In last iteration, make sure nrchannels == 2
+end
+
+%% Set up devices
 % Allocate space for outputData
 outputData.recordedaudio{numTrials} = [];
 
@@ -67,10 +83,8 @@ InitializePsychSound(1);
 % Open the device (i.e., create the object) for outputting sound to participant
 try
     % Try with the 'freq'uency we wanted:
-    %paOutputHandle = PsychPortAudio('Open', outputDevice, [], 2, freq, nrchannels);
-        % TODO remove after implementing parent/child
     % TODO add description for parent 'Open' call
-    paOutputHandle = PsychPortAudio('Open', outputDevice, 1+8, 1, freq, nrchannels);
+    paOutputParent = PsychPortAudio('Open', outputDevice, 1+8, 1, freq, nrchannels);
 catch
     % Failed. Retry with default frequency as suggested by device:
     fprintf(['\nCould not open device at wanted playback frequency of %i Hz.' ...
@@ -78,25 +92,46 @@ catch
     fprintf('Sound may sound a bit out of tune, ...\n\n');
 
     psychlasterror('reset');
-    %paOutputHandle = PsychPortAudio('Open', outputDevice, [], 2, [], nrchannels);
-        % TODO remove after implementing parent/child
-    paOutputHandle = PsychPortAudio('Open', outputDevice, 1+8, 1, freq, nrchannels);
+    paOutputParent = PsychPortAudio('Open', outputDevice, 1+8, 1, [], nrchannels);
 end
 
 % Get what frequency we are actually using:
-s = PsychPortAudio('GetStatus', paOutputHandle);
+s = PsychPortAudio('GetStatus', paOutputParent);
 freq = s.SampleRate;
 
+% Start parent immediately, wait for it to be started. We won't stop the
+% master until the end of the session.
+PsychPortAudio('Start', paOutputParent, 0, 0, 1);
 
+% Set the masterVolume for the master: This volume setting affects all
+% attached sound devices. We set this to 0.5, so it doesn't blow out the
+% ears of our listeners...
+PsychPortAudio('Volume', paOutputParent, 0.5);
+
+% Create two child audio devices for sound playback (+1), with same
+% frequency, channel count et. as parent. Attach them to parent. As they're
+% attached to the same sound channels of the parent (actually the same
+% single channel), their audio output will mix together:
+paOutputChild1 = PsychPortAudio('OpenSlave', paOutputParent, 1);
+paOutputChild2 = PsychPortAudio('OpenSlave', paOutputParent, 1);
+
+
+% Create audio buffers for any sounds that you want to play during each
+% trial, either pre-emptively or in response to the trigger
 
 % Fill the audio playback buffer with the audio data 'wavedata':
-PsychPortAudio('FillBuffer', paOutputHandle, wavedata);
+PsychPortAudio('FillBuffer', paOutputChild1, wavedataNoise);
+
+%TODO use 'freq' from file, or default (5th param == [])?
+PsychPortAudio('FillBuffer', paOutputChild2, wavedataTrigger);
 
 
-% Start audio playback, do it for infinite repetitions until stopped, 
+
+
+% Start funky music, do it for infinite repetitions until stopped, 
 % (3rd param == 0), and start it immediately (4th param == 0). Optionally,
 % output param of 'Start' call is a timestamp.
-PsychPortAudio('Start', paOutputHandle, 0, 0, 1);
+PsychPortAudio('Start', paOutputChild1, 0, 0, 1);
 
 paInputHandle = PsychPortAudio('Open', inputDevice, 2, 0, [], 2, [], 0.02);
 
@@ -159,26 +194,11 @@ for trialNum = 1:numTrials
         fprintf(['I heard that! \n' ...
             , 'The trigger happened at %.4f, which was ' ...
             , '%.4f seconds after the stimulus.\n'],tTrigger, tTrigger-tCaptureStart)
-        %
-        %
-        % Doing a very messy version of triggering audio
-        %
-        %
-        [y, freq] = psychwavread([PsychtoolboxRoot 'PsychDemos\SoundFiles\clap.wav']);
-        wavedata = y';
-        nrchannels = size(wavedata,1);
-            %TODO use 'freq' from file, or default (5th param == [])?
-        paOutputHandle2 = PsychPortAudio('Open', outputDevice2, [], 1, [], nrchannels);
-        PsychPortAudio('FillBuffer', paOutputHandle2, wavedata);
-        clapStart = PsychPortAudio('Start', paOutputHandle2, 1, 0, 1);
-        fprintf('clapStart happened at %.4f, which is %.4f ms after tTrigger\n', ...
-            clapStart, (clapStart-tTrigger)*1000);
-        %
-        %
-        % End of very messy triggering of audio, except closing them at the
-        % end of the fx.
-        %
-        %
+        
+        % TODO add documentation here
+        tTriggerConsequent = PsychPortAudio('Start', paOutputChild2, 1, 0, 1);
+        fprintf('tTriggerConsequent happened at %.4f, which is %.4f ms after tTrigger\n', ...
+            tTriggerConsequent, (tTriggerConsequent-tTrigger)*1000);
     else
         triggerOccurred = 0;  
         fprintf('I didn''t hear anything that time...\n')
@@ -206,16 +226,20 @@ for trialNum = 1:numTrials
     fprintf('Trial %d of %d is complete\n', trialNum, numTrials)
     WaitSecs(1.5);
     
-    % The very messy audio triggering handles are closed here 
+    
     if triggerOccurred == 1     % TODO remove sloppy triggerOccurred variable
-        PsychPortAudio('Stop', paOutputHandle2);
-        PsychPortAudio('Close', paOutputHandle2);
+        PsychPortAudio('Stop', paOutputChild2);
     end
 end
 
+%% Close up shop
+PsychPortAudio('Close', paOutputChild2);
 
-PsychPortAudio('Stop', paOutputHandle);
-PsychPortAudio('Close', paOutputHandle);
+PsychPortAudio('Stop', paOutputChild1);
+PsychPortAudio('Close', paOutputChild1);
+
+PsychPortAudio('Stop', paOutputParent);
+PsychPortAudio('Close', paOutputParent);
 fprintf('Demo complete. \n \n \n')
 
 end
