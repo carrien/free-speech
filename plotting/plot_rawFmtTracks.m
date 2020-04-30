@@ -17,7 +17,7 @@ if nargin < 1 || isempty(dataVals)
         fprintf(' done.\n')
     end
 end
-if nargin < 3 || isempty(trialset), trialset = 1:length(dataVals); end
+if nargin < 3 || isempty(trialset), trialset = [dataVals.token]; end
 if nargin < 4 || isempty(parent), h = figure('Units','normalized', 'Position',[.01 .25 .98 .5]); parent = h; end
 
 f1color = [0 0 1]; % blue
@@ -37,16 +37,21 @@ for g = 1:length(groups)
 %     hsub(g) = subplot(1,length(groups),g,'Parent',parent);
     % plot tracks and ends
     ihandle = 1;
-    for i=trialset % set of trials (jump, short, late, etc.) 
+    
+    %collect the indices of dataVals where the trialset and token values
+    %are the same
+    [~,inds] =  ismember(trialset, [dataVals.token]);
+    
+    for i=inds % set of trials (jump, short, late, etc.) 
 %         disp(i)
         if (~isfield(dataVals,'bExcl') || ~dataVals(i).bExcl) && dataVals(i).(grouping) == groupId
             %plot tracks
             taxis = dataVals(i).ftrack_taxis - dataVals(i).ftrack_taxis(1);
             htracks(g).f1(ihandle) = plot(taxis,dataVals(i).f1,'Color',f1color);
-            set(htracks(g).f1(ihandle),'Tag',num2str(i),'YdataSource','f1')
+            set(htracks(g).f1(ihandle),'Tag',num2str(dataVals(i).token),'YdataSource','f1')
             hold on;
             htracks(g).f2(ihandle) = plot(taxis,dataVals(i).f2,'Color',f2color);
-            set(htracks(g).f2(ihandle),'Tag',num2str(i),'YdataSource','f2')
+            set(htracks(g).f2(ihandle),'Tag',num2str(dataVals(i).token),'YdataSource','f2')
             
             %plot ends
             x = taxis(end);
