@@ -21,13 +21,14 @@ end
 
 %% set params
 
-% linestyles
-% p.subjMarker = '.';
-% p.subjMarkerSize = 12;
-% p.subjLineWidth = 1;
+% TODO: add defaults
+% p.Marker = '.';
+% p.MarkerSize = 12;
+% p.LineWidth = 1;
 % p.avgMarker = 'o';
 % p.avgMarkerSize = 8;
 % p.avgLineWidth = 3;
+p.avgLineColor = [0 0 0];
 
 %% colors
 if iscell(colorSpec(1)) %if colors are specified as character strings
@@ -43,11 +44,6 @@ if nColors == 1 || nColors~=nConds
     end
     colorSpec = repmat(colorSpec,nConds,1);
 end
-
-% individual subject data
-p.subjColor = colorSpec + 0.3;
-p.subjColor(p.subjColor > 1) = 1;
-p.lineColor = [.7 .7 .7 .5]; % alpha = 0.5
 
 %% plot
 
@@ -66,10 +62,10 @@ for c=1:nConds-1
     cond = conds{c}; nextcond = conds{c+1};
     if p.jitterFrac
         for o=1:nObsPerCond
-            plot([c c+1]+jitters(o),[dataMeansByCond.(cond)(o) dataMeansByCond.(nextcond)(o)],'-','Color',p.lineColor,'LineWidth',p.subjLineWidth);
+            plot([c c+1]+jitters(o),[dataMeansByCond.(cond)(o) dataMeansByCond.(nextcond)(o)],'-','Color',p.LineColor,'LineWidth',p.LineWidth);
         end
     else
-        plot([c c+1],[dataMeansByCond.(cond)' dataMeansByCond.(nextcond)'],'-','Color',p.lineColor,'LineWidth',p.subjLineWidth);
+        plot([c c+1],[dataMeansByCond.(cond)' dataMeansByCond.(nextcond)'],'-','Color',p.LineColor,'LineWidth',p.LineWidth);
     end
 end
 
@@ -83,17 +79,16 @@ for c=1:nConds
     cond_se(c) = nanstd(cond_data,0,1) / sqrt(length(cond_means(:,c)));
     cond_ci(c) = calcci(cond_data');
     if p.jitterFrac
-        %plot(c+jitters,dataMeansByCond.(cond),p.subjMarker,'Color',p.subjColor(c,:),'MarkerSize',p.subjMarkerSize)
-        scatter(c+jitters,dataMeansByCond.(cond),p.subjMarkerSize,'MarkerFaceColor',p.subjColor(c,:),'MarkerFaceAlpha',p.subjAlpha,'MarkerEdgeColor','none')
+        %plot(c+jitters,dataMeansByCond.(cond),p.Marker,'Color',get_lightcolor(colorSpec(c,:)),'MarkerSize',p.MarkerSize)
+        scatter(c+jitters,dataMeansByCond.(cond),p.MarkerSize,'MarkerFaceColor',get_lightcolor(colorSpec(c,:)),'MarkerFaceAlpha',p.MarkerAlpha,'MarkerEdgeColor','none')
     else
-        plot(c,dataMeansByCond.(cond),p.subjMarker,'Color',p.subjColor(c,:),'MarkerSize',p.subjMarkerSize)
+        plot(c,dataMeansByCond.(cond),p.Marker,'Color',get_lightcolor(colorSpec(c,:)),'MarkerSize',p.MarkerSize)
     end
 end
 
 % average data and errorbars
 hold on
-p.avgColor = [0 0 0]; %[.2 0 .5];
-plot(1:nConds,nanmean(cond_means,1),'-','Color',p.avgColor,'LineWidth',p.avgLineWidth)
+plot(1:nConds,nanmean(cond_means,1),'-','Color',p.avgLineColor,'LineWidth',p.avgLineWidth)
 for c = 1:nConds
     plot(c,nanmean(cond_means(:,c)),p.avgMarker,'Color',colorSpec(c,:),'MarkerFace',colorSpec(c,:),'MarkerSize',p.avgMarkerSize)
     errorbar(c,nanmean(cond_means(:,c)), cond_ci(c),'Color',colorSpec(c,:),'LineWidth',p.avgLineWidth)
@@ -104,4 +99,3 @@ set(gca,'XTick',1:nConds,'XTickLabel',conds)
 %set(gca,'YTick',min(YTick):200:max(YTick))
 ax = axis;
 axis([.5 nConds+.5 ax(3) ax(4)])
-makeFig4Screen;
