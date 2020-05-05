@@ -1,4 +1,4 @@
-function [h] = plot_centering_new(dataPaths,condtype,conds2plot,plotinds,p)
+function [h] = plot_centering(dataPaths,condtype,conds2plot,plotinds,p)
 %PLOT_CENTERING  Plot vowel centering in center and peripheral trials.
 %   PLOT_CENTERING reads formants from a subject's fdata file and plots
 %   them with respect to the median at both the beginning (first50ms) and
