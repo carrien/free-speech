@@ -1,43 +1,48 @@
-function outputData = cwn_OutputAndTriggerDemo(inputDevice, outputDevice, numTrials, maxTrialDur, triggerLevel)
-% Function description
+function outputData = cwn_OutputAndTriggerDemo(inputDevice, outputDevice, numTrials, trialDur, triggerLevel)
+% This demo presents continuous noise, then initiates a number of trials.
+% During the trial, if your signal through the mic rises above the
+% specified intensity threshold, you'll hear a clap instantly.
+% 
+% This demo attempts to show how Psychtoolbox is used for sound playback,
+% audio capture, a parent device with multiple children, polling 'while'
+% loops, triggering an event based on a mic signal (speech), and rough
+% software lag estimates.
 %
 % % Input arguments:
-% INPUTDEVICE: the microphone that will capture audio. Can pass in the
-% ID as a numeral or the first part of the name (case sensitive). 
+% INPUTDEVICE: the microphone that will capture audio. Pass in the numeral ID
+% which matches an ID when calling PsychPortAudio('GetDevices'). 
 %
-% OUTPUTDEVICE: The speaker that will present audio. Can pass in the ID as
-% a numeral or the first part of the name (case sensitive). 
+% OUTPUTDEVICE: The speaker that will present audio. Pass in the numeral ID
+% which matches an ID when calling PsychPortAudio('GetDevices').
 %
-% NUMTRIALS: How many trials to present in sequence. Defaults to 4.
+% NUMTRIALS: How many trials to present in sequence.
 %
-% MAXTRIALDUR: The max duration in seconds for each trial. After this
-% amount of time, end the trial even if no trigger occurred.
+% TRIALDUR: The duration of each trial in seconds. Whether a response is
+% received or not, after trialDur seconds, the trial ends.
 %
 % TRIGGERLEVEL: When the intensity of the audio input exceeds the trigger
 % level, the triggered events will occur. Enter a number from 0 to 1.
 %
-% 
-
-% TODO fix implementation of chooseAudioDevice in input arg handling
-% TODO Add scheduling. (Wait until end of trialDur to go to next trial?)
-% TODO instead of trigger occurred for closing the child output device,
-% should schedule a 'Close' action at end of wavedataTrigger playback
-% TODO tTriggerConsequent-tTrigger gives negative results... why...
-% TODO 'Stop' call, changing repetitions from 0 to 1.
+% % Similar demos released by Psychtoolbox reference:
+% SimpleVoiceTriggerDemo.m
+% BasicSoundOutputDemo.m
+% BasicSoundInputDemo.m
+% BasicAMAndMixScheduleDemo.m
 
 %% Input arg handling
-if nargin < 1 || isempty(inputDevice)
+deviceList = PsychPortAudio('GetDevices');
+if nargin < 1 || isempty(inputDevice) || deviceList(inputDevice + 1).NrInputChannels < 1
     warning(['Using default microphone. Call PsychPortAudio(''GetDevices'') ' ...
         'to see a list of mics if you prefer a different one.']);
     inputDevice = [];
 end
-if nargin < 2 || isempty(outputDevice)
+if nargin < 2 || isempty(outputDevice) || deviceList(outputDevice + 1).NrOutputChannels < 1
     warning(['Using default speakers. Call PsychPortAudio(''GetDevices'') ' ...
         'to see a list of speakers if you prefer a different one.']);
     outputDevice = [];
 end
 if nargin < 3 || isempty(numTrials), numTrials = 4; end
-if nargin < 4 || isempty(maxTrialDur), maxTrialDur = 4; end % in seconds
+if nargin < 4 || isempty(trialDur), trialDur = 4; end % in seconds
 if nargin < 5 || isempty(triggerLevel), triggerLevel = 0.15; end % from 0-1
 
 
@@ -134,7 +139,6 @@ paInputHandle = PsychPortAudio('Open', inputDevice, 2, [], [], 2);
 
 % Preallocate an internal audio recording buffer with a generous capacity
 % of twice the duration of each trial.
-trialDur = 5;
 PsychPortAudio('GetAudioData', paInputHandle, trialDur*2);
 
 for trialNum = 1:numTrials
@@ -149,7 +153,7 @@ for trialNum = 1:numTrials
     % Wait in a polling loop until some sound event of sufficient loudness
     % is captured. Also check for if n seconds have passed
     level = 0;
-    tMaxEnd = tCaptureStart + maxTrialDur;
+    tMaxEnd = tCaptureStart + trialDur;
     
     %Prompt user
     fprintf('----->Say something!<-----\n')
@@ -158,7 +162,9 @@ for trialNum = 1:numTrials
     while level < triggerLevel && GetSecs < tMaxEnd
         % Fetch current audiodata:
         [audiodata, offset, overflow]= PsychPortAudio('GetAudioData', paInputHandle);
-        t_timestamp = GetSecs();
+            %Note: `offset` is a rough estimate of when the sample being
+            %processed will leave the device? Tries to est. hardware lag?
+        tInLoop = GetSecs();
 
         % Compute maximum signal amplitude in this chunk of data:
         if ~isempty(audiodata)
@@ -180,33 +186,32 @@ for trialNum = 1:numTrials
     
     %% Because the trigger occurred, do X Y Z ...
     if level > triggerLevel  
-        idx = find((abs(sum(audiodata)) >= triggerLevel),1,'first');
+        % Since we're only requesting 1 repetition (5th param == 1) of the
+        % buffered audio file, we don't need a 'Stop' command later.
+        PsychPortAudio('Start', paOutputChild2, 1, 0, 1);
+        tInitAudio = GetSecs();
         
         % Compute absolute event time:
         inputStatus = PsychPortAudio('GetStatus', paInputHandle);
         inputFreq = inputStatus.SampleRate;
-        tTrigger = tCaptureStart + ((offset + idx - 1) / inputFreq);
+        % Find how many samples into the buffer the threshold was reached
+        idx = find((abs(sum(audiodata)) >= triggerLevel),1,'first');
+        % Find absolute time when threshold exceeded
+        tThresholdExceeded = tInLoop - ((length(audiodata) - idx) / inputFreq);
         
         fprintf(['I heard that! \n' ...
-            , 'The trigger happened at %.4f, which was ' ...
-            , '%.4f seconds after the stimulus.\n'],tTrigger, tTrigger-tCaptureStart)
-        
-        % TODO add documentation here
-        % Since we're only requesting 1 repetition (5th param == 1) of the
-        % buffered audio file, we don't need a 'Stop' command later.
-        tTriggerConsequent = PsychPortAudio('Start', paOutputChild2, 1, 0, 1);
-        t_trigger2 = GetSecs();
-        fprintf('tTriggerConsequent happened at %.4f, which is %.4f ms after tTrigger\n', ...
-            tTriggerConsequent, (tTriggerConsequent-tTrigger)*1000);
-        fprintf('t_trigger2 happened at %.4f, which is %.4f ms after t_timestamp\n', ...
-            t_trigger2, (t_trigger2-t_timestamp)*1000);
-        
-        % Tell the device to stop once it's done with the
-        % commands we've already given it (3rd param == 1). Since in the
-        % 'Start' call we told it to play 1 time, it'll stop after that.
-        %PsychPortAudio('Stop', paOutputChild2, 1)
+            , 'Your voice crossed the intensity threshold at %.5f, \n   which was ' ...
+            , '%.5f seconds after audio capture began.\n'],tThresholdExceeded, tThresholdExceeded-tCaptureStart)
+        fprintf(['I estimate %.5f ms of software lag between voice onset\n   ' ...
+        'and trigger event initiation (e.g., audio playback)\n'], (tInitAudio - tThresholdExceeded)*1000);
+            
     else
         fprintf('I didn''t hear anything that time...\n')
+    end
+    
+    % No new commands until the end of the trial duration
+    if GetSecs < (tCaptureStart + trialDur)
+        WaitSecs('UntilTime', (tCaptureStart + trialDur));
     end
     
     %Stop capturing audio
@@ -221,15 +226,18 @@ for trialNum = 1:numTrials
     recordedaudio = [recordedaudio audiodata];
     outputData.recordedaudio{trialNum} = recordedaudio;
     
-    % Hopefully this never happens, but check just in case.
+    % Hopefully this never happens, but alert the user just in case.
     if overflow == 1
         warning(["Overflow occurred. Insufficient buffer between trials. " ...
             "Some recorded audio may have been lost."])
     end
     
-    %Prep participant for next trial
-    fprintf('Trial %d of %d is complete\n', trialNum, numTrials)
-    WaitSecs(1.5);
+    % If we wanted to abort the triggered audio playback, even though it
+    % hasn't finished what the 'Start' command told it to do, use this:
+    % `PsychPortAudio('Stop', paOutputChild2)`
+    
+    fprintf('Trial %d of %d complete.\n', trialNum, numTrials)
+    WaitSecs(1);
     
 end
 
@@ -246,9 +254,6 @@ while 1
     WaitSecs(0.1); %wait 100 ms, then check the status again
 end
 
-% TODO try doing a 'stop' call with waitforendofplayback = 3, and set
-% repetitions to 1, so it stops after this one. Does that work right away?
-% Does it do one last rep after the current one?
 PsychPortAudio('Stop', paOutputChild1);
 PsychPortAudio('Close', paOutputChild1);
 
