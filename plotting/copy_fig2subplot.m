@@ -14,13 +14,17 @@ for ifig = 1:length(hfig2copy)
     
     % set position and copy
     temp_ax = subplot(nrows,ncols,subplotnums{ifig},'parent',hnewfig);
-    pause(1);
+    pause(.05);
     haxcp = copyobj(hax, hnewfig);
-    pause(1);
-    set(haxcp,'Position',get(temp_ax,'Position'));
-    try
-        set(haxcp,'Colormap',get(hax,'Colormap'));
-    catch
+    pause(.05);
+    for nax = 1:length(haxcp)
+        if isa(haxcp(nax),'matlab.graphics.axis.Axes')
+            set(haxcp(nax),'Position',get(temp_ax,'Position'));
+            set(haxcp(nax),'Colormap',get(hax(nax),'Colormap'));
+        else % e.g. a legend
+            % calculate position relative to parent axes
+            %set(haxcp(nax),'Position',get(temp_ax,'Position'))
+        end
     end
     delete(temp_ax);
     
