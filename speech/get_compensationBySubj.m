@@ -24,7 +24,7 @@ for s = 1:nSubs
     
     % get data and time axis
     dataPath = dataPaths{s};
-    load(fullfile(dataPath,fmtMatrixFilename),'fmtMatrix');
+    load(fullfile(dataPath,params.fmtMatrixFilename),'fmtMatrix');
     if ~exist('tstep','var')
         load(fullfile(dataPath,'dataVals.mat'),'dataVals');
         goodtrials = find(~[dataVals.bExcl]);
