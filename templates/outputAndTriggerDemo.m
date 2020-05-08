@@ -122,20 +122,20 @@ PsychPortAudio('Volume', paOutputParent, 0.5);
 % frequency, channel count etc. as parent. Attach them to parent. As they're
 % attached to the same sound channels of the parent (actually the same
 % single channel), their audio output will mix together:
-paOutputChild1 = PsychPortAudio('OpenSlave', paOutputParent, 1);
-paOutputChild2 = PsychPortAudio('OpenSlave', paOutputParent, 1);
+paOutputNoise = PsychPortAudio('OpenSlave', paOutputParent, 1);
+paOutputTrigger = PsychPortAudio('OpenSlave', paOutputParent, 1);
 
 % Create audio buffers for any sounds that you want to play during each
 % trial, either pre-emptively or in response to the trigger. Fill the
 % audio playback buffer with the audio data (wavedata):
-PsychPortAudio('FillBuffer', paOutputChild1, wavedataNoise);
-PsychPortAudio('FillBuffer', paOutputChild2, wavedataTrigger);
+PsychPortAudio('FillBuffer', paOutputNoise, wavedataNoise);
+PsychPortAudio('FillBuffer', paOutputTrigger, wavedataTrigger);
 
 % Start playing noise, do it for infinite repetitions until stopped 
 % (3rd param == 0), and start it immediately (4th param == 0). (5th == 1)
 % means PTB will wait at this point in the function until it expects the
 % sound to leave the speaker. This 'Start' call returns a timestamp if desired.
-PsychPortAudio('Start', paOutputChild1, 0, 0, 1);
+PsychPortAudio('Start', paOutputNoise, 0, 0, 1);
 
 % Open the microphone. We're only capturing audio (3rd param == 2), we want
 % low latency (4th param defaults to 1), it's recording at the device's
@@ -203,7 +203,7 @@ for trialNum = 1:numTrials
         % Since we're only requesting 1 repetition (3rd param == 1) of the
         % buffered audio file, we don't need a 'Stop' command later.
         tInitAudio = GetSecs();
-        tClapEst = PsychPortAudio('Start', paOutputChild2, 1, 0, 1);
+        tClapEst = PsychPortAudio('Start', paOutputTrigger, 1, 0, 1);
         
         % Compute absolute event time:
         inputStatus = PsychPortAudio('GetStatus', paInputHandle);
@@ -250,7 +250,7 @@ for trialNum = 1:numTrials
     
     % If we wanted to abort the triggered audio playback, even though it
     % hasn't finished what the 'Start' command told it to do, use this:
-    % `PsychPortAudio('Stop', paOutputChild2)`
+    % `PsychPortAudio('Stop', paOutputTrigger)`
     
     fprintf('Trial %d of %d complete.\n', trialNum, numTrials)
     WaitSecs(1);
@@ -262,16 +262,16 @@ end
 % Continually poll the device's status. Once s.Active == 0 (i.e., it's not
 % playing audio), close the device.
 while 1
-    s = PsychPortAudio('GetStatus', paOutputChild2);
+    s = PsychPortAudio('GetStatus', paOutputTrigger);
     if ~s.Active 
-        PsychPortAudio('Close', paOutputChild2);
+        PsychPortAudio('Close', paOutputTrigger);
         break
     end
     WaitSecs(0.1); %wait 100 ms, then check the status again
 end
 
-PsychPortAudio('Stop', paOutputChild1);
-PsychPortAudio('Close', paOutputChild1);
+PsychPortAudio('Stop', paOutputNoise);
+PsychPortAudio('Close', paOutputNoise);
 
 PsychPortAudio('Stop', paOutputParent);
 PsychPortAudio('Close', paOutputParent);
