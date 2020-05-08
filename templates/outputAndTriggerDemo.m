@@ -1,7 +1,7 @@
-function outputData = cwn_OutputAndTriggerDemo(inputDevice, outputDevice, numTrials, trialDur, triggerLevel)
+function returnedData = outputAndTriggerDemo(inputDevice, outputDevice, numTrials, trialDur, triggerLevel)
 % This demo presents continuous noise, then initiates a number of trials.
 % During the trial, if your signal through the mic rises above the
-% specified intensity threshold, you'll hear a clap instantly.
+% specified intensity threshold, you'll hear a sound instantly.
 % 
 % This demo attempts to show how Psychtoolbox is used for sound playback,
 % audio capture, a parent device with multiple children, polling 'while'
@@ -28,8 +28,11 @@ function outputData = cwn_OutputAndTriggerDemo(inputDevice, outputDevice, numTri
 % BasicSoundOutputDemo.m
 % BasicSoundInputDemo.m
 % BasicAMAndMixScheduleDemo.m
+%
+% v1 5/8/2020 CWN
 
 %% Input arg handling
+% Get device info in struct. For Windows, only use WASAPI-type devices.
 deviceList = PsychPortAudio('GetDevices');
 if nargin < 1 || isempty(inputDevice) || deviceList(inputDevice + 1).NrInputChannels < 1
     warning(['Using default microphone. Call PsychPortAudio(''GetDevices'') ' ...
@@ -65,7 +68,11 @@ end
 
 % Repeat process for any other sounds you know you'll be playing during
 % expt
-wavfilenameTrigger = [PsychtoolboxRoot 'PsychDemos\SoundFiles\clap.wav'];
+try
+    wavfilenameTrigger = 'C:\Users\Public\Documents\software\free-speech\templates\clap.wav';
+catch
+    wavfilenameTrigger = [PsychtoolboxRoot 'PsychDemos\SoundFiles\phaser.wav'];
+end
 
 [y, outputFreq] = psychwavread(wavfilenameTrigger); % in last WAV, get sample rate
 wavedataTrigger = y';
@@ -78,32 +85,32 @@ end
 
 %% Set up devices
 % Allocate space for outputData
-outputData.recordedaudio{numTrials} = [];
+returnedData.recordedaudio{numTrials} = [];
 
 % Perform basic initialization of the sound driver. Must do this at start
 % of each experiment. 1st parameter == 1 to use low latency mode.
 InitializePsychSound(1);
 
-% Open the device (i.e., create the object) for outputting sound to participant
-
 % Ideally there's a match across the board for what the sampling rate is.
 % If so, can combine 'outputFreq' and 'inputFreq' to just 'freq',
 % and don't need this try/catch block at all.
 try
-    % TODO add description for parent 'Open' call
+   % Open the device (i.e., create the object) for outputting sound to
+   % participant. We're using the device for audio output only (3rd == 1),
+   % and it's a parent device (3rd == +8). We want low latency (4th == 1).
+   % 5th and 6th are frequency and # channels, which should match device.
     paOutputParent = PsychPortAudio('Open', outputDevice, 1+8, 1, outputFreq, nrchannels);
 catch
     % Failed. Retry with default frequency as suggested by device:
     fprintf(['\nCould not open device at wanted playback frequency of %i Hz.\n ' ...
         'Will retry with device default frequency.\n'], outputFreq);
     fprintf('Sound may sound a bit out of tune...\n\n');
-
     psychlasterror('reset');
     paOutputParent = PsychPortAudio('Open', outputDevice, 1+8, 1, [], nrchannels);
 end
 
-% Start parent immediately, wait for it to be started. We won't stop the
-% master until the end of the session.
+% Start parent device immediately, wait for it to be started. We won't stop
+% the parent until the end of the session.
 PsychPortAudio('Start', paOutputParent, 0, 0, 1);
 
 % Set the masterVolume for the master: This volume setting affects all
@@ -111,13 +118,12 @@ PsychPortAudio('Start', paOutputParent, 0, 0, 1);
 % ears of our listeners...
 PsychPortAudio('Volume', paOutputParent, 0.5);
 
-% Create two child audio devices for sound playback (+1), with same
-% frequency, channel count et. as parent. Attach them to parent. As they're
+% Create two child audio devices for sound playback (3rd == 1), with same
+% frequency, channel count etc. as parent. Attach them to parent. As they're
 % attached to the same sound channels of the parent (actually the same
 % single channel), their audio output will mix together:
 paOutputChild1 = PsychPortAudio('OpenSlave', paOutputParent, 1);
 paOutputChild2 = PsychPortAudio('OpenSlave', paOutputParent, 1);
-
 
 % Create audio buffers for any sounds that you want to play during each
 % trial, either pre-emptively or in response to the trigger. Fill the
@@ -125,9 +131,10 @@ paOutputChild2 = PsychPortAudio('OpenSlave', paOutputParent, 1);
 PsychPortAudio('FillBuffer', paOutputChild1, wavedataNoise);
 PsychPortAudio('FillBuffer', paOutputChild2, wavedataTrigger);
 
-% Start playing noise, do it for infinite repetitions until stopped, 
-% (3rd param == 0), and start it immediately (4th param == 0). Optionally,
-% output param of 'Start' call is a timestamp.
+% Start playing noise, do it for infinite repetitions until stopped 
+% (3rd param == 0), and start it immediately (4th param == 0). (5th == 1)
+% means PTB will wait at this point in the function until it expects the
+% sound to leave the speaker. This 'Start' call returns a timestamp if desired.
 PsychPortAudio('Start', paOutputChild1, 0, 0, 1);
 
 % Open the microphone. We're only capturing audio (3rd param == 2), we want
@@ -137,10 +144,12 @@ PsychPortAudio('Start', paOutputChild1, 0, 0, 1);
 % playing it right back to the participant with the outputDevice.
 paInputHandle = PsychPortAudio('Open', inputDevice, 2, [], [], 2);
 
-% Preallocate an internal audio recording buffer with a generous capacity
-% of twice the duration of each trial.
+% Preallocate an internal audio recording buffer with a generous capacity.
 PsychPortAudio('GetAudioData', paInputHandle, trialDur*2);
 
+%%
+% For each trial, we start recording and check the speaker's volume every 
+% 1 ms. Meanwhile, we're saving the microphone's data to recordedaudio.
 for trialNum = 1:numTrials
     % We'll be adding to recordedaudio throughout the trial
     recordedaudio = [];
@@ -158,12 +167,12 @@ for trialNum = 1:numTrials
     %Prompt user
     fprintf('----->Say something!<-----\n')
     
-    % Repeat as long as below trigger-threshold:
+    % Repeat as long as below trigger-threshold for intensity:
     while level < triggerLevel && GetSecs < tMaxEnd
         % Fetch current audiodata:
         [audiodata, offset, overflow]= PsychPortAudio('GetAudioData', paInputHandle);
             %Note: `offset` is a rough estimate of when the sample being
-            %processed will leave the device? Tries to est. hardware lag?
+            %processed will leave the device (est. hardware lag)
         tInLoop = GetSecs();
 
         % Compute maximum signal amplitude in this chunk of data:
@@ -173,7 +182,10 @@ for trialNum = 1:numTrials
             level = 0;
         end
 
-        % Add audio data from this loop to our running total
+        % Each time you 'GetAudioData', it pulls all the audio data out of
+        % the buffer AND clears the buffer. So, to store all the audio data,
+        % we'll be appending audiodata to recordedaudio after each
+        % 'GetAudioData' call.
         recordedaudio = [recordedaudio audiodata];
         
         % Below trigger-threshold?
@@ -185,11 +197,13 @@ for trialNum = 1:numTrials
     end
     
     %% Because the trigger occurred, do X Y Z ...
+    % Now, we'll first play the buffered audio. Then report on latencies.
+    % Then we'll save the rest of the data and prepare for the next trial.
     if level > triggerLevel  
-        % Since we're only requesting 1 repetition (5th param == 1) of the
+        % Since we're only requesting 1 repetition (3rd param == 1) of the
         % buffered audio file, we don't need a 'Stop' command later.
-        PsychPortAudio('Start', paOutputChild2, 1, 0, 1);
         tInitAudio = GetSecs();
+        tClapEst = PsychPortAudio('Start', paOutputChild2, 1, 0, 1);
         
         % Compute absolute event time:
         inputStatus = PsychPortAudio('GetStatus', paInputHandle);
@@ -200,10 +214,14 @@ for trialNum = 1:numTrials
         tThresholdExceeded = tInLoop - ((length(audiodata) - idx) / inputFreq);
         
         fprintf(['I heard that! \n' ...
-            , 'Your voice crossed the intensity threshold at %.5f, \n   which was ' ...
+            , '* Your voice crossed the intensity threshold at %.5f, \n    which was ' ...
             , '%.5f seconds after audio capture began.\n'],tThresholdExceeded, tThresholdExceeded-tCaptureStart)
-        fprintf(['I estimate %.5f ms of software lag between voice onset\n   ' ...
-        'and trigger event initiation (e.g., audio playback)\n'], (tInitAudio - tThresholdExceeded)*1000);
+        fprintf(['* I estimate %.5f ms of software lag between voice onset\n    ' ...
+        'and trigger event initiation (i.e., the clap).\n'], (tInitAudio - tThresholdExceeded)*1000);
+        fprintf(['* PTB estimates %.4f ms of hardware lag between \n    ' ...
+        'initiating the trigger event (clap) and it leaving the speakers.\n'], ...
+            (tClapEst-tInitAudio)*1000);
+        fprintf('* Total estimated lag: %.4f milliseconds.\n',(tClapEst - tThresholdExceeded)*1000);
             
     else
         fprintf('I didn''t hear anything that time...\n')
@@ -214,22 +232,20 @@ for trialNum = 1:numTrials
         WaitSecs('UntilTime', (tCaptureStart + trialDur));
     end
     
-    %Stop capturing audio
+    % Stop capturing audio
     PsychPortAudio('Stop', paInputHandle);
 
     % Fetch all remaining audio data out of the buffer - Needs to be empty
-    % before next trial.
+    % before next trial. Then make sure everything's in recordedaudio, and
+    % put that trial's recorded audio in the struct this function returns.
     audiodata = PsychPortAudio('GetAudioData', paInputHandle);
-    
-    % Put the last scraps of audio in recordedaudio, then put it all in the
-    % outputData file that gets returned by the function
     recordedaudio = [recordedaudio audiodata];
-    outputData.recordedaudio{trialNum} = recordedaudio;
+    returnedData.recordedaudio{trialNum} = recordedaudio;
     
     % Hopefully this never happens, but alert the user just in case.
     if overflow == 1
-        warning(["Overflow occurred. Insufficient buffer between trials. " ...
-            "Some recorded audio may have been lost."])
+        warning(["Overflow occurred. Insufficient buffer allocated between " ...
+            "trials. Some recorded audio may have been lost."])
     end
     
     % If we wanted to abort the triggered audio playback, even though it
