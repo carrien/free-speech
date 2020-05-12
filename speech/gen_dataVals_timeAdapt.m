@@ -153,6 +153,14 @@ for i = 1:length(sortedTrialnums)
         dataVals(i).pitch_taxis = sigmat.pitch_taxis(onsetIndf0:offsetIndf0)';
         dataVals(i).ftrack_taxis = sigmat.ftrack_taxis(onsetIndfx:offsetIndfx)';
         dataVals(i).ampl_taxis = sigmat.ampl_taxis(onsetIndAmp:offsetIndAmp)';
+        
+        dataVals(i).v1Start_time = v1Start_time; 
+        dataVals(i).cStart_time = cStart_time; 
+        dataVals(i).cBurst_time = cBurst_time; 
+        dataVals(i).v2Start_time = v2Start_time; 
+        dataVals(i).pStart_time = pStart_time; 
+        dataVals(i).erStart_time = erStart_time; 
+        dataVals(i).erEnd_time = erEnd_time; 
 
         dataVals(i).dur = pStart_time - v2Start_time; % for dataVals tracking. this is only the ash dur
         dataVals(i).totalDur = erEnd_time - v1Start_time;
@@ -290,7 +298,14 @@ for i = 1:length(sortedTrialnums)
         dataVals(i).pitch_taxis = sigmat.pitch_taxis(onsetIndf0:offsetIndf0)';
         dataVals(i).ftrack_taxis = sigmat.ftrack_taxis(onsetIndfx:offsetIndfx)';
         dataVals(i).ampl_taxis = sigmat.ampl_taxis(onsetIndAmp:offsetIndAmp)';
-
+        
+        dataVals(i).v1Start_time = v1Start_time; 
+        dataVals(i).cStart_time = cStart_time; 
+        dataVals(i).cBurst_time = cBurst_time; 
+        dataVals(i).v2Start_time = v2Start_time; 
+        dataVals(i).pStart_time = pStart_time; 
+        dataVals(i).erStart_time = erStart_time; 
+        dataVals(i).erEnd_time = erEnd_time; 
         
         dataVals(i).dur = pStart_time - v2Start_time; % for check_dataVals 
         dataVals(i).totalDur = erEnd_time - v1Start_time;
