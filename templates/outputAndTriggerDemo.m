@@ -34,12 +34,12 @@ function returnedData = outputAndTriggerDemo(inputDevice, outputDevice, numTrial
 %% Input arg handling
 % Get device info in struct. For Windows, only use WASAPI-type devices.
 deviceList = PsychPortAudio('GetDevices');
-if nargin < 1 || isempty(inputDevice) || deviceList(inputDevice + 1).NrInputChannels < 1
+if nargin < 1 || isempty(inputDevice) || length(deviceList) <= inputDevice || deviceList(inputDevice + 1).NrInputChannels < 1
     warning(['Using default microphone. Call PsychPortAudio(''GetDevices'') ' ...
         'to see a list of mics if you prefer a different one.']);
     inputDevice = [];
 end
-if nargin < 2 || isempty(outputDevice) || deviceList(outputDevice + 1).NrOutputChannels < 1
+if nargin < 2 || isempty(outputDevice) || length(deviceList) <= outputDevice || deviceList(outputDevice+1).NrOutputChannels < 1
     warning(['Using default speakers. Call PsychPortAudio(''GetDevices'') ' ...
         'to see a list of speakers if you prefer a different one.']);
     outputDevice = [];
