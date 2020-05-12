@@ -156,7 +156,11 @@ for i = 1:length(sortedTrialnums)
         
         dataVals(i).v1Start_time = v1Start_time; 
         dataVals(i).cStart_time = cStart_time; 
-        dataVals(i).cBurst_time = cBurst_time; 
+        if ~isempty(cBurst_time)
+            dataVals(i).cBurst_time = cBurst_time; 
+        else
+            dataVals(i).cBurst_time = NaN; 
+        end
         dataVals(i).v2Start_time = v2Start_time; 
         dataVals(i).pStart_time = pStart_time; 
         dataVals(i).erStart_time = erStart_time; 
@@ -301,7 +305,11 @@ for i = 1:length(sortedTrialnums)
         
         dataVals(i).v1Start_time = v1Start_time; 
         dataVals(i).cStart_time = cStart_time; 
-        dataVals(i).cBurst_time = cBurst_time; 
+        if ~isempty(cBurst_time)
+            dataVals(i).cBurst_time = cBurst_time; 
+        else
+            dataVals(i).cBurst_time = NaN; 
+        end
         dataVals(i).v2Start_time = v2Start_time; 
         dataVals(i).pStart_time = pStart_time; 
         dataVals(i).erStart_time = erStart_time; 
