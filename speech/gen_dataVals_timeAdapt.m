@@ -154,18 +154,48 @@ for i = 1:length(sortedTrialnums)
         dataVals(i).ftrack_taxis = sigmat.ftrack_taxis(onsetIndfx:offsetIndfx)';
         dataVals(i).ampl_taxis = sigmat.ampl_taxis(onsetIndAmp:offsetIndAmp)';
         
-        dataVals(i).v1Start_time = v1Start_time; 
-        dataVals(i).cStart_time = cStart_time; 
+%         if ~isempty(v1Start_time) 
+            dataVals(i).v1Start_time = v1Start_time; 
+%         else
+%             dataVals(i).v1Start_time = NaN; 
+%         end
+%         
+%         if ~isempty(cStart_time)
+            dataVals(i).cStart_time = cStart_time; 
+%         else
+%             dataVals(i).cStart_time = NaN; 
+%         end
+%                 
         if ~isempty(cBurst_time)
             dataVals(i).cBurst_time = cBurst_time; 
         else
             dataVals(i).cBurst_time = NaN; 
         end
-        dataVals(i).v2Start_time = v2Start_time; 
-        dataVals(i).pStart_time = pStart_time; 
-        dataVals(i).erStart_time = erStart_time; 
-        dataVals(i).erEnd_time = erEnd_time; 
-
+%         
+%         if ~isempty(v2Start_time)
+            dataVals(i).v2Start_time = v2Start_time; 
+%         else
+%             dataVals(i).v2Start_time = NaN; 
+%         end
+%         
+%         if ~isempty(pStart_time)
+            dataVals(i).pStart_time = pStart_time; 
+%         else
+%             dataVals(i).pStart_time = NaN; 
+%         end
+%         
+%         if ~isempty(erStart_time)
+            dataVals(i).erStart_time = erStart_time; 
+%         else
+%             dataVals(i).erStart_time = NaN; 
+%         end
+%         
+%         if ~isempty(erEnd_time)
+            dataVals(i).erEnd_time = erEnd_time; 
+%         else
+%             dataVals(i).erEnd_time = NaN; 
+%         end
+%         
         dataVals(i).dur = pStart_time - v2Start_time; % for dataVals tracking. this is only the ash dur
         dataVals(i).totalDur = erEnd_time - v1Start_time;
         dataVals(i).wordDur = erEnd_time - cStart_time; 
@@ -198,6 +228,15 @@ for i = 1:length(sortedTrialnums)
         dataVals(i).erDur = NaN; % timeAdapt addition 
         dataVals(i).manipTargetDur = NaN; 
         dataVals(i).spirantize = NaN;
+
+        dataVals(i).v1Start_time = NaN; 
+        dataVals(i).cStart_time = NaN; 
+        dataVals(i).cBurst_time = NaN; 
+        dataVals(i).v2Start_time = NaN; 
+        dataVals(i).pStart_time = NaN; 
+        dataVals(i).erStart_time = NaN; 
+        dataVals(i).erEnd_time = NaN; 
+
     
     end
     if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params)
@@ -303,17 +342,47 @@ for i = 1:length(sortedTrialnums)
         dataVals(i).ftrack_taxis = sigmat.ftrack_taxis(onsetIndfx:offsetIndfx)';
         dataVals(i).ampl_taxis = sigmat.ampl_taxis(onsetIndAmp:offsetIndAmp)';
         
-        dataVals(i).v1Start_time = v1Start_time; 
-        dataVals(i).cStart_time = cStart_time; 
+%         if ~isempty(v1Start_time) 
+            dataVals(i).v1Start_time = v1Start_time; 
+%         else
+%             dataVals(i).v1Start_time = NaN; 
+%         end
+%         
+%         if ~isempty(cStart_time)
+            dataVals(i).cStart_time = cStart_time; 
+%         else
+%             dataVals(i).cStart_time = NaN; 
+%         end
+                
         if ~isempty(cBurst_time)
             dataVals(i).cBurst_time = cBurst_time; 
         else
             dataVals(i).cBurst_time = NaN; 
         end
-        dataVals(i).v2Start_time = v2Start_time; 
-        dataVals(i).pStart_time = pStart_time; 
-        dataVals(i).erStart_time = erStart_time; 
-        dataVals(i).erEnd_time = erEnd_time; 
+        
+%         if ~isempty(v2Start_time)
+            dataVals(i).v2Start_time = v2Start_time; 
+%         else
+%             dataVals(i).v2Start_time = NaN; 
+%         end
+%         
+%         if ~isempty(pStart_time)
+            dataVals(i).pStart_time = pStart_time; 
+%         else
+%             dataVals(i).pStart_time = NaN; 
+%         end
+%         
+%         if ~isempty(erStart_time)
+            dataVals(i).erStart_time = erStart_time; 
+%         else
+%             dataVals(i).erStart_time = NaN; 
+%         end
+%         
+%         if ~isempty(erEnd_time)
+            dataVals(i).erEnd_time = erEnd_time; 
+%         else
+%             dataVals(i).erEnd_time = NaN; 
+%         end
         
         dataVals(i).dur = pStart_time - v2Start_time; % for check_dataVals 
         dataVals(i).totalDur = erEnd_time - v1Start_time;
@@ -345,6 +414,14 @@ for i = 1:length(sortedTrialnums)
         dataVals(i).erDur = NaN; % timeAdapt addition 
         dataVals(i).manipTargetDur = NaN; 
         dataVals(i).spirantize = NaN;
+        
+        dataVals(i).v1Start_time = NaN; 
+        dataVals(i).cStart_time = NaN; 
+        dataVals(i).cBurst_time = NaN; 
+        dataVals(i).v2Start_time = NaN; 
+        dataVals(i).pStart_time = NaN; 
+        dataVals(i).erStart_time = NaN; 
+        dataVals(i).erEnd_time = NaN; 
     end
         
     if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params)
