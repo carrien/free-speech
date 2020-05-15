@@ -70,6 +70,7 @@ end
 % expt
 try
     wavfilenameTrigger = 'C:\Users\Public\Documents\software\free-speech\templates\clap.wav';
+    %wavfilenameTrigger = 'C:\Users\Public\Documents\software\free-speech\templates\tipper_cwn.wav';
 catch
     wavfilenameTrigger = [PsychtoolboxRoot 'PsychDemos\SoundFiles\phaser.wav'];
 end
@@ -113,17 +114,17 @@ end
 % the parent until the end of the session.
 PsychPortAudio('Start', paOutputParent, 0, 0, 1);
 
-% Set the masterVolume for the master: This volume setting affects all
-% attached sound devices. We set this to 0.5, so it doesn't blow out the
-% ears of our listeners...
-PsychPortAudio('Volume', paOutputParent, 0.5);
-
 % Create two child audio devices for sound playback (3rd == 1), with same
 % frequency, channel count etc. as parent. Attach them to parent. As they're
 % attached to the same sound channels of the parent (actually the same
 % single channel), their audio output will mix together:
 paOutputNoise = PsychPortAudio('OpenSlave', paOutputParent, 1);
 paOutputTrigger = PsychPortAudio('OpenSlave', paOutputParent, 1);
+
+% Set the masterVolume for the master: This volume setting affects all
+% attached sound devices. (Scale: 0-1). Then, lower noise volume.
+PsychPortAudio('Volume', paOutputParent, 0.5);
+PsychPortAudio('Volume', paOutputNoise, 0.25);
 
 % Create audio buffers for any sounds that you want to play during each
 % trial, either pre-emptively or in response to the trigger. Fill the
