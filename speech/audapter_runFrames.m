@@ -1,23 +1,29 @@
-function [dataOut] = audapter_runFrames(data,nlpc)
+function [dataOut] = audapter_runFrames(data,p)
 %AUDAPTER_RUNFRAMES  Process data in Audapter offline ('runFrame') mode.
-%   AUDAPTER_RUNFRAMES(DATA,NLPC) runs audio through Audapter's offline
-%   mode using the LPC order given in NLPC.  The input DATA is a struct
+%   AUDAPTER_RUNFRAMES(DATA,P) runs audio through Audapter's offline
+%   mode using the Audapter parameters provided in P.  The input DATA is a struct
 %   array with fields 'signalIn' and 'params' (i.e., the same format
 %   returned by Audapter).
 
-if nargin < 2, nlpc = 15; end
-
 % set Audapter param fields
-gender = 'female'; % dummy var for getting default params; will be overwritten by nlpc
-p = getAudapterDefaultParams(gender);
+gender = 'female'; % dummy var for getting default params; overwritten by P if provided
+pDefault = getAudapterDefaultParams(gender);
 downFact = 3; % Downsampling factor
 fsNoDS = 48000; % Sampling rate, before downsampling
 frameLenNoDS = 96;  % Frame length before downsampling (# of samples)
-p.downFact = downFact;
-p.sr = fsNoDS / downFact;
-p.frameLen = frameLenNoDS / downFact;
-p.bShift = 0;
-p.nLPC = nlpc;
+pDefault.downFact = downFact;
+pDefault.sr = fsNoDS / downFact;
+pDefault.frameLen = frameLenNoDS / downFact;
+
+%pDefault.bShift = 0;
+%pDefault.nLPC = nlpc;
+
+if nargin < 2 
+    p = pDefault;
+else
+    p = add2struct(pDefault,p);    
+end
+
 
 % Nullify OST and PCF, so that they won't override the perturbation field
 Audapter('ost', '', 0);
