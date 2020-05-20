@@ -7,8 +7,9 @@ function [h] = plot_centering(dataPaths,condtype,conds2plot,plotinds,p)
 %                       fdata_(condtype).mat from which data should be
 %                       plotted
 %                       CONDTYPE: condition type to plot e.g. word, vowel
-%                       CONDS2PLOT: indices of desired conditions in fdata
-%                       structure e.g. if conds are [aa iy uu] then [1 3]
+%                       CONDS2PLOT: cell array of desired conditions in fdata
+%                       structure e.g. if conds are [aa iy uu] then {'aa'
+%                       'uu'}
 %                       only plots aa and uu.
 %                       PLOTINDS: plotting type - 1 for normalized init->mid,
 %                                                 2 for non-normalized,
@@ -64,7 +65,6 @@ h = gobjects(1,length(plotinds)); %Structure to be returned by plot_centering,
 %% subject loop
 numFigs = 0;
 for s=1:length(dataPaths)
-    p.subject = s;
     p.condtype = condtype;
     %Load subject's fdata file
     load(fullfile(dataPaths{s},sprintf('fdata_%s.mat',condtype)));

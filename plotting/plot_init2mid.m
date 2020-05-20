@@ -19,6 +19,7 @@ if nargin < 1 || isempty(data2plot), ...
 fprintf('Please provide a fmtdata structure to plot from');
 return
 end
+
 if nargin < 2, p = []; end
 pTemplate.xpos = 100;
 pTemplate.ypos = 50;
@@ -30,7 +31,8 @@ pTemplate.LineStyle = '--';
 pTemplate.Curvature = [1,1];
 pTemplate.units = 'mels';
 pTemplate.ntile = 5; 
-pTemplate.bNorm = 1; 
+pTemplate.bNorm = 1;
+pTemplate.condtype = 'vowel';
 p = set_missingFields(p,pTemplate);
 
 %% plotting loop
@@ -241,6 +243,6 @@ for c = 1:length(cnds)    %Over each vowel/word specified
 end %End word/vowel loop
 
 set(gcf,'Position',[p.xpos p.ypos p.width p.height],'Name',...
-            sprintf('init2mid subject-%d (%s) normalized: True',...
-            p.subject, p.condtype))
+            sprintf('init2mid (%s) normalized: True',...
+            p.condtype))
 end %End function
