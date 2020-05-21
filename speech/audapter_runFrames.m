@@ -6,7 +6,11 @@ function [dataOut] = audapter_runFrames(data,p)
 %   returned by Audapter).
 
 % set Audapter param fields
-gender = 'female'; % dummy var for getting default params; overwritten by P if provided
+if ~isempty(p.gender)
+    gender = p.gender;
+else
+    gender = 'female'; % default gender is female
+end
 pDefault = getAudapterDefaultParams(gender);
 downFact = 3; % Downsampling factor
 fsNoDS = 48000; % Sampling rate, before downsampling
@@ -14,9 +18,6 @@ frameLenNoDS = 96;  % Frame length before downsampling (# of samples)
 pDefault.downFact = downFact;
 pDefault.sr = fsNoDS / downFact;
 pDefault.frameLen = frameLenNoDS / downFact;
-
-%pDefault.bShift = 0;
-%pDefault.nLPC = nlpc;
 
 if nargin < 2 
     p = pDefault;
