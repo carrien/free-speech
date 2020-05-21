@@ -24,45 +24,51 @@ for s = 1:nSubs
     
     % get data and time axis
     dataPath = dataPaths{s};
-    load(fullfile(dataPath,params.fmtMatrixFilename),'fmtMatrix');
-    if ~exist('tstep','var')
-        load(fullfile(dataPath,'dataVals.mat'),'dataVals');
-        goodtrials = find(~[dataVals.bExcl]);
-        tstep = mean(diff(dataVals(goodtrials(1)).ftrack_taxis));
-    end
-    
-    % set time windows
-    startTime = floor(params.startTimeMs/tstep);
-    endTime = floor(params.endTimeMs/tstep);
-    maxEndTime = min([size(fmtMatrix.(measSel).shiftUp,1) size(fmtMatrix.(measSel).shiftDown,1)]);
-    %maxEndTime = min([find(percNaN.shiftUp <= 50, 1, 'last') find(percNaN.shiftDown <= 50, 1, 'last')]);
-    endTime = min(endTime,maxEndTime);
-        
-    % get average compensation in time window
-    if params.byTrialMeans
-        trialMeansUp = -1.*nanmedian(fmtMatrix.(measSel).shiftUp(startTime:endTime,:));
-        trialMeansDown = nanmedian(fmtMatrix.(measSel).shiftDown(startTime:endTime,:));
+    if exist(fullfile(dataPath,[params.fmtMatrixFilename '.mat']),'file')
+        load(fullfile(dataPath,params.fmtMatrixFilename),'fmtMatrix');
+        if ~exist('tstep','var')
+            load(fullfile(dataPath,'dataVals.mat'),'dataVals');
+            goodtrials = find(~[dataVals.bExcl]);
+            tstep = mean(diff(dataVals(goodtrials(1)).ftrack_taxis));
+        end
+
+        % set time windows
+        startTime = floor(params.startTimeMs/tstep);
+        endTime = floor(params.endTimeMs/tstep);
+        maxEndTime = min([size(fmtMatrix.(measSel).shiftUp,1) size(fmtMatrix.(measSel).shiftDown,1)]);
+        %maxEndTime = min([find(percNaN.shiftUp <= 50, 1, 'last') find(percNaN.shiftDown <= 50, 1, 'last')]);
+        endTime = min(endTime,maxEndTime);
+
+        % get average compensation in time window
+        if params.byTrialMeans
+            trialMeansUp = -1.*nanmedian(fmtMatrix.(measSel).shiftUp(startTime:endTime,:));
+            trialMeansDown = nanmedian(fmtMatrix.(measSel).shiftDown(startTime:endTime,:));
+        else
+            trialMeansUp = -1.*nanmedian(fmtMatrix.(measSel).shiftUp(startTime:endTime,:),2);
+            trialMeansDown = nanmedian(fmtMatrix.(measSel).shiftDown(startTime:endTime,:),2);
+        end
+
+        switch params.shift2use
+            case 'up'
+                trialMeans = trialMeansUp;
+            case 'down'
+                trialMeans = trialMeansDown;
+            case 'all'
+                if params.byTrialMeans
+                    trialMeans = [trialMeansUp trialMeansDown];
+                else
+                    trialMeans = nanmean([trialMeansUp trialMeansDown],2);
+                end
+        end
+        compensation(s) = nanmean(trialMeans);
+        bSigComp(s) = ttest(trialMeans,0,'Tail','both');
+        if params.byTrialMeans
+            se(s) = get_errorbars(trialMeans,'se');
+        end
+        clear trialMeans
     else
-        trialMeansUp = -1.*nanmedian(fmtMatrix.(measSel).shiftUp(startTime:endTime,:),2);
-        trialMeansDown = nanmedian(fmtMatrix.(measSel).shiftDown(startTime:endTime,:),2);
+        warning(sprintf('No fmtMatrix file found for participant %d. Returning NaN values for this participant',s))
+        compensation(s) = nanmean(NaN);
+        bSigComp(s) = NaN;
     end
-    
-    switch params.shift2use
-        case 'up'
-            trialMeans = trialMeansUp;
-        case 'down'
-            trialMeans = trialMeansDown;
-        case 'all'
-            if params.byTrialMeans
-                trialMeans = [trialMeansUp trialMeansDown];
-            else
-                trialMeans = nanmean([trialMeansUp trialMeansDown],2);
-            end
-    end
-    compensation(s) = nanmean(trialMeans);
-    bSigComp(s) = ttest(trialMeans,0,'Tail','both');
-    if params.byTrialMeans
-        se(s) = get_errorbars(trialMeans,'se');
-    end
-    clear trialMeans
 end
