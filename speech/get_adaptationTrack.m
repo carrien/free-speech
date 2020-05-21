@@ -11,6 +11,9 @@ if nargin < 5 || isempty(toTrack), toTrack = {'f1' 'f2'}; end
 load(fullfile(dataPath,'expt.mat'),'expt');
 if isfield(expt,'nBaseline')
     nBaseline = exptInfo.nBaseline;
+elseif any(strcmp(expt.conds,'baseline'))
+    iCond = find(strcmp(expt.conds,'baseline'));
+    nBaseline = max(find(expt.allConds == iCond));
 else
     warning('Setting number of baseline trials to default (80).')
     nBaseline = 80;
@@ -19,18 +22,24 @@ end
 % get data
 load(fullfile(dataPath,'dataVals.mat'))
 ntrials = length(dataVals);
-fs = get_fs_from_taxis(dataVals(1).ftrack_taxis);
+goodTrials = find(~[dataVals(:).bExcl]);
+fs = get_fs_from_taxis(dataVals(goodTrials(1)).ftrack_taxis);
 
 % define averaging function (which timepoints/percent, etc.)
 switch avgtype
     case 'mid'
         avgfn = @(fmttrack) midnperc(fmttrack,avgval);
     case 'first'
-        avgfn = @(fmttrack) fmttrack(1:min(ceil(avgval/fs),length(fmttrack)));
+        avgfn = @(fmttrack) fmttrack(1:min(ceil(avgval*fs/1000),length(fmttrack)));
     case 'next'
-        avgfn = @(fmttrack) fmttrack(min(ceil(avgval/fs)+1,length(fmttrack)):min(2*ceil(avgval/fs),length(fmttrack)));
+        avgfn = @(fmttrack) fmttrack(min(ceil(avgval*fs/1000)+1,length(fmttrack)):min(2*ceil(avgval*fs/1000),length(fmttrack)));
     case 'then'
-        avgfn = @(fmttrack) fmttrack(min(2*ceil(avgval/fs)+1,length(fmttrack)):min(3*ceil(avgval/fs),length(fmttrack)));
+        avgfn = @(fmttrack) fmttrack(min(2*ceil(avgval*fs/1000)+1,length(fmttrack)):min(3*ceil(avgval*fs/1000),length(fmttrack)));
+    case 'delayed'
+        delay = 50;
+        avgfn = @(fmttrack) fmttrack(ceil(delay*fs/1000):min(ceil(avgval*fs/1000),length(fmttrack)));
+    otherwise
+        error("'%s' is not an option for avgtype\nchoose: 'mid', 'first', 'next', 'then', or'delayed'",avgtype)
 end
 
 for i=1:length(toTrack)
