@@ -8,5 +8,5 @@ if nargin < 2, nlpc = 15; end
 [y,fs] = audioread(wavfile);
 data.signalIn = y;
 data.params.sr = fs;
-
-[dataOut] = audapter_runFrames(data,nlpc);
+p.nlpc = nlpc;
+[dataOut] = audapter_runFrames(data,p);
