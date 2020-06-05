@@ -134,7 +134,8 @@ end
 %% Setup for screens
 % setup figures
 %close all;
-%sca
+sca;
+Screen('Preference', 'VisualDebuglevel', 1);
 PsychDefaultSetup(2);
 screens = Screen('Screens');
 screenNumber = max(screens);
