@@ -109,25 +109,29 @@ a1{nTrials} = []; % Pull 1 word per trial from this array to show to pt initiall
 a2{nTrials} = []; % After vocal onset, switch to corresponding word in this array
 
 for i = 1:nTrials
-    if strcmp(mode, 'fill') % first word is always 'cat'
+    if strcmp(mode, 'fill') % first word is always base word ('cat')
         a1{i} = dictionary{1};
     elseif strcmp(mode,'switcheroo') % first word is a random word from dictionary
         dictIndex = ceil(rand*length(dictionary));
         a1{i} = dictionary{dictIndex};
+    elseif strcmp(mode,'cutoff') % first word is random, but never the base word
+        dictIndex = ceil(1 + (rand*(length(dictionary) - 1))); 
+        a1{i} = dictionary{dictIndex};
     end
     
-    % If you randomly roll below the gotchaRatio, the second word will be a
-    % different word from the dictionary. Otherwise, it's the same word
+    a2{i} = a1{i}; % Default to word 2 being the same as word 1
+    
+    % If you randomly roll below the gotchaRatio, do something different to
+    % the second word.
     if rand < gotchaRatio
-        dictIndex = ceil(rand*length(dictionary));
-        a2{i} = dictionary{dictIndex};
-        % If you land on the same word, roll again until you don't
-        while strcmp(a2{i}, a1{i})
-            dictIndex = ceil(rand*length(dictionary));
-            a2{i} = dictionary{dictIndex};
+        if strcmp(mode, 'fill') || strcmp(mode, 'switcheroo')
+            while strcmp(a2{i}, a1{i}) % If you land on the same word, roll again until you don't
+                dictIndex = ceil(rand*length(dictionary));
+                a2{i} = dictionary{dictIndex};
+            end
+        elseif strcmp(mode, 'cutoff')
+            a2{i} = dictionary{1};
         end
-    else
-        a2{i} = a1{i};
     end
 end
 
@@ -196,7 +200,7 @@ for trialNum = 1:nTrials
     
     % Stop capturing audio
     PsychPortAudio('Stop', inputDevice);
-    audiodata = PsychPortAudio('GetAudioData', inputDevice); 
+    audiodata = PsychPortAudio('GetAudioData', inputDevice); %Clear buffer
     
     % Clear screen again
     txt2display = '';
@@ -219,19 +223,23 @@ sca;
 
     function mode = getMode()
         mode = '';
-        while ~strcmp(mode,'switcheroo') && ~strcmp(mode,'fill')
+        while ~strcmp(mode,'switcheroo') && ~strcmp(mode,'fill') && ~strcmp(mode, 'cutoff')
             reply = input(['Which mode would you like to use?' ...
-                '\n  For switcheroo, enter 1. For fill-in-the-blank, enter 2.' ...
+                '\n  For switcheroo, enter 1. For fill-in-the-blank, enter 2. For cutoff, enter 3.' ...
                 '\n  Need help? enter help.\n'], 's');
             if strcmp(reply, '1')
                 mode = 'switcheroo';
             elseif strcmp(reply, '2')
                 mode = 'fill';
+            elseif strcmp(reply, '3')
+                mode = 'cutoff';
             elseif strcmp(reply, 'help')
                 fprintf(['\n    Switcheroo will show you some word (catfish), then it may switch to a \n' ...
                     '     different word with the same beginning (cataract). \n    Fill in the blank ' ...
                     'will always show you the same word to start (cat),\n     and sometimes ' ...
-                    'will switch to a longer word with the same beginning (catfish).\n\n']);
+                    'will switch to a longer word with the same beginning (catfish).\n' ...
+                    '    Cutoff will show you a long word (catfish), then sometimes will \n' ...
+                    '     truncate all but the first part (cat).\n\n']);
                 mode = '';
             else
                 mode = '';
