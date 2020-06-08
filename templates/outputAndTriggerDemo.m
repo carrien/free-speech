@@ -75,7 +75,7 @@ catch
     wavfilenameTrigger = [PsychtoolboxRoot 'PsychDemos\SoundFiles\phaser.wav'];
 end
 
-[y, outputFreq] = psychwavread(wavfilenameTrigger); % in last WAV, get sample rate
+[y, outputFreq] = audioread(wavfilenameTrigger); % in last WAV, get sample rate
 wavedataTrigger = y';
 nrchannels = size(wavedataTrigger,1);
 
@@ -124,7 +124,7 @@ paOutputTrigger = PsychPortAudio('OpenSlave', paOutputParent, 1);
 % Set the masterVolume for the master: This volume setting affects all
 % attached sound devices. (Scale: 0-1). Then, lower noise volume.
 PsychPortAudio('Volume', paOutputParent, 0.5);
-PsychPortAudio('Volume', paOutputNoise, 0.25);
+PsychPortAudio('Volume', paOutputNoise, 0.0);
 
 % Create audio buffers for any sounds that you want to play during each
 % trial, either pre-emptively or in response to the trigger. Fill the
