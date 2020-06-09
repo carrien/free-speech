@@ -100,14 +100,26 @@ PsychPortAudio('GetAudioData', inputDevice, trialDur*2); % preallocate buffer
 % WHEN MAKING NEW DICTS, first cell must be the base word
 catDict = {'cat', 'catfish', 'catbus', 'cataract', 'catty', 'cats', 'catnip'};
 clamDict = {'clam', 'clams', 'clammy', 'clambor', 'clamor', 'clamp', 'clamshell', 'clam chowder'};
-if strcmp(dictType, 'cat')
-    dictionary = catDict;
-elseif strcmp(dictType, 'clam')
-    dictionary = clamDict;
+seaDict = {'sea','seagull','seaplane'};
+switch dictType
+    case 'cat'
+        dictionary = catDict;
+    case 'clam'
+        dictionary = clamDict;
+    case 'sea'
+        dictionary = seaDict;
+    otherwise
+        error('Unrecognized stimulus set (%s)',dictType)
 end
 
 a1{nTrials} = []; % Pull 1 word per trial from this array to show to pt initially
 a2{nTrials} = []; % After vocal onset, switch to corresponding word in this array
+
+%generate list of trials with a switch, no switch on first trial
+gotchaTrials = 1;
+while any(gotchaTrials ==1)
+    gotchaTrials = randperm(nTrials,floor(gotchaRatio*nTrials));
+end
 
 for i = 1:nTrials
     if strcmp(mode, 'fill') % first word is always base word ('cat')
@@ -124,7 +136,7 @@ for i = 1:nTrials
     
     % If you randomly roll below the gotchaRatio, do something different to
     % the second word.
-    if rand < gotchaRatio
+    if any(i == gotchaTrials)
         if strcmp(mode, 'fill') || strcmp(mode, 'switcheroo')
             while strcmp(a2{i}, a1{i}) % If you land on the same word, roll again until you don't
                 dictIndex = ceil(rand*length(dictionary));
@@ -155,6 +167,11 @@ Screen('TextSize', window, 100)
 
 %% Start the experiment
 for trialNum = 1:nTrials
+    [~,~,keyCode] = KbCheck;
+    if keyCode(KbName('escape'))
+        sca;
+        break;
+    end
     WaitSecs(0.75);
     txt2display = a1{trialNum};
     % Display text
