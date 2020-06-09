@@ -52,12 +52,13 @@ if nargin < 5 || isempty(triggerLevel), triggerLevel = 0.15; end % from 0-1
 %% Set up audio files that will play during expt
 try
     wavfilenameNoise = 'C:\Users\Public\Documents\software\current-studies\audapter_demo\mtbabble48k.wav';
+    [y, ~] = audioread(wavfilenameNoise);
 catch
-    wavfilenameNoise = [PsychtoolboxRoot 'PsychDemos\SoundFiles\funk.wav'];
+    wavfilenameNoise = fullfile(PsychtoolboxRoot,'PsychDemos','SoundFiles','funk.wav');
+    [y, ~] = audioread(wavfilenameNoise);
 end
 
 % Read WAV file from filesystem:
-[y, ~] = audioread(wavfilenameNoise);
 wavedataNoise = y';
 nrchannels = size(wavedataNoise,1); % Number of rows == number of channels.
 
@@ -70,12 +71,13 @@ end
 % expt
 try
     wavfilenameTrigger = 'C:\Users\Public\Documents\software\free-speech\templates\clap.wav';
+    [y, outputFreq] = audioread(wavfilenameTrigger);
     %wavfilenameTrigger = 'C:\Users\Public\Documents\software\free-speech\templates\tipper_cwn.wav';
 catch
-    wavfilenameTrigger = [PsychtoolboxRoot 'PsychDemos\SoundFiles\phaser.wav'];
+    wavfilenameTrigger = fullfile(PsychtoolboxRoot,'PsychDemos','SoundFiles','phaser.wav');
+    [y, outputFreq] = audioread(wavfilenameTrigger);
 end
 
-[y, outputFreq] = audioread(wavfilenameTrigger); % in last WAV, get sample rate
 wavedataTrigger = y';
 nrchannels = size(wavedataTrigger,1);
 

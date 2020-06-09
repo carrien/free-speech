@@ -59,12 +59,13 @@ InitializePsychSound(1);
 if noiseYN == 1
     try
         wavfilenameNoise = 'C:\Users\Public\Documents\software\current-studies\audapter_demo\mtbabble48k.wav';
+        [y, outputFreq] = audioread(wavfilenameNoise);
     catch
-        wavfilenameNoise = [PsychtoolboxRoot 'PsychDemos\SoundFiles\funk.wav'];
+        wavfilenameNoise = fullfile(PsychtoolboxRoot,'PsychDemos','SoundFiles','funk.wav');
+        [y, outputFreq] = audioread(wavfilenameNoise);
     end
     
     % Read WAV file from filesystem:
-    [y, outputFreq] = audioread(wavfilenameNoise);
     wavedataNoise = y';
     nrchannels = size(wavedataNoise,1); % Number of rows == number of channels.
     
