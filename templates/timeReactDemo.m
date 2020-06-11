@@ -101,6 +101,8 @@ PsychPortAudio('GetAudioData', inputDevice, trialDur*2); % preallocate buffer
 catDict = {'cat', 'catfish', 'catbus', 'cataract', 'catty', 'cats', 'catnip'};
 clamDict = {'clam', 'clams', 'clammy', 'clambor', 'clamor', 'clamp', 'clamshell', 'clam chowder'};
 seaDict = {'sea','seagull','seaplane'};
+flashDict = {'flash','flashlight','flashback'};
+sedDict = {'sed','sediment','sedative'};
 switch dictType
     case 'cat'
         dictionary = catDict;
@@ -108,6 +110,10 @@ switch dictType
         dictionary = clamDict;
     case 'sea'
         dictionary = seaDict;
+    case 'flash'
+        dictionary = flashDict;
+    case 'sed'
+        dictionary = sedDict;
     otherwise
         error('Unrecognized stimulus set (%s)',dictType)
 end
