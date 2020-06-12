@@ -50,6 +50,8 @@ if nargin < 8 || isempty(outputDeviceID) || length(deviceList) <= outputDeviceID
     outputDeviceID = [];
 end
 if nargin < 9 || isempty(gotchaRatio), gotchaRatio = 0.5; end
+    if gotchaRatio > 0.999, gotchaRatio = 0.999; end
+    if gotchaRatio < 0, gotchaRatio = 0; end
 if nargin < 10 || isempty(dictType), dictType = 'cat'; end
 
 %% Psychtoolbox setup for playback and capture
@@ -121,11 +123,13 @@ end
 a1{nTrials} = []; % Pull 1 word per trial from this array to show to pt initially
 a2{nTrials} = []; % After vocal onset, switch to corresponding word in this array
 
-%generate list of trials with a switch
-gotchaTrials = randperm(nTrials,floor(gotchaRatio*nTrials));
-a2{1} = a1{1}; % never switch on first trial
+%generate list of trials with a switch, no switch on first trial
+gotchaTrials = 1;
+while any(gotchaTrials ==1)
+    gotchaTrials = randperm(nTrials,floor(gotchaRatio*nTrials));
+end
 
-for i = 2:nTrials
+for i = 1:nTrials
     if strcmp(mode, 'fill') % first word is always base word ('cat')
         a1{i} = dictionary{1};
     elseif strcmp(mode,'switcheroo') % first word is a random word from dictionary
