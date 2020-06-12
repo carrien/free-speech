@@ -121,13 +121,11 @@ end
 a1{nTrials} = []; % Pull 1 word per trial from this array to show to pt initially
 a2{nTrials} = []; % After vocal onset, switch to corresponding word in this array
 
-%generate list of trials with a switch, no switch on first trial
-gotchaTrials = 1;
-while any(gotchaTrials ==1)
-    gotchaTrials = randperm(nTrials,floor(gotchaRatio*nTrials));
-end
+%generate list of trials with a switch
+gotchaTrials = randperm(nTrials,floor(gotchaRatio*nTrials));
+a2{1} = a1{1}; % never switch on first trial
 
-for i = 1:nTrials
+for i = 2:nTrials
     if strcmp(mode, 'fill') % first word is always base word ('cat')
         a1{i} = dictionary{1};
     elseif strcmp(mode,'switcheroo') % first word is a random word from dictionary
