@@ -167,8 +167,10 @@ for i = 1:length(sortedfiles)
         
         % convert to dataVals struct
         dataVals(i).f0 = sigmat.pitch(onsetIndf0:offsetIndf0)';                     % f0 track from onset to offset
-        dataVals(i).f1 = sigmat.ftrack(1,onsetIndfx:offsetIndfx)';                  % f1 track from onset to offset
-        dataVals(i).f2 = sigmat.ftrack(2,onsetIndfx:offsetIndfx)';                  % f2 track from onset to offset
+        for f=1:size(sigmat.ftrack,1)
+            fname=sprintf('f%d',f);
+            dataVals(i).(fname) = sigmat.ftrack(f,onsetIndfx:offsetIndfx)';
+        end
         dataVals(i).int = sigmat.ampl(onsetIndAmp:offsetIndAmp)';                   % intensity (rms amplitude) track from onset to offset
         dataVals(i).pitch_taxis = sigmat.pitch_taxis(onsetIndf0:offsetIndf0)';      % pitch time axis
         dataVals(i).ftrack_taxis = sigmat.ftrack_taxis(onsetIndfx:offsetIndfx)';    % formant time axis
