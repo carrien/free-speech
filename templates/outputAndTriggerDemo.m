@@ -30,6 +30,7 @@ function returnedData = outputAndTriggerDemo(inputDevice, outputDevice, numTrial
 % BasicAMAndMixScheduleDemo.m
 %
 % v1 5/8/2020 CWN
+% v1.1 2020-07 CWN Mac updates
 
 %% Input arg handling
 % Get device info in struct. For Windows, only use WASAPI-type devices.
