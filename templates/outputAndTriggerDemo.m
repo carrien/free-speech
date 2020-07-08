@@ -30,6 +30,7 @@ function returnedData = outputAndTriggerDemo(inputDevice, outputDevice, numTrial
 % BasicAMAndMixScheduleDemo.m
 %
 % v1 5/8/2020 CWN
+% v1.1 2020-07 CWN Mac updates
 
 %% Input arg handling
 % Get device info in struct. For Windows, only use WASAPI-type devices.
@@ -67,10 +68,9 @@ if nrchannels < 2
     wavedataNoise = [wavedataNoise ; wavedataNoise];
 end
 
-% Repeat process for any other sounds you know you'll be playing during
-% expt
+% Repeat process for any other sounds you know you'll be playing during expt
 try
-    wavfilenameTrigger = 'C:\Users\Public\Documents\software\free-speech\templates\clap.wav';
+    wavfilenameTrigger = 'C:\Users\Public\Documents\software\free-speech\templates\simple_click_96kHz.wav';
     [y, outputFreq] = audioread(wavfilenameTrigger);
     %wavfilenameTrigger = 'C:\Users\Public\Documents\software\free-speech\templates\tipper_cwn.wav';
 catch
@@ -102,14 +102,14 @@ try
    % participant. We're using the device for audio output only (3rd == 1),
    % and it's a parent device (3rd == +8). We want low latency (4th == 1).
    % 5th and 6th are frequency and # channels, which should match device.
-    paOutputParent = PsychPortAudio('Open', outputDevice, 1+8, 1, outputFreq, nrchannels);
+    paOutputParent = PsychPortAudio('Open', outputDevice, 1+8, 4, outputFreq, nrchannels);
 catch
     % Failed. Retry with default frequency as suggested by device:
     fprintf(['\nCould not open device at wanted playback frequency of %i Hz.\n ' ...
         'Will retry with device default frequency.\n'], outputFreq);
     fprintf('Sound may sound a bit out of tune...\n\n');
     psychlasterror('reset');
-    paOutputParent = PsychPortAudio('Open', outputDevice, 1+8, 1, [], nrchannels);
+    paOutputParent = PsychPortAudio('Open', outputDevice, 1+8, 4, [], nrchannels);
 end
 
 % Start parent device immediately, wait for it to be started. We won't stop
@@ -125,7 +125,7 @@ paOutputTrigger = PsychPortAudio('OpenSlave', paOutputParent, 1);
 
 % Set the masterVolume for the master: This volume setting affects all
 % attached sound devices. (Scale: 0-1). Then, lower noise volume.
-PsychPortAudio('Volume', paOutputParent, 0.5);
+PsychPortAudio('Volume', paOutputParent, 1);
 PsychPortAudio('Volume', paOutputNoise, 0.0);
 
 % Create audio buffers for any sounds that you want to play during each
@@ -145,7 +145,7 @@ PsychPortAudio('Start', paOutputNoise, 0, 0, 1);
 % default frequency (5th param == []), using 2 channels (6th).
 % NOTE: Use 'outputfreq' here if you're recording something here and then
 % playing it right back to the participant with the outputDevice.
-paInputHandle = PsychPortAudio('Open', inputDevice, 2, [], [], 2);
+paInputHandle = PsychPortAudio('Open', inputDevice, 2, 4, 96000, 2);
 
 % Preallocate an internal audio recording buffer with a generous capacity.
 PsychPortAudio('GetAudioData', paInputHandle, trialDur*2);
@@ -220,9 +220,9 @@ for trialNum = 1:numTrials
             , '* Your voice crossed the intensity threshold at %.5f, \n    which was ' ...
             , '%.5f seconds after audio capture began.\n'],tThresholdExceeded, tThresholdExceeded-tCaptureStart)
         fprintf(['* I estimate %.5f ms of software lag between voice onset\n    ' ...
-        'and trigger event initiation (i.e., the clap).\n'], (tInitAudio - tThresholdExceeded)*1000);
+        'and trigger event initiation (i.e., the click).\n'], (tInitAudio - tThresholdExceeded)*1000);
         fprintf(['* PTB estimates %.4f ms of hardware lag between \n    ' ...
-        'initiating the trigger event (clap) and it leaving the speakers.\n'], ...
+        'initiating the trigger event (click) and it leaving the speakers.\n'], ...
             (tClapEst-tInitAudio)*1000);
         fprintf('* Total estimated lag: %.4f milliseconds.\n',(tClapEst - tThresholdExceeded)*1000);
             
@@ -231,7 +231,7 @@ for trialNum = 1:numTrials
     end
     
     % No new commands until the end of the trial duration
-    if GetSecs < (tCaptureStart + trialDur)
+    if GetSecs < tMaxEnd
         WaitSecs('UntilTime', (tCaptureStart + trialDur));
     end
     

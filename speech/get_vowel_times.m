@@ -1,23 +1,9 @@
-function [] = gen_dataVals_from_wave_viewer(dataPath,trialdir,bSaveCheck)
-%GEN_DATAVALS  Scrape subject trial files for data and save.
-%   GEN_DATAVALS(DATAPATH,TRIALDIR) scrapes the files from a subject's
-%   DATAPATH/TRIALDIR directory and collects formant data into the single
-%   file DATAVALS.mat.
-%
-%CN 3/2010
+function [times] = get_vowel_times(dataPath,trialdir)
 
-if nargin < 1 || isempty(dataPath), dataPath = cd; end
+if nargin < 1 || isempty(dataPath), dataPath=cd; end
 if nargin < 2 || isempty(trialdir), trialdir = 'trials'; end
-if nargin < 3 || isempty(bSaveCheck), bSaveCheck = 1; end
 
-
-savefile = fullfile(dataPath,sprintf('dataVals%s.mat',trialdir(7:end)));
-if bSaveCheck
-    bSave = savecheck(savefile);
-else
-    bSave = 1;
-end
-if ~bSave, return; end
+times = struct;
 
 load(fullfile(dataPath,'expt.mat'));
 if exist(fullfile(dataPath,'wave_viewer_params.mat'),'file')
@@ -40,7 +26,7 @@ sortedfiles = sort(filenums);
 shortTracks = [];
 
 % Append '.mat' and load
-dataVals = struct([]);
+times = struct([]);
 for i = 1:length(sortedfiles)
     trialnum = sortedfiles(i);
     filename = sprintf('%d.mat',trialnum);
@@ -48,14 +34,14 @@ for i = 1:length(sortedfiles)
     
     % skip bad trials, except for adding metadata
     if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params) && ~trialparams.event_params.is_good_trial
-        dataVals(i).word = expt.allWords(trialnum);
-        dataVals(i).vowel = expt.allVowels(trialnum);
+        times(i).word = expt.allWords(trialnum);
+        times(i).vowel = expt.allVowels(trialnum);
         if isfield(expt,'allColors')
-            dataVals(i).color = expt.allColors(trialnum);
+            times(i).color = expt.allColors(trialnum);
         end
-        dataVals(i).cond = expt.allConds(trialnum);
-        dataVals(i).token = trialnum;
-        dataVals(i).bExcl = 1;
+        times(i).cond = expt.allConds(trialnum);
+        times(i).token = trialnum;
+        times(i).bExcl = 1;
     else
         % find onset
         if exist('trialparams','var') & isfield(trialparams,'event_params') & ~isempty(trialparams.event_params) & ~isempty(trialparams.event_params.user_event_times) %#ok<AND2>
@@ -96,7 +82,7 @@ for i = 1:length(sortedfiles)
                 if exist('uevind','var')
                     onset_time = trialparams.event_params.user_event_times(uevind);
                 end
-                sprintf('trialnumber %d, word %s',trialnum, expt.listWords{trialnum})
+                sprintf('trialnumber %d, word %s',trialnum, expt.listWords{trialnum});
                 % end
             else
                 % find time of user-created onset event
@@ -157,72 +143,7 @@ for i = 1:length(sortedfiles)
         if exist('uevind','var')
             clear uevind
         end
-        
-        
-        % find onset/offset indices for each track
-        onsetIndf0 = get_index_at_time(sigmat.pitch_taxis,onset_time);
-        offsetIndf0 = get_index_at_time(sigmat.pitch_taxis,offset_time);
-        onsetIndfx = get_index_at_time(sigmat.ftrack_taxis,onset_time);
-        offsetIndfx = get_index_at_time(sigmat.ftrack_taxis,offset_time);
-        
-        % convert to dataVals struct
-        dataVals(i).f0 = sigmat.pitch(onsetIndf0:offsetIndf0)';                     % f0 track from onset to offset
-        for f=1:size(sigmat.ftrack,1)
-            fname=sprintf('f%d',f);
-            dataVals(i).(fname) = sigmat.ftrack(f,onsetIndfx:offsetIndfx)';
-        end
-        dataVals(i).int = sigmat.ampl(onsetIndAmp:offsetIndAmp)';                   % intensity (rms amplitude) track from onset to offset
-        dataVals(i).pitch_taxis = sigmat.pitch_taxis(onsetIndf0:offsetIndf0)';      % pitch time axis
-        dataVals(i).ftrack_taxis = sigmat.ftrack_taxis(onsetIndfx:offsetIndfx)';    % formant time axis
-        dataVals(i).ampl_taxis = sigmat.ampl_taxis(onsetIndAmp:offsetIndAmp)';      % amplitude time axis
-        dataVals(i).dur = offset_time - onset_time;                                 % duration
-        dataVals(i).word = expt.allWords(trialnum);                                 % numerical index to word list (e.g. 2)
-        dataVals(i).vowel = expt.allVowels(trialnum);                               % numerical index to vowel list (e.g. 1)
-        if isfield(expt,'allColors')
-            dataVals(i).color = expt.allColors(trialnum);                           % numerical index to color list (e.g. 1)
-        end
-        dataVals(i).cond = expt.allConds(trialnum);                                 % numerical index to condition list (e.g. 1)
-        dataVals(i).token = trialnum;                                               % trial number (e.g. 22)
-        dataVals(i).bExcl = 0;                                                      % binary variable: 1 = exclude trial, 0 = don't exclude trial
-        
-        % warn about short tracks
-        if ~dataVals(i).bExcl && sum(~isnan(dataVals(i).f0)) < 20
-            shortTracks = [shortTracks dataVals(i).token];
-            warning('Short pitch track: trial %d',dataVals(i).token);
-        end
-        if ~dataVals(i).bExcl && sum(~isnan(dataVals(i).f1)) < 20
-            shortTracks = [shortTracks dataVals(i).token];
-            warning('Short formant track: trial %d',dataVals(i).token);
-        end
+        times(i).onset = onset_time;
+        times(i).offset = offset_time;
     end
-end
-
-if ~isempty(shortTracks)
-    shortTracks = unique(shortTracks);
-    warning('Short track list: %s',num2str(shortTracks));
-end
-
-save(savefile,'dataVals');
-fprintf('%d trials saved in %s.\n',length(sortedfiles),savefile)
-
-end
-
-function [ind] = get_index_at_time(taxis,t)
-% Simple binary search to find the corresponding t-axis value
-
-low = 1; high = length(taxis);
-
-while (high - low > 1)
-    cand_ind = round((high+low)/2);
-    if t < taxis(cand_ind)
-        high = cand_ind;
-    else
-        low = cand_ind;
-    end
-end
-
-if abs(high-t) > abs(low-t), ind = low;
-else ind = high;
-end
-
 end
