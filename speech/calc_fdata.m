@@ -182,6 +182,8 @@ end
 ntiles = [50, 33, 25];
 for cnd=1:length(conds)
     c = conds{cnd};
+    avgfn = fieldnames(fmtdata.(fr).(c));
+    avgfn = setdiff(avgfn,'traces');
     for avg=1:length(avgfn)
         av = avgfn{avg};
         
@@ -368,6 +370,8 @@ if isfield(expt,'shifts')
     shiftnames = expt.conds(end-nshifts+1:end);
     for cnd=1:length(conds)
         c = conds{cnd};
+        avgfn = fieldnames(fmtdata.(fr).(c));
+        avgfn = setdiff(avgfn,'traces');
         for avg=1:length(avgfn)
             av = avgfn{avg};
             for fqs=1:length(shiftscales)
