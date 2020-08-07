@@ -138,7 +138,7 @@ function errors = get_dataVals_errors(UserData,dataVals)
     shortThresh = .1; %(<200 ms)
     longThresh = 1; %(> 1 s)
     jumpThresh = 200; %in Hz, upper limit for sample-to-sample change to detect jumpTrials in F1 trajectory
-    wrongFThresh = [200 1000]; %acceptable range of possible F1 values
+    fishyFThresh = [200 1100]; %acceptable range of possible F1 values
 
     badTrials = [];
     shortTrials = [];
@@ -146,7 +146,7 @@ function errors = get_dataVals_errors(UserData,dataVals)
     nanFTrials = [];
     jumpF1Trials = [];
     jumpF2Trials = [];
-    wrongFTrials = [];
+    fishyF1Trials = [];
     earlyTrials = [];
     lateTrials = [];
     goodTrials = [];
@@ -166,8 +166,8 @@ function errors = get_dataVals_errors(UserData,dataVals)
             elseif max(abs(diff(dataVals(i).f2)))>jumpThresh %check for trials with F2 jumps
                 jumpF2Trials = [jumpF2Trials dataVals(i).token];
             end
-        elseif any(dataVals(i).f1 < wrongFThresh(1)) || any(dataVals(i).f1 > wrongFThresh(2)) %check if wrong formant is being tracked for F1
-            wrongFTrials = [wrongFTrials dataVals(i).token];
+        elseif any(dataVals(i).f1 < fishyFThresh(1)) || any(dataVals(i).f1 > fishyFThresh(2)) %check if wrong formant is being tracked for F1
+            fishyF1Trials = [fishyF1Trials dataVals(i).token];
         elseif dataVals(i).ampl_taxis(1) < .0001
             earlyTrials = [earlyTrials dataVals(i).token];
         elseif dataVals(i).ampl_taxis(end) > 1.5
@@ -183,7 +183,7 @@ function errors = get_dataVals_errors(UserData,dataVals)
     errors.nanFTrials = nanFTrials;
     errors.jumpF1Trials = jumpF1Trials;
     errors.jumpF2Trials = jumpF2Trials;
-    errors.wrongFTrials = wrongFTrials;
+    errors.fishyFTrials = fishyF1Trials;
     errors.earlyTrials = earlyTrials;
     errors.lateTrials = lateTrials;
     errors.goodTrials = goodTrials;
