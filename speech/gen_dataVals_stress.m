@@ -20,7 +20,6 @@ if nargin < 2 || isempty(trialdir), trialdir = 'trials'; end
 max_events = 4; % three events for VOT study: word onset, voice onset, word offset
 
 % set output file
-%savefile = fullfile(dataPath,sprintf('dataVals%s.mat',trialdir(7:end)));
 %bSave = savecheck(savefile);
 %if ~bSave, return; end
 
@@ -394,10 +393,14 @@ end
             warning('Short track list for syllable 2: %s',num2str(shortTracks_syll2));
         end
 
-save('dataVals_syll1.mat','dataVals_syll1');
+savefile1 = fullfile(dataPath,sprintf('dataVals_syll1%s.mat',trialdir(7:end)));
+savefile2 = fullfile(dataPath,sprintf('dataVals_syll2%s.mat',trialdir(7:end)));
+       
+        
+save(savefile1,'dataVals_syll1');
 %fprintf('%d trials saved in %s.\n',length(sortedTrials),savefile)
 
-save('dataVals_syll2.mat','dataVals_syll2');
+save(savefile2,'dataVals_syll2');
 %fprintf('%d trials saved in %s.\n',length(sortedTrials),savefile)
 
 
