@@ -13,11 +13,15 @@ elseif endPerc < startPerc
     error('Second percentage supplied must be greater than the first')
 end
 
-startInd = ceil(startPerc*.01*length(signal));
+
+if range(1) == 0
+    startInd = 1;
+else
+    startInd = ceil(startPerc*.01*length(signal));
+end
 endInd = floor(endPerc*.01*length(signal));
-
-
 rangeSig = signal(startInd:endInd);
+
 
 
 
