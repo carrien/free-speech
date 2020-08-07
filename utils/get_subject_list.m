@@ -21,16 +21,15 @@ subs(folds2rm) = [];
 
 if isempty(subs2exclude)
     subs2exclude='subs2exclude.mat';
-else
-    subs2exclude=[subs2exclude '.mat'];
+    if exist(subs2exclude)==2
+        load(subs2exclude);
+    end
 end
-
-
-if exist(subs2exclude) == 2
-    load(subs2exclude);
+if iscell(subs2exclude)
     subs2rm = ismember(subs,subs2exclude);
     subs(subs2rm)=[];
 end
+
 
 if bSPonly
     subs = subs(contains(subs,'sp'));
