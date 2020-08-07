@@ -14,7 +14,7 @@ elseif endPerc < startPerc
 end
 
 startInd = ceil(startPerc*.01*length(signal));
-endInd = ceil(endPerc*.01*length(signal));
+endInd = floor(endPerc*.01*length(signal));
 
 
 rangeSig = signal(startInd:endInd);
