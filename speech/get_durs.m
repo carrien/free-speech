@@ -1,22 +1,18 @@
-function [allDurs] = get_durs(exptName)
+function [allDurs] = get_durs(dataPaths,dataValsStr,trackname)
 
-exptData = get_exptInfo(exptName);
-snums = exptData.snums;
-
+if nargin < 2 || isempty(dataValsStr), dataValsStr = 'dataVals.mat'; end
+if nargin < 3 || isempty(trackname), trackname = 'f0'; end
 allDurs = [];
 
-% for i=1:length(snums)
-%     subjPath = getAcoustSubjPath(exptName,snums(i),'pert','formant_analysis');
-%     load(fullfile(subjPath,'dataVals_medsplit.mat'));
-%     durs = [dataVals.dur]';
-%     allDurs = nancat(allDurs,durs);
-% end
-
-for i=1:length(snums)
-    subjPath = getAcoustSubjPath(exptName,snums(i),'pert','formant_analysis');
-    load(fullfile(subjPath,'dataVals_medsplit.mat'));
-    for j=1:length(dataVals)
-        durs(j) = dataVals(j).f0(end,1)-dataVals(j).f0(1,1);
+for dP = 1:length(dataPaths)
+    dataPath = dataPaths{dP};
+    load(fullfile(dataPath,dataValsStr),'dataVals');
+    if isfield(dataVals,'dur')
+        durs = [dataVals.dur];
+    else
+        for j = 1:length(dataVals)
+            durs(j) = dataVals(j).(trackname)(end,1)-dataVals(j).(trackname)(1,1);
+        end
     end
     allDurs = nancat(allDurs,durs');
     clear durs
