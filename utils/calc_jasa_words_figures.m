@@ -8,11 +8,6 @@ function [figwords] = calc_jasa_words_figures(figSizeArray, cols)
 
 if nargin < 3 || isemtpy(cols), cols = cell(size(figSizeArray,1),1); cols(:) = {'single'}; end
 
-if length(width) ~= length(height)
-    error('Lists of widths and heights are not of equal length!')
-end
-
-
 for f = 1:size(figSizeArray,1)
     tw = figSizeArray(f,1);
     th = figSizeArray(f,2);
