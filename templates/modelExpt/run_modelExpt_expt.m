@@ -31,9 +31,10 @@ experiments. There are a couple things you should know before you start:
         the code works," and more like "our lab typically does it this way."
 
 2.) LINKS TO REFERENCE GUIDE
-    Words in [[DOUBLE BRACKETS]] point to the reference guide. Go to
-    github.com and log in, then go to this address:
-    https://github.com/blab-lab/current-studies/blob/master/modelExpt/README.md
+    Words in [[DOUBLE BRACKETS]] point to the reference guide, which can be
+    found at this website:
+    https://github.com/carrien/free-speech/blob/master/templates/modelExpt/README.md
+
     Information or a concept which takes a while to explain goes there.
 
 THIS EXPERIMENT ACTUALLY WORKS. Try using breakpoints and following
@@ -91,7 +92,11 @@ expt.words = {'bed', 'dead', 'head'};
 
     % [[COUNTERBALANCING]]
     
-    %[ This block starts by checking if
+    %[ This block starts by checking if the participant has already been
+    %assigned to a group. We check this by seeing if their expt file
+    %already contains the field 'group'. If in a previous run-through of
+    % the experiment the participant was in one group, now they'll be in
+    % the other group.
 groups = {'normal', 'perturbed'};
 if ~isfield(expt,'group')
     if bTestMode
@@ -112,8 +117,8 @@ else
     check_sgroup(expt.group, groups);
     expt.groupnum = find(strcmp(expt.group, groups));
 end
-exptPath = fullfile(subjPath, expt.group);
-expt.dataPath = exptPath;
+    % set new expt.dataPath based on group subfolder
+expt.dataPath = fullfile(expt.dataPath, expt.group);
 
 % timing
     %[[JITTER]]
@@ -215,7 +220,7 @@ exptfile = fullfile(expt.dataPath,'expt.mat');
         trial indices -- inds
         %}
     
-set_exptDefaults(expt);
+expt = set_exptDefaults(expt);
 
     %[ `savecheck` will ask if you want to overwrite an existing file
     %before doing so. If you click Cancel on that "overwrite?" popup,
