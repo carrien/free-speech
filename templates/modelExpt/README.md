@@ -38,7 +38,7 @@ Debugging is the process of finding and correcting errors in your code. To begin
 ## Editing
 If you want to edit `run_modelExpt_expt` or `run_modelExpt_audapter` **and you want to save your changes**, here's how to do that safely. 
 
- 1. Open up the folder containing those files. It's probably `C:\Users\Public\Documents\software\current-studies\modelExpt`
+ 1. Open up the folder containing those files. It's probably `C:\Users\Public\Documents\software\free-speech\templates\modelExpt`
  2. Make another folder called practice_[your initials]
  3. Copy and paste the files you want to edit into your new folder.
  4. Change the name of the copied **files** to have your initials at the end. For example, `run_modelExpt_expt_cwn`.
