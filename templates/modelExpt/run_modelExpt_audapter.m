@@ -7,7 +7,6 @@ function [expt] = run_modelExpt_audapter(expt, conds2run)
 if nargin < 1, error('Need expt file to run this function'); end
 if nargin < 2, conds2run = expt.conds; end
 
-
 % assign folder for saving trial data
     %CONV: While the _audapter function is running, we save data from
     %individual trials as individual files in a temporary folder. When all
@@ -23,6 +22,12 @@ end
 rmsThresh = 0.04;
 stimtxtsize = 200;
 
+% set missing expt fields to defaults and save
+    %[This is just in case someone runs this code without the wrapper
+    %function (run_xx_expt). 
+expt = set_exptDefaults(expt);
+save(fullfile(outputdir,'expt.mat'), 'expt');
+
 %find trial #'s to run through for this iteration of modelExpt_audapter
     %[ These two lines might look scary; they're more for the "template"
     %crowd than the "tutorial" crowd. You shouldn't need to change them,
@@ -30,7 +35,6 @@ stimtxtsize = 200;
     %replace them.
 firstTrial = find(expt.allConds == find(strcmp(expt.conds, conds2run{1})), 1, 'first');
 lastTrial = find(expt.allConds == find(strcmp(expt.conds, conds2run{end})), 1, 'last');
-
 
 %% setup for audapter
 
@@ -47,7 +51,7 @@ Audapter('pcf', pcfFN, 0);
     %[ These settings probably won't change from experiment to experiment.
 audioInterfaceName = 'Focusrite USB'; %SMNG default for Windows 10
 sRate = 48000;  % Hardware sampling rate (before downsampling)
-downFact = 2;
+downFact = 3; % For most studies, we will sample downsample the data by 3 for a final sampling rate of 16 kHz.
 frameLen = 96/downFact;  % Before downsampling
 
 Audapter('deviceName', audioInterfaceName);
@@ -66,16 +70,16 @@ p = getAudapterDefaultParams(expt.gender); % get default params
 if isfield(expt, 'audapterParams')
     p = add2struct(p, expt.audapterParams);
 end
-p.bPitchShift = 0; % Set to 1 if using time warping
+p.bPitchShift = 0; % Set to 1 if using time warping or a pitch perturbation
 p.downFact = downFact;
 p.sr = sRate / downFact;
 p.frameLen = frameLen;
 
     % TODO are these conflicting with using OSTs?
     % TODO add more Audapter descriptions
-p.bShift = 1;
-p.bRatioShift = 0;
-p.bMelShift = 1;
+p.bShift = 1; %set to 1 if you want to implement a formant shift
+p.bRatioShift = 0; % set to 0 if you are using a shift in Hz or mels. Set to 1 if the shift is a ratio of the current formant value (e.g. 1.3*current value).
+p.bMelShift = 1; %set to 0 if you are specifying the shift in Hz. Set to 1 if you are specifying the shift in mels.
 
 % set noise
     %[ For many experiments, we play white noise in the background. That
@@ -114,7 +118,8 @@ pause(1)
 for itrial = firstTrial:lastTrial
     bGoodTrial = 0;
         %[ We use `bGoodTrial` to see if the participant responded to the
-        %stimulus. If they didn't, re-do that same trial.
+        %stimulus. If they didn't, re-do that same trial. You may not want
+        %to use this for evey experiment.
     while ~bGoodTrial
         % pause if 'p' is pressed
         if get_pause_state(h_fig,'p')

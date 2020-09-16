@@ -96,7 +96,9 @@ expt.words = {'bed', 'dead', 'head'};
     %assigned to a group. We check this by seeing if their expt file
     %already contains the field 'group'. If in a previous run-through of
     % the experiment the participant was in one group, now they'll be in
-    % the other group.
+    % the other group. Many experiments, where participants only perform
+    % one session, will not need this section of code.
+    % 
 groups = {'normal', 'perturbed'};
 if ~isfield(expt,'group')
     if bTestMode
@@ -167,17 +169,26 @@ expt.allConds = [1*ones(1,nBaseline) 2*ones(1,nRamp) 3*ones(1,nHold) 4*ones(1,nW
     %that expt.listWords(n) is the stimulus word that should be presented
     %on the n'th trial.
     %
-    % One method for setting expt.listWords would be to just put them in
-    % order, with the help of `mod`. bed dead head, bed dead head, etc.
-        %for i = 1:expt.ntrials
-        %    expt.listWords{i} = expt.words{1 + mod(i-1, nwords)};
-        %end
-
-    %[ We'll instead use this method of settings expt.listWords. It
+    % This is automatically done by set_exptDefaults if you do not define
+    % the order yourself. In set_exptDefaults, the experiment is diveded
+    % into "blocks" of words; each block has 1 instance of each stimulus
+    % word. The order of the words is randomized within each block. This
+    % makes sure the words are evenly distributed throughought the
+    % experiment.
+    %
+    % You may need to change this default for your experiment though. To do
+    % so, specify a word order here, before calling set_exptDefaults. You
+    % need only to set the order of the indexes into the words
+    % (expt.allWords), not the order of the actual words themselves
+    % (expt.listWords). expt.listWords will be created automatically by
+    % set_exptDefaults.
+    %
+    %[ Here's an example of setting expt.allWords. It
     % [[RANDOMIZES]] the order of words within each condition, aka "block".
     % This code is slightly complicated because our blocks aren't all the
     % same size. In the end though, each block displays each word an equal
-    % number of times.
+    % number of times. You probably don't want to randomize words this way,
+    % but it gives you an example of what this might look like.
 rng('shuffle');
 for blockIx = 1:length(expt.conds)
     ntrialsInBlock = length(find(expt.allConds == blockIx));
@@ -186,10 +197,35 @@ for blockIx = 1:length(expt.conds)
     firstInBlock = find(expt.allConds == blockIx, 1, 'first');
     lastInBlock = find(expt.allConds == blockIx, 1, 'last');
     for itrial = firstInBlock:lastInBlock
-        expt.listWords(itrial) = expt.words(wordIx(1 + itrial-firstInBlock));
+        expt.allWords(itrial) = wordIx(1 + itrial-firstInBlock);
     end
 end
 
+%% Set other expt values
+%There are a lot of other parameters you can set that control how the
+%experiment looks or functions. If you don't set these here, default values
+%will be set when you call set_exptDefaults in the next section . Here's
+%all the categories of things that you can set:
+    
+        %{
+        subject params:
+            expt.snum:      participant ID
+            expt.gender:    participant gender
+            expt.dataPath:  path on local machine where data is stored
+        environment params -- date, compName, username
+        experiment params -- conds, words, vowels, colors, trials, blocks
+          and breaks, stimulus order (index), stimulus order (stimulus
+          itself), 
+        formant shifting params (audapter)--
+            expt.audapterparams.XXX
+        timing -- stimdur, visualfbdur, interstimdur, jitter
+        duration tracking -- durcalc
+        amplitude tracking -- amplcalc
+        instructions -- instruct
+        binaries -- bUseTrigs, bManualMode
+        restart params -- startTrial, isRestart, crashTrials
+        trial indices -- inds
+        %}
 
 %% save experiment file
     %[Makes a folder if one's not there already.
@@ -203,22 +239,7 @@ exptfile = fullfile(expt.dataPath,'expt.mat');
     %fields across experiments. `set_exptDefaults` sets A LOT of fields. If
     %for your experiment, you think you need to save a new type of
     %information in expt.mat, first check if we have a name for that type
-    %of data already. Here's all the categories of things that are set:
-    
-        %{
-        subject params -- snum, gender, dataPath
-        environment params -- date, compName, username
-        experiment params -- conds, words, vowels, colors, trials, blocks
-          and breaks, stimulus order (index), stimulus order (stimulus
-          itself), formant shifting params (audapter)
-        timing -- stimdur, visualfbdur, interstimdur, jitter
-        duration tracking -- durcalc
-        amplitude tracking -- amplcalc
-        instructions -- instruct
-        binaries -- bUseTrigs, bManualMode
-        restart params -- startTrial, isRestart, crashTrials
-        trial indices -- inds
-        %}
+    %of data already. 
     
 expt = set_exptDefaults(expt);
 
