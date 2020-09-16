@@ -36,15 +36,20 @@ Many of our experiments use counterbalancing in one way or another. `timeAdapt`,
 Debugging is the process of finding and correcting errors in your code. To begin with, you might just try running your code and seeing if it works. Matlab has great functionality for when you want your debugging to be faster or more efficient. [This YouTube video](https://www.youtube.com/watch?v=PdNY9n8lV1Y) is an excellent showcase of some of that functionality.
 
 ## Editing
-If you want to edit `run_modelExpt_expt` or `run_modelExpt_audapter` **and you want to save your changes**, here's how to do that safely. 
+If you want to edit `run_modelExpt_expt` or `run_modelExpt_audapter` and **you don't care about saving your changes**, you can just make changes in `run_modelExpt_expt`, then when you're done for the day trash your changes using Git. Do this by navigating to the modelExpt folder in git, then entering `git checkout -- [name of function you changed]`. 
 
- 1. Open up the folder containing those files. It's probably `C:\Users\Public\Documents\software\free-speech\templates\modelExpt`
- 2. Make another folder called practice_[your initials]
- 3. Copy and paste the files you want to edit into your new folder.
- 4. Change the name of the copied **files** to have your initials at the end. For example, `run_modelExpt_expt_cwn`.
- 5. Open the files in Matlab. Change the function name in line 1 of the code to also include your initials.
+ Alternatively, **if you want to save your changes**, such as if you're making changes over the course of the week, you should make a copy of the functions you want to edit, then edit your copies. Here's how to do that safely.
 
-Alternatively, **if you don't care about saving your changes**, you can just make changes in `run_modelExpt_expt`, then when you're done for the day trash your changes using Git. Do this by navigating to the modelExpt folder in git, then entering `git checkout -- [name of function you changed]`. 
+ 1. Open the folder containing the modelExpt files you want to make changes to. It's probably `C:\Users\Public\Documents\software\free-speech\templates\modelExpt`
+ 2. You have two options here. **Option 1** is to save files to your own git repository, which you probably have from BASIC training. **Option 2** is to just save the files locally on your computer, i.e., not in a git repository. Once you've decided, copy the modelExpt files you'd like to edit into the new folder.
+ 3. Now there are two versions of the same function which MATLAB has access to -- the one in the modelExpt folder, and the one in your new folder. To make sure Matlab uses the one in your new folder, we need to change Matlab's search path ("the path").
+  (3a.) In the toolbar, go to Home >> Environment >> Set Path.
+  (3b.) Click Add with Subfolders...
+  (3c.) Navigate to the new folder. Select it and click Select Folder.
+  (3d.) Back in the Set Path box, you should see your new folder at the top of the list in the Matlab search path. Click Save and then Close.
+ 4. To confirm that Matlab will use the copy of the files in your new folder, enter in the command window: `which run_modelExpt_expt`, or whichever file you copied. You should see your new folder's location. If there's multiple, your new folder's location should be first.
+ 5. You're done! Now, whenever you call that function, Matlab will find your copy first. Consider putting your initials in the header so you have an easy thing to glance at to confirm, "yep, I'm editing *my* file."
+
 
 ## Headers
 Headers are the comments right at the beginning of a function. They're also what show up if you execute  `help [function]` . As a convention, function calls should describe:
