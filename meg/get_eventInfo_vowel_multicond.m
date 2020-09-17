@@ -13,7 +13,7 @@ if nargin < 2 || isempty(cond), cond = 'both'; end
 
 load(fullfile(dataPath,'expt.mat'));
 
-fullfile(dataPath,othercond,'dataVals.mat')
+fullfile(dataPath,'dataVals.mat')
 
 if exist(fullfile(dataPath,'dataVals.mat'))
     load(fullfile(dataPath,'dataVals.mat'));
