@@ -28,7 +28,10 @@ end
 % p.avgMarker = 'o';
 % p.avgMarkerSize = 8;
 % p.avgLineWidth = 3;
-p.avgLineColor = [0 0 0];
+% p.avgLineColor = [0 0 0];
+if ~isfield(p,'avgMarkerColor')
+    p.avgMarkerColor = colorSpec;
+end
 
 %% colors
 if iscell(colorSpec(1)) %if colors are specified as character strings
@@ -37,12 +40,19 @@ if iscell(colorSpec(1)) %if colors are specified as character strings
     colorSpec = [0 0 0];
 else % if colors are specified as RBG values
     nColors = size(colorSpec,1);
+    nAvgColors = size(p.avgMarkerColor,1);
 end
 if nColors == 1 || nColors~=nConds
     if nColors > 1
         warning('Number of colors does not match number of conditions. Using single color for plotting.')
     end
     colorSpec = repmat(colorSpec,nConds,1);
+end
+if nAvgColors == 1 || nColors~=nConds
+    if nAvgColors > 1
+        warning('Number of colors for averages does not match number of conditions. Using single color for plotting.')
+    end
+    p.avgMarkerColor = repmat(p.avgMarkerColor,nConds,1);
 end
 
 %% plot
@@ -90,8 +100,8 @@ end
 hold on
 plot(1:nConds,nanmean(cond_means,1),'-','Color',p.avgLineColor,'LineWidth',p.avgLineWidth)
 for c = 1:nConds
-    plot(c,nanmean(cond_means(:,c)),p.avgMarker,'Color',colorSpec(c,:),'MarkerFace',colorSpec(c,:),'MarkerSize',p.avgMarkerSize)
-    errorbar(c,nanmean(cond_means(:,c)), cond_ci(c),'Color',colorSpec(c,:),'LineWidth',p.avgLineWidth)
+    plot(c,nanmean(cond_means(:,c)),p.avgMarker,'Color',p.avgMarkerColor(c,:),'MarkerFace',p.avgMarkerColor(c,:),'MarkerSize',p.avgMarkerSize)
+    errorbar(c,nanmean(cond_means(:,c)), cond_ci(c),'Color',p.avgMarkerColor(c,:),'LineWidth',p.avgLineWidth)
 end
 
 set(gca,'XTick',1:nConds,'XTickLabel',conds)
