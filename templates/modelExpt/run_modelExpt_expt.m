@@ -212,19 +212,72 @@ end
             expt.snum:      participant ID
             expt.gender:    participant gender
             expt.dataPath:  path on local machine where data is stored
-        environment params -- date, compName, username
-        experiment params -- conds, words, vowels, colors, trials, blocks
-          and breaks, stimulus order (index), stimulus order (stimulus
-          itself), 
-        formant shifting params (audapter)--
-            expt.audapterparams.XXX
-        timing -- stimdur, visualfbdur, interstimdur, jitter
-        duration tracking -- durcalc
-        amplitude tracking -- amplcalc
-        instructions -- instruct
-        binaries -- bUseTrigs, bManualMode
-        restart params -- startTrial, isRestart, crashTrials
-        trial indices -- inds
+        environment params (we want these to be set automatically):
+            expt.date: date the experiment was run
+            expt.compName: the computer the experiment was run on
+            expt.username: the person logged in to the computer; the person
+                who ran the experiment
+        experiment params:
+            expt.conds: conditions use in the experiment (e.g., baseline, 
+                hold washout). you should definitely set these by hand.
+            expt.allConds: index of conditions (expt.conds) for each trial
+            expt.listConds: the name (string) of conditions for each trial
+            expt.words: stimuli words used in the experiment
+            expt.allWords: index of stimuli (expt.words) for each trial
+            expt.listWords: the word (string) of the stimulus for each
+                trial
+            expt.vowels: list of the vowel for each stimulus word (the
+                order should match!). can be set automatically if the word
+                you are using in appears in  txt2ipa.m.
+            expt.allVowels: index of vowels (expt.vowels) for each trial
+            expt.listVowels: the vowel (string) of the stimulus for each
+                trial
+            expt.colors: the colors for the stimuli (as a vector of strings)
+            expt.allColors: index of stimulus color (expt.colors) for each 
+                trial
+            expt.listColor: stimulus color (string) for each trial
+            expt.colorvals: the color for the stimuli (as a matlab RGB
+                vector)
+            expt.nblocks: number of blocks in the experiment
+            expt.ntrials_per_block: number of trials in each block
+            expt.ntrials: total number of trials in the experiment
+            expt.breakFrequency: the number of trials between breaks
+            expt.breakTrials: the trials after which there will be a break
+        formant shifting params (for Audapter):
+            expt.shiftMags: vector of the magnitude of formant shifts for 
+                each trial
+            expt.shiftAngles: vector of the angle in F1/F2 space of shifts 
+                for each trial
+        timing:
+            expt.timing.stimdur: the duration the stimulus is visible on each
+                trial
+            expt.timing.interstimdur: the break between each trial
+            expt.timing.jitter: added jitter between each trial to make the
+                experiment less rhythmic
+            expt.timing.visualfbdur: how long any visual feedback (like about
+                vowel duration) is displayed.
+        duration tracking:
+            expt.durcalc.min_dur = .25: minimum acceptable duration
+            expt.durcalc.max_dur = .5: maximum acceptable duration
+            expt.durcalc.ons_thresh = 0.3: amplitude threshold for vowel
+                onset detection
+            expt.durcalc.offs_thresh = 0.4: amplitude threshold for vowel
+                offset detection
+        amplitude tracking -- 
+            amplcalc.min_ampl = 0.04: minimum acceptable amplitude
+            amplcalc.max_ampl = 0.24: maximum acceptable amplitude
+            amplcalc.ons_thresh = 0.01:
+            amplcalc.offs_thresh = 0.015;
+        instructions:
+            expt.instruct: text string of instructions at start of
+                experiment
+        binaries:
+            expt.bUseTrigs: use triggers (for MRI experiments)
+            expt.bManualMode: manual mode (requires keypress to advance trials)
+        restart params for keeping track of crashes-- startTrial, isRestart, crashTrials
+        trial indices: for example, a list of all trials with a certain 
+            vowel. we wantthese to be set automatically. these are used
+            primarily for data analysis
         %}
 
 %% save experiment file
