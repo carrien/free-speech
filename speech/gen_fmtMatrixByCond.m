@@ -195,7 +195,12 @@ goodtrials = find(~[dataVals.bExcl]);
 [~,tstep] = get_fs_from_taxis(dataVals(goodtrials(1)).ftrack_taxis); %#ok<ASGLU>
 
 %% save data
-filename = sprintf('fmtMatrix_%s_%s.mat',[indShift.name],basename);
+filename = sprintf('fmtMatrix_%s_%s',[indShift.name],basename);
+if length(filename) > 30 % feel free to change
+    filename = input('File name is too long! Please enter a new filename without extension or quotes. Make sure to be consistent across subjects. ','s')
+end
+
+filename = [filename '.mat'];
 
 % construct structs
 savefile = fullfile(dataPath,filename);
