@@ -1,4 +1,4 @@
-function [eventInfo] = get_eventInfo_vowel(dataPath,cond,othercond)
+function [eventInfo] = get_eventInfo_vowel_multicond(dataPath,cond,othercond)
 %GET_EVENTINFO_VOWEL  Get event info for trials by vowel identity.
 %   GET_EVENTINFO_VOWEL(DATAPATH,CONDITION) uses trial information from
 %   expt.mat to construct eventInfo grouped by vowel identity. COND
