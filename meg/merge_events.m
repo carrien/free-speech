@@ -25,7 +25,7 @@ for f=2:length(eventFiles)
             if ~strcmp(events(e_ind).label,events2add(e).label)
                 error('Event names don''t match.')
             end
-            events(e_ind).samples = [events(e_ind).samples events2add(e).samples];
+            events(e_ind).samples = [events(e_ind).samples events2add(e).samples]; % why are there no samples?
             events(e_ind).times = [events(e_ind).times events2add(e).times];
             events(e_ind).fileind = [events(e_ind).fileind f*ones(1,length(events2add(e).times))];
             events(e_ind).eventind = [events(e_ind).eventind e_ind*ones(1,length(events2add(e).times))];
