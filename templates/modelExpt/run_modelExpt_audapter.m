@@ -14,9 +14,11 @@ if nargin < 2, conds2run = expt.conds; end
     %Each row in data.mat then represents the data from a single trial.
 trialdirname = 'temp_trials';
 outputdir = fullfile(expt.dataPath, trialdirname);
+trialdir = fullfile(outputdir, trialdirname);
 if ~exist(outputdir, 'dir')
-    mkdir(outputdir, trialdirname)
+    mkdir(trialdir)
 end
+
 
 %set RMS threshold for deciding if a trial is good or not
 rmsThresh = 0.04;

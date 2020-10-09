@@ -113,7 +113,7 @@ if ~isfield(expt,'group')
         end
         expt.group = groups{expt.groupnum};
     else %if real participant, assign group randomly
-        [expt.group, expt.groupnum] = get_sgroup(subjPath, groups);
+        [expt.group, expt.groupnum] = get_sgroup(expt.dataPath, groups);
     end
 else
     check_sgroup(expt.group, groups);
