@@ -47,3 +47,6 @@ dataOut = AudapterIO('getData');
 if isfield(data,'ost_stat')
     dataOut.ost_stat = data.ost_stat; %use original OST tracking
 end
+if isfield(data,'calcOST')
+    dataOut.calcOST = data.calcOST; %use original OST tracking
+end
