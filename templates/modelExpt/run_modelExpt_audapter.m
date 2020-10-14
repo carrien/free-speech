@@ -214,7 +214,7 @@ for itrial = firstTrial:lastTrial
         draw_exptText(h_fig,.5,.5,breaktext,expt.instruct.txtparams);
         pause(3);
     elseif any(expt.breakTrials == itrial)
-        breaktext = sprintf('Time for a break!\n%d of %d trials done.\n\nPress the space bar to continue.',itrial,length(trials2run));
+        breaktext = sprintf('Time for a break!\n%d of %d trials done.\n\nPress the space bar to continue.',itrial,expt.ntrials);
         h_break = draw_exptText(h_fig,.5,.5,breaktext,expt.instruct.txtparams);
         pause
         delete_exptText(h_fig,h_break)
