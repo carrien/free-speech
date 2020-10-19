@@ -43,10 +43,14 @@ for n = 1:length(sigInCell)
     Audapter('runFrame', sigInCell{n});
 end
 
+% preserve original (or calculated) OST values
 dataOut = AudapterIO('getData');
 if isfield(data,'ost_stat')
-    dataOut.ost_stat = data.ost_stat; %use original OST tracking
+    dataOut.ost_stat = data.ost_stat; 
 end
 if isfield(data,'calcOST')
-    dataOut.calcOST = data.calcOST; %use original OST tracking
+    dataOut.calcOST = data.calcOST; 
+end
+if isfield(data,'ost_calc')
+    dataOut.calcOST = data.ost_calc; 
 end
