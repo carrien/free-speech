@@ -52,5 +52,5 @@ if isfield(data,'calcOST')
     dataOut.calcOST = data.calcOST; 
 end
 if isfield(data,'ost_calc')
-    dataOut.calcOST = data.ost_calc; 
+    dataOut.ost_calc = data.ost_calc; 
 end
