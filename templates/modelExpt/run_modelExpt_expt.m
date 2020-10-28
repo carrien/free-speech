@@ -69,6 +69,8 @@ if nargin < 2 || isempty(bTestMode), bTestMode = 0; end
 
 %% Experiment setup
 expt.name = 'modelExpt';
+expt.trackingFileLoc = 'experiment_helpers'; % Where the OST/PCF files are kept (for audapter_viewer)
+expt.trackingFileName = 'measureFormants'; % What the files are called
 if ~isfield(expt,'snum'), expt.snum = get_snum; end     %eg, sp247
 expt.dataPath = get_acoustSavePath(expt.name, expt.snum);
     %CONV Your expt file should be saved to:
@@ -131,6 +133,7 @@ expt.timing.interstimjitter = .75;  % maximum extra time between stims (jitter)
 
 %% Stimuli setup
 
+refreshWorkingCopy(expt.trackingFileLoc, expt.trackingFileName);
 % set up [[CONDITIONS]] and number of trials
 expt.conds = {'baseline' 'ramp' 'hold' 'washout'};
 
