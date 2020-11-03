@@ -1,4 +1,4 @@
-function check_audio(dataPath,trialinds,bSort,nTrials,stringType)
+function check_audio(dataPath,trialinds,bSort,nTrials,stringType, buffertype)
 % DATA = CHECK_AUDIO(dataPath,trialinds)
 % Function cycles through trials to check that participant said correct
 % word. Inputs:
@@ -8,12 +8,15 @@ function check_audio(dataPath,trialinds,bSort,nTrials,stringType)
 %   bSort: sort trials by word (1) or don't (0). Default is 0. (currently
 %   not implemented)
 %   nTrials: how many trials to analyze at a time. Default is 10
+%   buffertype: which field to use from data struct. Only tested with
+%     signalIn or signalOut. (default: signalIn)
 
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
 if nargin < 2, trialinds = []; end
 if nargin < 3 || isempty(bSort), bSort = 0; end
 if nargin < 4 || isempty(nTrials), nTrials = 10; end
 if nargin < 5 || isempty(stringType), stringType = 'listWords'; end
+if nargin < 6 || isempty(buffertype), buffertype = 'signalIn'; end
 
 %% create GUI
 f = figure('Visible','off','Units','Normalized','Position',[.1 .1 .8 .8]);
@@ -25,6 +28,7 @@ UserData.f =f;
 UserData.nTrials = nTrials;
 UserData.bSort = bSort;
 UserData.stringType = stringType;
+UserData.buffertype = buffertype;
 
 % load data
 UserData.dataPath = dataPath;
@@ -179,16 +183,16 @@ end
 function playAll(src,evt)
     UserData = guidata(src);
     for i = 1:length(UserData.currTrials)
-        signalIn = UserData.data(UserData.currTrials(i)).signalIn;
+        signal = UserData.data(UserData.currTrials(i)).(UserData.buffertype);
         if isfield(UserData.data(UserData.currTrials(i)).params,'fs')
             fs = UserData.data(UserData.currTrials(i)).params.fs;
         else
             fs = UserData.data(UserData.currTrials(i)).params.sr;
         end
-        soundsc(signalIn,fs)
+        soundsc(signal,fs)
         oldBG = UserData.bg(i).BackgroundColor;
         UserData.bg(i).BackgroundColor = [1 1 0];
-        pause(length(signalIn)./fs + .025)
+        pause(length(signal)./fs + .025)
         UserData.bg(i).BackgroundColor = oldBG;
     end
 end
@@ -270,7 +274,7 @@ function plotTrials(src)
         'Position',[.1 .275 .8 .425],'Box','on','Visible','off');
 
         axes(UserData.haxes(iBg))
-        currSig = UserData.data(UserData.currTrials(iBg)).signalIn;
+        currSig = UserData.data(UserData.currTrials(iBg)).(UserData.buffertype);
         plot(currSig,'k')
         set(UserData.haxes(iBg),'XTick',[],'YTick',[])
         if max(abs(currSig)) < 0.5
@@ -300,17 +304,17 @@ function replayTrial(src,evt)
     UserData = guidata(src);
     trialNumber = str2num(src.Parent.Title);
     tagNumber = str2num(src.Parent.Tag);
-    signalIn = UserData.data(trialNumber).signalIn;
+    signal = UserData.data(trialNumber).(UserData.buffertype);
     if isfield(UserData.data(trialNumber).params,'fs')
         fs = UserData.data(trialNumber).params.fs;
     else
         fs = UserData.data(trialNumber).params.sr;
     end
-    soundsc(signalIn,fs)
+    soundsc(signal,fs)
     
     oldBG = UserData.bg(tagNumber).BackgroundColor;
     UserData.bg(tagNumber).BackgroundColor = [1 1 0];
-    pause(length(signalIn)./fs + .025)
+    pause(length(signal)./fs + .025)
     UserData.bg(tagNumber).BackgroundColor = oldBG;
     UserData.lastTargetTrial = tagNumber;
 end
