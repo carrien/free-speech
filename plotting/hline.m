@@ -5,7 +5,7 @@ if nargin < 4, ax = gca; end
 
 a = axis(ax);
 hl = line(a(1:2),val*ones(2,1),'Parent',ax);
-set(hl,'LineWidth',1);
+
 if nargin >= 2
   set(hl,'Color',color);
 end
