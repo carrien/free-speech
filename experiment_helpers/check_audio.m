@@ -18,6 +18,14 @@ if nargin < 4 || isempty(nTrials), nTrials = 10; end
 if nargin < 5 || isempty(stringType), stringType = 'listWords'; end
 if nargin < 6 || isempty(buffertype), buffertype = 'signalIn'; end
 
+% set trial folder
+if strcmp(buffertype, 'signalIn')
+    trialfolder = 'trials';
+else
+    trialfolder = sprintf('trials_%s', buffertype);    
+    %trialfolderSigIn = 'trials';   %CWN TODO Don't think I need this
+end
+
 %% create GUI
 f = figure('Visible','off','Units','Normalized','Position',[.1 .1 .8 .8]);
 set(f, 'WindowKeyPressFcn', @KeyPress)
@@ -29,6 +37,7 @@ UserData.nTrials = nTrials;
 UserData.bSort = bSort;
 UserData.stringType = stringType;
 UserData.buffertype = buffertype;
+UserData.trialfolder = trialfolder;
 
 % load data
 UserData.dataPath = dataPath;
@@ -36,7 +45,8 @@ load(fullfile(dataPath,'data.mat'),'data');
 UserData.data = data;
 load(fullfile(dataPath,'expt.mat'),'expt');
 UserData.expt = expt;
-if exist(fullfile(dataPath,'dataVals.mat'),'file')
+    % only update dataVals.bExcl based on signalIn
+if exist(fullfile(dataPath,'dataVals.mat'),'file') && strcmp(buffertype, 'signalIn') 
     UserData.bDataVals = 1;
     load(fullfile(dataPath,'dataVals.mat'),'dataVals');
     UserData.dataVals = dataVals;
@@ -45,10 +55,10 @@ else
     for i = 1:UserData.expt.ntrials
         UserData.dataVals(i).bExcl = 0;
     end
-    if exist(fullfile(dataPath,'trials'),'dir')
-        [~,sortedFilenames] = get_sortedTrials(fullfile(dataPath,'trials'));
+    if exist(fullfile(dataPath,trialfolder),'dir')
+        [~,sortedFilenames] = get_sortedTrials(fullfile(dataPath,trialfolder));
         for i = 1:length(sortedFilenames)
-            load(fullfile(dataPath,'trials',sortedFilenames{i}))
+            load(fullfile(dataPath,trialfolder,sortedFilenames{i}))
             fileNameParts = strsplit(sortedFilenames{i},'.');
             trialIndex = str2double(fileNameParts{1});
             if ~isfield(trialparams,'event_params') || trialparams.event_params.is_good_trial
@@ -153,25 +163,25 @@ function saveData(src,evt)
     if UserData.bDataVals
         save(fullfile(UserData.dataPath,'dataVals.mat'),'dataVals'); %save datVals structure
     end
-    if ~exist(fullfile(UserData.dataPath,'trials'),'dir')
-        mkdir(fullfile(UserData.dataPath,'trials'))
+    if ~exist(fullfile(UserData.dataPath,UserData.trialfolder),'dir')
+        mkdir(fullfile(UserData.dataPath,UserData.trialfolder))
     end
     for i = 1:length(dataVals) %save individual files
         if UserData.statusChange(i)
-            try load(fullfile(UserData.dataPath,'trials',sprintf('%d.mat',i)));
+            try load(fullfile(UserData.dataPath,UserData.trialfolder,sprintf('%d.mat',i)));
                 if UserData.dataVals(i).bExcl
                     trialparams.event_params.is_good_trial = 0;
                 else
                     trialparams.event_params.is_good_trial = 1;
                 end
-                save(fullfile(UserData.dataPath,'trials',sprintf('%d.mat',i)),'sigmat','trialparams')
+                save(fullfile(UserData.dataPath,UserData.trialfolder,sprintf('%d.mat',i)),'sigmat','trialparams')
             catch
                 if UserData.dataVals(i).bExcl
                     trialparams.event_params.is_good_trial = 0;
                 else
                     trialparams.event_params.is_good_trial = 1;
                 end
-                save(fullfile(UserData.dataPath,'trials',sprintf('%d.mat',i)),'trialparams')
+                save(fullfile(UserData.dataPath,UserData.trialfolder,sprintf('%d.mat',i)),'trialparams')
             end
             fprintf('Trial %d saved.\n',i)
 
