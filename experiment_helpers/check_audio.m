@@ -153,6 +153,7 @@ function saveData(src,evt)
         save(fullfile(UserData.dataPath,'dataVals_signalOut.mat'),'dataVals'); %save dataVals structure, signalOut
     end
     
+    % make trials and trials_signalOut folders if needed
     for i = 1:length(trialfolder)
         if ~exist(fullfile(UserData.dataPath,trialfolder{i}),'dir')
             mkdir(fullfile(UserData.dataPath,trialfolder{i}))
@@ -276,7 +277,6 @@ function plotTrials(src)
         end
         
         % make axis for signalIn
-        %UserData.haxes(iBg) = axes(UserData.bg(iBg),'Units','Normalized', 'Position',[.1 .275 .8 .425],'Box','on','Visible','off');
         UserData.haxes(iBg) = axes(UserData.bg(iBg),'Units','Normalized',...    
         'Position',[.1 .5 .8 .225],'Box','on','Visible','off');
     
@@ -287,23 +287,30 @@ function plotTrials(src)
         % UserData.haxes(iBg) becomes current axes
         axes(UserData.haxes(iBg))
         currSig = UserData.data(UserData.currTrials(iBg)).signalIn;
+        signalInLength = length(currSig);
         plot(currSig,'k')
+        xlim([0 signalInLength]);
         set(UserData.haxes(iBg),'XTick',[],'YTick',[])
-        if max(abs(currSig)) < 0.5
-            ylim([-.5 .5])
+        if max(abs(currSig)) < 0.4
+            ylim([-.4 .4])
         else
             ylim([-max(abs(currSig)) max(abs(currSig))])
         end
         
-        % repeat process for signalOut, with UserData.haxesOut
+        % repeat process for signalOut, with UserData.haxesOut(iBg)
         axes(UserData.haxesOut(iBg))
-        currSig = UserData.data(UserData.currTrials(iBg)).signalOut;
-        plot(currSig,'k')
-        set(UserData.haxesOut(iBg),'XTick',[],'YTick',[])
-        if max(abs(currSig)) < 0.5
-            ylim([-.5 .5])
-        else
-            ylim([-max(abs(currSig)) max(abs(currSig))])
+        try
+            currSig = UserData.data(UserData.currTrials(iBg)).signalOut;
+            plot(currSig,'k')
+            xlim([0 signalInLength]);
+            set(UserData.haxesOut(iBg),'XTick',[],'YTick',[])
+            if max(abs(currSig)) < 0.4
+                ylim([-.4 .4])
+            else
+                ylim([-max(abs(currSig)) max(abs(currSig))])
+            end
+        catch
+            %leave axis blank
         end
         
         dispID = iBg;
