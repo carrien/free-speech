@@ -146,31 +146,40 @@ end
 function saveData(src,evt)
     UserData = guidata(src);
     dataVals = UserData.dataVals;
+    trialfolder = {'trials', 'trials_signalOut'};
+    
     if UserData.bDataVals
-        save(fullfile(UserData.dataPath,'dataVals.mat'),'dataVals'); %save datVals structure
+        save(fullfile(UserData.dataPath,'dataVals.mat'),'dataVals'); %save dataVals structure, signalIn
+        save(fullfile(UserData.dataPath,'dataVals_signalOut.mat'),'dataVals'); %save dataVals structure, signalOut
     end
-    if ~exist(fullfile(UserData.dataPath,'trials'),'dir')
-        mkdir(fullfile(UserData.dataPath,'trials'))
+    
+    % make trials and trials_signalOut folders if needed
+    for i = 1:length(trialfolder)
+        if ~exist(fullfile(UserData.dataPath,trialfolder{i}),'dir')
+            mkdir(fullfile(UserData.dataPath,trialfolder{i}))
+        end
     end
+    
     for i = 1:length(dataVals) %save individual files
         if UserData.statusChange(i)
-            try load(fullfile(UserData.dataPath,'trials',sprintf('%d.mat',i)));
-                if UserData.dataVals(i).bExcl
-                    trialparams.event_params.is_good_trial = 0;
-                else
-                    trialparams.event_params.is_good_trial = 1;
+            for j = 1:length(trialfolder)
+                try load(fullfile(UserData.dataPath,trialfolder{j},sprintf('%d.mat',i)));
+                    if UserData.dataVals(i).bExcl
+                        trialparams.event_params.is_good_trial = 0;
+                    else
+                        trialparams.event_params.is_good_trial = 1;
+                    end
+                    save(fullfile(UserData.dataPath,trialfolder{j},sprintf('%d.mat',i)),'sigmat','trialparams')
+                catch
+                    if UserData.dataVals(i).bExcl
+                        trialparams.event_params.is_good_trial = 0;
+                    else
+                        trialparams.event_params.is_good_trial = 1;
+                    end
+                    save(fullfile(UserData.dataPath,trialfolder{j},sprintf('%d.mat',i)),'trialparams')
                 end
-                save(fullfile(UserData.dataPath,'trials',sprintf('%d.mat',i)),'sigmat','trialparams')
-            catch
-                if UserData.dataVals(i).bExcl
-                    trialparams.event_params.is_good_trial = 0;
-                else
-                    trialparams.event_params.is_good_trial = 1;
-                end
-                save(fullfile(UserData.dataPath,'trials',sprintf('%d.mat',i)),'trialparams')
+                fprintf('Trial %d saved for %s folder.\n',i, trialfolder{j});
             end
-            fprintf('Trial %d saved.\n',i)
-
         end
     end
     msgbox('Data Saved!','');
@@ -179,16 +188,16 @@ end
 function playAll(src,evt)
     UserData = guidata(src);
     for i = 1:length(UserData.currTrials)
-        signalIn = UserData.data(UserData.currTrials(i)).signalIn;
+        signal = UserData.data(UserData.currTrials(i)).signalIn;
         if isfield(UserData.data(UserData.currTrials(i)).params,'fs')
             fs = UserData.data(UserData.currTrials(i)).params.fs;
         else
             fs = UserData.data(UserData.currTrials(i)).params.sr;
         end
-        soundsc(signalIn,fs)
+        soundsc(signal,fs)
         oldBG = UserData.bg(i).BackgroundColor;
         UserData.bg(i).BackgroundColor = [1 1 0];
-        pause(length(signalIn)./fs + .025)
+        pause(length(signal)./fs + .025)
         UserData.bg(i).BackgroundColor = oldBG;
     end
 end
@@ -236,6 +245,7 @@ function plotTrials(src)
     if isfield(UserData,'bg')
         delete(UserData.bg)
     end
+    % make a variable bg with a panel bg(iBg) for each trial on-screen
     for iBg = 1:nTrialsCurr
         xIndex = mod(iBg,UserData.nColumns);
         if xIndex == 0, xIndex = UserData.nColumns;end
@@ -253,6 +263,7 @@ function plotTrials(src)
 
     fontDispSize = 0.3;
     for iBg = 1:nTrialsCurr
+        % make good/bad button object
         UserData.htxt(iBg) = uicontrol(UserData.bg(iBg),'Style','pushbutton',...
         'Units','Normalized','Position',[.1 .775 .8 .2],...
         'String',UserData.expt.(UserData.stringType)(UserData.currTrials(iBg)),'FontUnits','Normalized',...
@@ -265,22 +276,46 @@ function plotTrials(src)
             UserData.htxt(iBg).BackgroundColor = [0.3 0.85 0.3];
         end
         
-        
-        UserData.haxes(iBg) = axes(UserData.bg(iBg),'Units','Normalized',...
-        'Position',[.1 .275 .8 .425],'Box','on','Visible','off');
+        % make axis for signalIn
+        UserData.haxes(iBg) = axes(UserData.bg(iBg),'Units','Normalized',...    
+        'Position',[.1 .5 .8 .225],'Box','on','Visible','off');
+    
+        % make axis for signalOut
+        UserData.haxesOut(iBg) = axes(UserData.bg(iBg),'Units','Normalized',...   
+        'Position',[.1 .275 .8 .225],'Box','on','Visible','off');
 
+        % UserData.haxes(iBg) becomes current axes
         axes(UserData.haxes(iBg))
         currSig = UserData.data(UserData.currTrials(iBg)).signalIn;
+        signalInLength = length(currSig);
         plot(currSig,'k')
+        xlim([0 signalInLength]);
         set(UserData.haxes(iBg),'XTick',[],'YTick',[])
-        if max(abs(currSig)) < 0.5
-            ylim([-.5 .5])
+        if max(abs(currSig)) < 0.4
+            ylim([-.4 .4])
         else
             ylim([-max(abs(currSig)) max(abs(currSig))])
         end
         
+        % repeat process for signalOut, with UserData.haxesOut(iBg)
+        axes(UserData.haxesOut(iBg))
+        try
+            currSig = UserData.data(UserData.currTrials(iBg)).signalOut;
+            plot(currSig,'k')
+            xlim([0 signalInLength]);
+            set(UserData.haxesOut(iBg),'XTick',[],'YTick',[])
+            if max(abs(currSig)) < 0.4
+                ylim([-.4 .4])
+            else
+                ylim([-max(abs(currSig)) max(abs(currSig))])
+            end
+        catch
+            %leave axis blank
+        end
+        
         dispID = iBg;
         if dispID == 10, dispID = 0;end
+        % make replay button
         UserData.hreplay(iBg) = uicontrol(UserData.bg(iBg),'Style','pushbutton',...
         'Units','Normalized','Position',[.1 .025 .8 .2],...
         'String',sprintf('replay [%d]',dispID),'FontUnits','Normalized','FontSize',.4,...
@@ -300,17 +335,17 @@ function replayTrial(src,evt)
     UserData = guidata(src);
     trialNumber = str2num(src.Parent.Title);
     tagNumber = str2num(src.Parent.Tag);
-    signalIn = UserData.data(trialNumber).signalIn;
+    signal = UserData.data(trialNumber).signalIn;
     if isfield(UserData.data(trialNumber).params,'fs')
         fs = UserData.data(trialNumber).params.fs;
     else
         fs = UserData.data(trialNumber).params.sr;
     end
-    soundsc(signalIn,fs)
+    soundsc(signal,fs)
     
     oldBG = UserData.bg(tagNumber).BackgroundColor;
     UserData.bg(tagNumber).BackgroundColor = [1 1 0];
-    pause(length(signalIn)./fs + .025)
+    pause(length(signal)./fs + .025)
     UserData.bg(tagNumber).BackgroundColor = oldBG;
     UserData.lastTargetTrial = tagNumber;
 end
