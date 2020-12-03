@@ -13,9 +13,9 @@ if nargin < 2, conds2run = expt.conds; end
     %the trials are completed, we compile all those trials into data.mat.
     %Each row in data.mat then represents the data from a single trial.
 trialdirname = 'temp_trials';
-outputdir = fullfile(expt.dataPath, trialdirname);
+outputdir = expt.dataPath;
 trialdir = fullfile(outputdir, trialdirname);
-if ~exist(outputdir, 'dir')
+if ~exist(trialdir, 'dir')
     mkdir(trialdir)
 end
 
