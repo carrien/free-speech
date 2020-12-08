@@ -186,7 +186,7 @@ fprintf(msg_graphs);
 play_audio(data_1d.signalOut, sRate/downFact_lowFs);
 play_audio(data_2d.signalOut, sRate/downFact_highFs)
 
-msg_audio = ['\nHOW TO EVALUATE AUDIO: You should hear two instances of "popping popcorn."' ...
+msg_audio = ['\nHOW TO EVALUATE AUDIO: You should hear two instances of "popping popcorn."\n' ...
     ' Both should be slightly shifted, since the audio is from signalOut.\n\n'];
 fprintf(msg_audio);
 
