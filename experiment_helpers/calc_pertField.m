@@ -169,8 +169,9 @@ if bPlot
 end
 
 %% asign values to output variable (p)
-p.pertAmp = pertAmp';
-p.pertPhi = pertPhi';
+p.bShift2D = 1;     % flag for 2D experiments
+p.pertAmp2D = pertAmp';     % convert to Audapter naming scheme w/ 2D
+p.pertPhi2D = pertPhi';     % convert to Audapter naming scheme w/ 2D
 p.pertf1 = pertf1;
 p.pertf2 = pertf2;
 p.F1Min = F1Min;
@@ -178,3 +179,5 @@ p.F1Max = F1Max;
 p.F2Min = F2Min;
 p.F2Max = F2Max;
 p.fCen = fCen;
+
+end
