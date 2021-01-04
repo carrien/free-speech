@@ -10,7 +10,11 @@ if nargin < 6 || isempty(bCloseOrig), bCloseOrig = 0; end
 
 for ifig = 1:length(hfig2copy)
     % get handle to axis
-    hax = get(hfig2copy(ifig),'Children'); % assume only one axis
+    if strcmp(get(hfig2copy(ifig), 'type'), 'figure')
+        hax = get(hfig2copy(ifig),'Children'); % assume only one axis
+    else
+        hax = hfig2copy(ifig);
+    end
     
     % set position and copy
     temp_ax = subplot(nrows,ncols,subplotnums{ifig},'parent',hnewfig);
@@ -29,7 +33,7 @@ for ifig = 1:length(hfig2copy)
     delete(temp_ax);
     
     % close original figure
-    if bCloseOrig
+    if bCloseOrig && strcmp(get(hfig2copy(ifig), 'type'), 'figure')
         close(hfig2copy(ifig));
     end
 end

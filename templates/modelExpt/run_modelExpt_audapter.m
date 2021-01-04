@@ -13,9 +13,9 @@ if nargin < 2, conds2run = expt.conds; end
     %the trials are completed, we compile all those trials into data.mat.
     %Each row in data.mat then represents the data from a single trial.
 trialdirname = 'temp_trials';
-outputdir = fullfile(expt.dataPath, trialdirname);
+outputdir = expt.dataPath;
 trialdir = fullfile(outputdir, trialdirname);
-if ~exist(outputdir, 'dir')
+if ~exist(trialdir, 'dir')
     mkdir(trialdir)
 end
 
@@ -40,11 +40,11 @@ lastTrial = find(expt.allConds == find(strcmp(expt.conds, conds2run{end})), 1, '
 
 %% setup for audapter
 
-helpersDir = fullfile(get_gitPath, 'current-studies', 'experiment_helpers');
+helpersDir = fullfile(get_gitPath, 'free-speech', expt.trackingFileLoc);
     %[ For modelExpt, we use very simple [[OST and PCF files]]
     %that only try to find landmarks for vowel onset and vowel offset.
-ostFN = fullfile(helpersDir, 'measureFormants.ost');
-pcfFN = fullfile(helpersDir, 'measureFormants.pcf');
+ostFN = fullfile(helpersDir, [expt.trackingFileName 'Working.ost']);
+pcfFN = fullfile(helpersDir, [expt.trackingFileName 'Working.pcf']);
 check_file(ostFN);
 check_file(pcfFN);
 Audapter('ost', ostFN, 0);

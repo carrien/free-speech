@@ -1,8 +1,8 @@
-function [hax] = makeFig4Screen(hax,p,minChildLineWidth)
+function [hax] = makeFig4Screen(hax,p,minLineWidth)
 
 if nargin < 1 || isempty(hax), hax = gca; end
 if nargin < 2 || isempty(p), p = struct; end
-if nargin < 3 || isempty(minChildLineWidth), minChildLineWidth = 1; end
+if nargin < 3 || isempty(minLineWidth), minLineWidth = 1; end
 
 % if input is figure handle, run recursively on child axes
 if isa(hax,'matlab.ui.Figure')
@@ -35,10 +35,10 @@ for fn = 1:length(fields)
     hax.(fieldname) = p.(fieldname);
 end
 
-if minChildLineWidth
+if minLineWidth
     for c = 1:length(hax.Children)
-        if isprop(hax.Children(c),'LineWidth') && hax.Children(c).LineWidth < minChildLineWidth
-            hax.Children(c).LineWidth = minChildLineWidth;
+        if isprop(hax.Children(c),'LineWidth') && hax.Children(c).LineWidth < minLineWidth
+            hax.Children(c).LineWidth = minLineWidth;
         end
     end
 end

@@ -137,7 +137,7 @@ yPos = 0.375 + plotMargin/2;
 ySpan = 0.475 - plotMargin/2 - yPos;
 UserData.toggle_formant = uicontrol(UserData.f,'Style','pushbutton',...
     'String','change OSTs',...
-    'Units','Normalized','Position',[xPos,yPos,xSpan,ySpan],... % TODO CWN reposition. Make parent Figure instead of Panel?
+    'Units','Normalized','Position',[xPos,yPos,xSpan,ySpan],... 
     'FontUnits','Normalized','FontSize',0.35,...
     'Callback',@goto_audapter_viewer);
 
@@ -263,7 +263,7 @@ function updatePlots(src)
     
     %TODO: allow for any number of colors/vowels? Currently only allows for
     %8... 
-    plotColors = [1 0 0; 0 1 0; 0 0 1; 1 0.5 0; 1 0.4 0.6; 0 0 0; 1 0 1; 0 1 0.7];
+    plotColors = [1 0 0; 0 1 0; 0 0 1; 0 0 0; 1 0.5 0; 1 0.4 0.6; 1 0 1; 0 1 0.7];
     %plotColors = [.9 0 0; 0 0.8 0; 0 0 1; 0.91 0.41 0.17]; 
     for i = 1:UserData.nVowels
         vow = vowels{i};     
@@ -334,17 +334,23 @@ function updatePlots(src)
         else
             vowelFrames = find(UserData.data(trial2plot).ost_stat == 2); % get indices to vowel, from initial audapter run
         end
-        vowelFrames = vowelFrames(1)-offset(1):vowelFrames(end)-offset(2); %account for offset in ost tracking
-        vowMidPoint = (vowelFrames(1)+vowelFrames(end))./2;
-        vowLength = length(vowelFrames);
-        vowMidOns = floor(vowMidPoint-vowLength/4);
-        vowMidOffs = floor(vowMidPoint+vowLength/4);
-        UserData.vowelBounds.(vow)(1) = vline(vowelFrames(1)*framedur,'k');
-        UserData.vowelBounds.(vow)(2) = vline(vowelFrames(end)*framedur,'k');
-        UserData.vowelBounds.(vow)(3) = vline(vowMidOns*framedur,'c');
-        UserData.vowelBounds.(vow)(4) = vline(vowMidOffs*framedur,'c');
-        set(UserData.vowelBounds.(vow)(3),'LineWidth',2)
-        set(UserData.vowelBounds.(vow)(4),'LineWidth',2)
+        if ~isempty(vowelFrames)
+            vowelFrames = vowelFrames(1)-offset(1):vowelFrames(end)-offset(2); %account for offset in ost tracking
+            vowMidPoint = (vowelFrames(1)+vowelFrames(end))./2;
+            vowLength = length(vowelFrames);
+            vowMidOns = floor(vowMidPoint-vowLength/4);
+            vowMidOffs = floor(vowMidPoint+vowLength/4);
+            UserData.vowelBounds.(vow)(1) = vline(vowelFrames(1)*framedur,'k');
+            UserData.vowelBounds.(vow)(2) = vline(vowelFrames(end)*framedur,'k');
+            UserData.vowelBounds.(vow)(3) = vline(vowMidOns*framedur,'c');
+            UserData.vowelBounds.(vow)(4) = vline(vowMidOffs*framedur,'c');
+            set(UserData.vowelBounds.(vow)(3),'LineWidth',2)
+            set(UserData.vowelBounds.(vow)(4),'LineWidth',2)
+        else    
+            set(UserData.warnPanel,'HighlightColor','yellow');
+            outstring = textwrap(UserData.warnText,sprintf("Missing OST trigger: trial %d of %s", trialInd, vow));
+            set(UserData.warnText,'String',outstring, 'FontSize', 0.25, 'Position', [0.05 0.05 .9 .9]);
+        end
         title(vow,'FontUnits','normalized','FontSize',0.1)
         
         %highlight selected token
