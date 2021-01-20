@@ -140,20 +140,20 @@ for iblock = 1:expt.nblocks
     % match up pert-nonpert pairs with remaining nonpert trials
     for i = 1:length(ix)
         if ix(i)
-            listWordCond = [listWordCond pertPair(1, pertIx) pertPair(2, pertIx)]; %#ok<*AGROW>
-            pertIx = pertIx + 1;
-        else
             listWordCond = [listWordCond nonpertLeftover(nonpertIx)];
             nonpertIx = nonpertIx + 1;
+        else
+            listWordCond = [listWordCond pertPair(1, pertIx) pertPair(2, pertIx)]; %#ok<*AGROW>
+            pertIx = pertIx + 1;
         end
     end
     
 end
 
 %% Put it back into expt format
-expt.allWords = mod(listWordCond, length(expt.words)) + 1;
+expt.allWords = floor(listWordCond/length(expt.words)) + 1;
 expt.listWords = expt.words(expt.allWords);
-expt.allConds = floor(listWordCond/length(expt.words)) + 1;
+expt.allConds = mod(listWordCond, length(expt.words)) + 1;
 
 % set baseline and washout trials to the noPert condition
 if nBaseline > 0 
