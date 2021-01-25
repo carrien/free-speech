@@ -9,6 +9,10 @@ function [h_dur,success] = plot_duration_feedback(h_fig, data, params)
 %                   (0-1), default 0.1
 %      offs_thresh: percentage of maximum amplitude for offset threshold
 %                   (0-1), default 0.4
+%      bFirst_offs_thresh:  When searching for an offset threshold, whether
+%                   to look for the first (1) or last (0) frame that drops
+%                   below the offset threshold.
+%      bPrintDuration:  If 1, print vowel_dur for each trial, default 0.
 
 if nargin < 3 || isempty(params), params = []; end
 
@@ -28,6 +32,12 @@ end
 if ~isfield(params, 'circ_pos')
     params.circ_pos = [.45,.15,.1,.1];%define location and size of circle
 end
+if ~isfield(params, 'bFirst_offs_thresh')
+    params.bFirst_offs_thresh = 1; %after max, find first instance below offs_thresh
+end
+if ~isfield(params, 'bPrintDuration')
+    params.bPrintDuration = 0;
+end
 %get amplitude data from Audapter data structure
 ampl = data.rms(:,1);
 
@@ -42,8 +52,15 @@ else
     onset = [];
 end
 
-%find first point after amplitude max below amplitude threshold
-below_thresh = find(ampl(imax:end)<max_a*params.offs_thresh);
+if params.bFirst_offs_thresh
+    %find first point after amplitude max below amplitude threshold
+    below_thresh = find(ampl(imax:end)<max_a*params.offs_thresh);
+else
+    % find last point after max that's at or above the amplitude threshold.
+    % Add 1 to find the frame right after.
+    below_thresh = find(ampl(imax:end)>=max_a*params.offs_thresh, 1, 'last') + 1;
+end
+
 if ~isempty(below_thresh)
     offset = below_thresh(1)+imax;
 else
@@ -77,4 +94,8 @@ elseif vowel_dur < params.min_dur
     h_dur(1) = viscircles(center,.05,'Color','b');
     h_dur(2) = text(params.circ_pos(1)+0.05,params.circ_pos(2)-0.1,{'Speak a little more slowly'}, 'Color', 'b', 'FontSize', 30,'HorizontalAlignment','Center');
     success = 0;
+end
+
+if params.bPrintDuration 
+    fprintf('vowel_dur was %.3f \n', vowel_dur);
 end

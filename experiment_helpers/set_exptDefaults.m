@@ -104,6 +104,8 @@ durcalc.min_dur = .25;         %
 durcalc.max_dur = .5;
 durcalc.ons_thresh = 0.3;
 durcalc.offs_thresh = 0.4;
+durcalc.bFirst_offs_thresh = 1;
+durcalc.bPrintDuration = 0;
 expt = set_missingField(expt,'durcalc',durcalc);
 
 %% amplitude tracking parameters
