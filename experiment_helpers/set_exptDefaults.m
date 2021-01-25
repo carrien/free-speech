@@ -83,6 +83,15 @@ expt = set_missingField(expt,'listColors',expt.colors(expt.allColors));
 expt = set_missingField(expt,'shiftMags',zeros(1,expt.ntrials));
 expt = set_missingField(expt,'shiftAngles',zeros(1,expt.ntrials));
 
+% actual stimulus string shown to participant
+expt = set_missingField(expt,'stimulusText',expt.words);
+expt = set_missingField(expt,'allStimulusText',expt.allWords);
+if all(strcmp(expt.words, expt.stimulusText)) 
+    expt = set_missingField(expt,'listStimulusText',expt.listWords);
+else  %, make list from stimulusText instead of words
+    expt = set_missingField(expt,'listStimulusText',expt.stimulusText(expt.allStimulusText));
+end
+
 %% stimulus timing parameters, in seconds
 timing.stimdur = 1.5;            % time of recording
 timing.visualfbdur = 0.5;      % time visual feedback is shown
