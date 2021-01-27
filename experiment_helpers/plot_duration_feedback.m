@@ -1,4 +1,4 @@
-function [h_dur,success] = plot_duration_feedback(h_fig, data, params)
+function [h_dur,success,vowel_dur] = plot_duration_feedback(h_fig, data, params)
 %add duration feedback to display for auditory compensation study. Inputs:
 %   h_fig:          figure handle for plot
 %   data:           Audapter data file for a single trial
