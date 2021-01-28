@@ -113,6 +113,7 @@ durcalc.ons_thresh = 0.3;
 durcalc.offs_thresh = 0.4;
 durcalc.bFirst_offs_thresh = 1;
 durcalc.bPrintDuration = 0;
+durcalc.bMeasureOst = 0;
 expt = set_missingField(expt,'durcalc',durcalc);
 
 %% amplitude tracking parameters

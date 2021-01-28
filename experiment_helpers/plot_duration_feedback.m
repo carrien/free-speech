@@ -1,4 +1,4 @@
-function [h_dur,success,vowel_dur] = plot_duration_feedback(h_fig, data, params)
+function [h_dur,success,vowel_dur] = plot_duration_feedback(h_fig, data, params, ostTrigger)
 %add duration feedback to display for auditory compensation study. Inputs:
 %   h_fig:          figure handle for plot
 %   data:           Audapter data file for a single trial
@@ -13,8 +13,14 @@ function [h_dur,success,vowel_dur] = plot_duration_feedback(h_fig, data, params)
 %                   to look for the first (1) or last (0) frame that drops
 %                   below the offset threshold.
 %      bPrintDuration:  If 1, print vowel_dur for each trial, default 0.
+%      bMeasureOst:     If 1, measure vowel length via duration of ost
+%                       status specified in ostTrigger. Default 0.
+%   ostTrigger:     The ost status used to measure duration. Only used if
+%                   params.bMeasureOst==1. Default [].
 
 if nargin < 3 || isempty(params), params = []; end
+if nargin < 4, ostTrigger = []; end
+
 
 %default duration tracking parameters
 if ~isfield(params,'offs_thresh')
@@ -38,35 +44,50 @@ end
 if ~isfield(params, 'bPrintDuration')
     params.bPrintDuration = 0;
 end
-%get amplitude data from Audapter data structure
-ampl = data.rms(:,1);
-
-%find maximum amplitude
-[max_a,imax] = max(ampl);
-
-%find first point above amplitude threshold
-above_thresh = find(ampl>max_a*params.ons_thresh);
-if ~isempty(above_thresh)
-    onset = above_thresh(1);
-else
-    onset = [];
+if ~isfield(params, 'bMeasureOst')
+    params.bMeasureOst = 0;
 end
 
-if params.bFirst_offs_thresh
-    %find first point after amplitude max below amplitude threshold
-    below_thresh = find(ampl(imax:end)<max_a*params.offs_thresh);
-else
-    % find last point after max that's at or above the amplitude threshold.
-    % Add 1 to find the frame right after.
-    below_thresh = find(ampl(imax:end)>=max_a*params.offs_thresh, 1, 'last') + 1;
-end
 
-if ~isempty(below_thresh)
-    offset = below_thresh(1)+imax;
-else
-    offset = [];
+if params.bMeasureOst  %use OST statuses to find onset and offset
+    onset = find(data.ost_stat == ostTrigger, 1);
+    offset = find(data.ost_stat == ostTrigger+1, 1, 'last');
+    if ~find(data.ost_stat == ostTrigger+2, 1)
+        bOstStuck = 1; %ost didn't advance to the next "full" status
+    else
+        bOstStuck = 0;
+    end
+else  %use general amplitude thresholds to find onset and offset
+    %get amplitude data from Audapter data structure
+    ampl = data.rms(:,1);
+    
+    %find maximum amplitude
+    [max_a,imax] = max(ampl);
+    
+    %find first point above amplitude threshold
+    above_thresh = find(ampl>max_a*params.ons_thresh);
+    if ~isempty(above_thresh)
+        onset = above_thresh(1);
+    else
+        onset = [];
+    end
+    
+    if params.bFirst_offs_thresh
+        %find first point after amplitude max below amplitude threshold
+        below_thresh = find(ampl(imax:end)<max_a*params.offs_thresh);
+    else
+        % find last point after max that's at or above the amplitude threshold.
+        % Add 1 to find the frame right after.
+        below_thresh = find(ampl(imax:end)>=max_a*params.offs_thresh, 1, 'last') + 1;
+    end
+    
+    if ~isempty(below_thresh)
+        offset = below_thresh(1)+imax;
+    else
+        offset = [];
+    end 
 end
-
+    
 %find vowel duration in frames
 if ~isempty(offset) && ~isempty(onset)
     vowel_dur_frames = offset-onset;
@@ -80,7 +101,11 @@ vowel_dur = vowel_dur_frames*data.params.frameLen/data.params.sr;
 center = [params.circ_pos(1)+0.05 params.circ_pos(2)];
 %plot feedback
 figure(h_fig)
-if vowel_dur <= params.max_dur && vowel_dur >= params.min_dur
+if params.bMeasureOst && bOstStuck
+    h_dur(1) = viscircles(center,.05,'Color',[1 0.5 0]); %orange
+    h_dur(2) = text(params.circ_pos(1)+0.05,params.circ_pos(2)-0.1,{'Speak a little clearer'}, 'Color', [1 0.5 0], 'FontSize', 30,'HorizontalAlignment','Center');
+    success = 0;
+elseif vowel_dur <= params.max_dur && vowel_dur >= params.min_dur
     %h_dur(1) = rectangle('Position',params.circ_pos,'Curvature',[1,1],'Facecolor', 'g');
     h_dur(1) = viscircles(center,.05,'Color','g');
     success = 1;
