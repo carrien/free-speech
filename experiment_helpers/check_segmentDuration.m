@@ -60,7 +60,7 @@ ostStatEndPrev = ostStatEnd - 2;
 
 % If a working copy doesn't exist, make one
 if exist(ostWorking,'file') ~= 2
-    refreshWorkingCopy(dummyWord,'ost');
+    refreshWorkingCopy(expt.name, dummyWord,'ost');
 end
 
 % Open file and load file line by line into structure finfo
