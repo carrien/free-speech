@@ -1,4 +1,4 @@
-function [hfig] = plot_fmtMatrix_crossSubj(dataPath,plotfile,toPlotList,errtype,bsigbar,fx,linecolors,bDualAx)
+function [hfig] = plot_fmtMatrix_crossSubj(dataPath,plotfile,toPlotList,errtype,bsigbar,fx,linecolors,plotParams)
 %PLOT_FMTMATRIX_CROSSSUBJ  Plot magnitude of compensation across subjects.
 %   PLOT_FMTMATRIX_CROSSSUBJ(DATAPATH,PLOTFILE,TOPLOTLIST,ERRTYPE,BSIGBAR,FX,LINECOLORS)
 %   plots formant tracks per condition across multiple subjects.
@@ -10,34 +10,47 @@ if nargin < 3 || isempty(toPlotList), toPlotList = {'diff1'}; end
 if nargin < 4 || isempty(errtype), errtype = 'se'; end
 if nargin < 5 || isempty(bsigbar), bsigbar = 0; end
 if nargin < 6 || isempty(fx)
-    fx = {'ffx'}; % fx = {'ffx','rfx'}; end
+    fx = {'ffx'};
 elseif ~iscell(fx)
     fx = {fx};
 end
-if nargin < 8 || isempty(bDualAx), bDualAx = 0; end
+if nargin < 7, linecolors = []; end
+if nargin < 8, plotParams = []; end
 
-load(fullfile(dataPath,plotfile)) % e.g. fmtTraces_10s.mat
+% set default plot params
+pDefault.lineWidth = 1.5;
+pDefault.facealpha = .3;
+pDefault.xlab = 'time (s)';
+pDefault.bDualAx = 0;
+plotParams = set_missingFields(plotParams,pDefault);
+
+% load data
+fmtData = load(fullfile(dataPath,plotfile)); % e.g. fmtTraces_10s.mat
+ffx = fmtData.ffx;
+rfx = fmtData.rfx;
+tstep = fmtData.tstep;
 analyses = fieldnames(ffx);
+if ~isempty(linecolors)
+    fmtData.linecolors = linecolors;
+end
 
 % calculate mean and errorbars
 fprintf('Calculating means and error (%s)...',errtype);
 for a = 1:length(analyses)
     anl = analyses{a};
     conds = fieldnames(ffx.(anl));
-    for c=1:length(conds)
-        cnd = conds{c};
-        ffx_mean.(anl).(cnd) = nanmean(ffx.(anl).(cnd),2);
-        rfx_mean.(anl).(cnd) = nanmean(rfx.(anl).(cnd),2);
-        ffx_err.(anl).(cnd) = get_errorbars(ffx.(anl).(cnd),errtype);
-        rfx_err.(anl).(cnd) = get_errorbars(rfx.(anl).(cnd),errtype);
+    for c = 1:length(conds)
+        cond = conds{c};
+        ffx_mean.(anl).(cond) = nanmean(ffx.(anl).(cond),2);
+        rfx_mean.(anl).(cond) = nanmean(rfx.(anl).(cond),2);
+        ffx_err.(anl).(cond) = get_errorbars(ffx.(anl).(cond),errtype);
+        rfx_err.(anl).(cond) = get_errorbars(rfx.(anl).(cond),errtype);
     end
 end
 fprintf(' done.\n');
 data_mean = struct('ffx',ffx_mean,'rfx',rfx_mean);
 data_err = struct('ffx',ffx_err,'rfx',rfx_err);
 
-%if strcmp(exptName,'cat'), tstep = .004; else tstep = .003; end
-if ~exist('tstep','var'), tstep = .003; end
 alltime = 0:tstep:1;
 conds = fieldnames(ffx.rawf1);
 stop_ms = 300;
@@ -66,15 +79,15 @@ end
 % plot setup
 
 % set line colors
-if ~exist('linecolors','var') || isempty(linecolors)
+if ~isfield(fmtData,'linecolors') % if no linecolors loaded or passed in
     linecolors = get_colorStruct(conds);
-elseif ~isstruct(linecolors) %ismatrix(linecolors)
-    linecolors = get_colorStruct(conds,linecolors);
+elseif ~isstruct(fmtData.linecolors) %ismatrix(linecolors)
+    linecolors = get_colorStruct(conds,fmtData.linecolors);
+else
+    linecolors = fmtData.linecolors;
 end
 linestyles = {'-.',':','-','--'};
 
-facealpha = .5;
-xlab = 'time (s)';
 % account for short mean traces by decreasing stop point
 % for c=1:length(conds) 
 %     if length(rfx_mean.diff2d.(conds{c})) < stop(c)
@@ -93,12 +106,12 @@ for f=1:length(fx)
         % plot only means (for legend)
         conds = fieldnames(ffx.(toPlot));
         for c = 1:length(conds)
-            cnd = conds{c};
-            linecolor = linecolors.(cnd);
-            errcolor = get_lightcolor(linecolor);
+            cond = conds{c};
+            linecolor = linecolors.(cond);
+            errcolor = linecolor; %get_lightcolor(linecolor);
             linestyle = linestyles{mod(c,length(linestyles))+1};
             
-            if bDualAx
+            if plotParams.bDualAx
                 if ~mod(c,2)
                     yyaxis left;
                 else
@@ -107,16 +120,17 @@ for f=1:length(fx)
             end
             
             % plot tracks
-            sig = data_mean.(fx{f}).(toPlot).(cnd)(1:stop(c));
+            sig = data_mean.(fx{f}).(toPlot).(cond)(1:stop(c));
             hlin(c) = plot(alltime(1:length(sig)), sig', 'LineWidth',3, 'Color',linecolor, 'LineStyle',linestyle); hold on;
             % plot errorbars
-            err = data_err.(fx{f}).(toPlot).(cnd)(1:stop(c));
+            err = data_err.(fx{f}).(toPlot).(cond)(1:stop(c));
             %err = get_errorbars(fmtMatrix.(toPlot).(cnd),errtype,size(fmtMatrix.(toPlot).(cnd),2));
             sig = sig(~isnan(err));
             err = err(~isnan(err));
             t = alltime(~isnan(err));
 
-            plot_filled_err(t,sig',err',errcolor,facealpha);
+            hf = plot_filled_err(t,sig',err',errcolor,plotParams.facealpha);
+            uistack(hf,'bottom');
 
             %fill([alltime(1:length(sig)) fliplr(alltime(1:length(sig)))], [sig'+err' fliplr(sig'-err')], errcolor, 'EdgeColor', errcolor, 'FaceAlpha', .5, 'EdgeAlpha', 0);
             %hashalf_s(c) = find(hashalf.(cnd), 1, 'last')*tstep; %#ok<AGROW>
@@ -127,7 +141,7 @@ for f=1:length(fx)
 
         %vline(mean(hashalf_s),'k','--');
         legend(hlin, conds, 'Location','NorthWest'); legend boxoff;
-        xlabel(xlab, 'FontSize', 20);
+        xlabel(plotParams.xlab, 'FontSize', 20);
         ylabel(ylabs{fn}, 'FontSize', 20);
         set(gca, 'FontSize', 20);
         set(gca, 'LineWidth', 1);
@@ -139,7 +153,7 @@ for f=1:length(fx)
         ymin = -30; %ax(3);
         ymax = 30; %ax(4);
         
-        if bDualAx
+        if plotParams.bDualAx
             yyaxis left;
             axis([alltime(1) alltime(stop(c)) ymin ymax])
             haxL = gca;
