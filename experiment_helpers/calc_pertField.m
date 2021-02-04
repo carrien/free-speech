@@ -141,6 +141,9 @@ for iF1 = 1:fieldDim
     end
 end
 
+% remove NaNs which can result from atan(0/0)
+pertPhi(isnan(pertPhi)) = 0;
+
 %% plot pert field
 if bPlot
     h_fig = figure;        
