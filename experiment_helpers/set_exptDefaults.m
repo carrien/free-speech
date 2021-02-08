@@ -36,7 +36,10 @@ expt = set_missingField(expt,'conds',{'test'});
 expt = set_missingField(expt,'words',{'bed'});
 
 % vowels
-if ~isfield(expt,'vowels')
+expt = set_missingField(expt,'bIgnoreVowels',0);
+if expt.bIgnoreVowels
+    expt.vowels = {'null'};
+elseif ~isfield(expt,'vowels')
     [vowels,~,ivowels] = unique(txt2ipa(expt.words));
     if length(vowels) == length(ivowels), vowels = vowels(ivowels); end
     expt = set_missingField(expt,'vowels',vowels);
@@ -70,7 +73,11 @@ expt = set_missingField(expt,'allColors',randi(length(expt.colors),[1,expt.ntria
 expt = set_missingField(expt,'listConds',expt.conds(expt.allConds));
 expt = set_missingField(expt,'listWords',expt.words(expt.allWords));
 if ~isempty(expt.vowels)
-    expt = set_missingField(expt,'listVowels',txt2ipa(expt.listWords));
+    if expt.bIgnoreVowels
+        expt.listVowels = repmat(expt.vowels, [1 expt.ntrials]);
+    else
+        expt = set_missingField(expt,'listVowels',txt2ipa(expt.listWords));
+    end
     if any(expt.allVowels == 0)
         for t=1:expt.ntrials
             expt.allVowels(t) = find(strcmp(expt.listVowels{t},expt.vowels));
@@ -104,6 +111,9 @@ durcalc.min_dur = .25;         %
 durcalc.max_dur = .5;
 durcalc.ons_thresh = 0.3;
 durcalc.offs_thresh = 0.4;
+durcalc.bFirst_offs_thresh = 1;
+durcalc.bPrintDuration = 0;
+durcalc.bMeasureOst = 0;
 expt = set_missingField(expt,'durcalc',durcalc);
 
 %% amplitude tracking parameters

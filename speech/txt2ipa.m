@@ -22,7 +22,6 @@ er = ismember(txtcell,{'er' 'blur' 'bird'});
 oe = ismember(txtcell,{'oe' 'oeuf' 'neuf' 'öde' 'oede' 'böse' 'boese'});
 ou = ismember(txtcell,{'ceux'});
 uh = ismember(txtcell,{'uh' 'good' 'hood'});
-uu = ismember(txtcell,{'uu'});
 xx = ismember(txtcell,{'xx' '*' '**' '***'});
 os = ismember(txtcell,{'os'});
 uu = ismember(txtcell,{'uu'});
