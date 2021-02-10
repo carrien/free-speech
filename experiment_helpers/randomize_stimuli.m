@@ -151,9 +151,9 @@ for iblock = 1:expt.nblocks
 end
 
 %% Put it back into expt format
-expt.allWords = floor(listWordCond/length(expt.words)) + 1;
+expt.allWords = floor(listWordCond/length(expt.conds)) + 1;
 expt.listWords = expt.words(expt.allWords);
-expt.allConds = mod(listWordCond, length(expt.words)) + 1;
+expt.allConds = mod(listWordCond, length(expt.conds)) + 1;
 
 % set baseline and washout trials to the noPert condition
 if nBaseline > 0 
