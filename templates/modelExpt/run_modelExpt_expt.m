@@ -232,7 +232,7 @@ expt.stimulusText = expt.words;
                 trial
             expt.vowels: list of the vowel for each stimulus word (the
                 order should match!). can be set automatically if the word
-                you are using in appears in  txt2ipa.m.
+                you are using appears in txt2arpabet.m.
             expt.allVowels: index of vowels (expt.vowels) for each trial
             expt.listVowels: the vowel (string) of the stimulus for each
                 trial

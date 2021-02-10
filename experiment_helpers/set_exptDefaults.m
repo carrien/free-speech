@@ -40,7 +40,7 @@ expt = set_missingField(expt,'bIgnoreVowels',0);
 if expt.bIgnoreVowels
     expt.vowels = {'null'};
 elseif ~isfield(expt,'vowels')
-    [vowels,~,ivowels] = unique(txt2ipa(expt.words));
+    [vowels,~,ivowels] = unique(txt2arpabet(expt.words));
     if length(vowels) == length(ivowels), vowels = vowels(ivowels); end
     expt = set_missingField(expt,'vowels',vowels);
 end
@@ -76,7 +76,7 @@ if ~isempty(expt.vowels)
     if expt.bIgnoreVowels
         expt.listVowels = repmat(expt.vowels, [1 expt.ntrials]);
     else
-        expt = set_missingField(expt,'listVowels',txt2ipa(expt.listWords));
+        expt = set_missingField(expt,'listVowels',txt2arpabet(expt.listWords));
     end
     if any(expt.allVowels == 0)
         for t=1:expt.ntrials
