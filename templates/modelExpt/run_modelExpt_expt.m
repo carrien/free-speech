@@ -203,6 +203,7 @@ for blockIx = 1:length(expt.conds)
         expt.allWords(itrial) = wordIx(1 + itrial-firstInBlock);
     end
 end
+expt.stimulusText = expt.words;
 
 %% Set other expt values
 %There are a lot of other parameters you can set that control how the
@@ -231,7 +232,7 @@ end
                 trial
             expt.vowels: list of the vowel for each stimulus word (the
                 order should match!). can be set automatically if the word
-                you are using in appears in  txt2ipa.m.
+                you are using appears in txt2arpabet.m.
             expt.allVowels: index of vowels (expt.vowels) for each trial
             expt.listVowels: the vowel (string) of the stimulus for each
                 trial
@@ -246,6 +247,10 @@ end
             expt.ntrials: total number of trials in the experiment
             expt.breakFrequency: the number of trials between breaks
             expt.breakTrials: the trials after which there will be a break
+            expt.stimulusText: What actually displays to participants in a
+                trial
+            expt.allStimulusText: Indexes of stimulusText for each trial
+            expt.listStimulusText: The stimulusText string for each trial
         formant shifting params (for Audapter):
             expt.shiftMags: vector of the magnitude of formant shifts for 
                 each trial

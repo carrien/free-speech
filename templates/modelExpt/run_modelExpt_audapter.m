@@ -13,9 +13,9 @@ if nargin < 2, conds2run = expt.conds; end
     %the trials are completed, we compile all those trials into data.mat.
     %Each row in data.mat then represents the data from a single trial.
 trialdirname = 'temp_trials';
-outputdir = fullfile(expt.dataPath, trialdirname);
+outputdir = expt.dataPath;
 trialdir = fullfile(outputdir, trialdirname);
-if ~exist(outputdir, 'dir')
+if ~exist(trialdir, 'dir')
     mkdir(trialdir)
 end
 
@@ -134,7 +134,7 @@ for itrial = firstTrial:lastTrial
         h_trialn = text(h_sub(1),0,0.5,ctrltxt,'Color','black', 'FontSize',30, 'HorizontalAlignment','center');
 
         % set text
-        txt2display = expt.listWords{itrial};
+        txt2display = expt.listStimulusText{itrial};
         color2display = expt.colorvals{expt.allColors(itrial)};
 
         % set new perturbation

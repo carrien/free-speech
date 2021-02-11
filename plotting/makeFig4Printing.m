@@ -1,8 +1,8 @@
-function [hax] = makeFig4Printing(hax,p,minChildLineWidth)
+function [hax] = makeFig4Printing(hax,p,minLineWidth)
 
 if nargin < 1 || isempty(hax), hax = gca; end
 if nargin < 2 || isempty(p), p = struct; end
-if nargin < 3 || isempty(minChildLineWidth), minChildLineWidth = 0.75; end
+if nargin < 3 || isempty(minLineWidth), minLineWidth = 0; end
 
 % if input is figure handle, run recursively on child axes
 if isa(hax,'matlab.ui.Figure')
@@ -15,7 +15,7 @@ if isa(hax,'matlab.ui.Figure')
     return;
 end
 
-hax = makeFig4Screen(hax,p,minChildLineWidth);
+hax = makeFig4Screen(hax,p,minLineWidth);
 hax.Color = 'none';
 hax.FontSize = 8;
 hax.LineWidth = 0.75;

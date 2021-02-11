@@ -167,14 +167,14 @@ condnames = expt.conds;
      %% output experiment log    
     vowels = cell(size(words));
     for w=1:length(words)
-        vowels{w} = txt2ipa(words{w});
+        vowels{w} = txt2arpabet(words{w});
     end
     if length(vowels) < length(unique(vowels)), % only resort if duplicates
         vowels = unique(vowels);
     end
     
     listWords = words(allWords);
-    listVowels = txt2ipa(listWords);
+    listVowels = txt2arpabet(listWords);
     
     allVowels = zeros(size(allWords));
     for w=1:length(allWords)

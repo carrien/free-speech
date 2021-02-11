@@ -38,11 +38,16 @@ Audapter('deviceName', audioInterfaceName);
 
 %set files for vowel tracking
 if isfield(expt,'trackingFileName')
-    ostFN = fullfile(get_exptRunpath(expt.trackingFileLoc, [expt.trackingFileName 'Working.ost'])); 
-    pcfFN = fullfile(get_exptRunpath(expt.trackingFileLoc, [expt.trackingFileName 'Working.pcf'])); 
+    if strcmp(expt.trackingFileLoc, 'experiment_helpers')
+        ostFN = fullfile(get_gitPath, 'free-speech', expt.trackingFileLoc, [expt.trackingFileName 'Working.ost']); 
+        pcfFN = fullfile(get_gitPath, 'free-speech', expt.trackingFileLoc, [expt.trackingFileName 'Working.pcf']); 
+    else %it's in current-studies repo
+        ostFN = fullfile(get_exptRunpath(expt.trackingFileLoc, [expt.trackingFileName 'Working.ost'])); 
+        pcfFN = fullfile(get_exptRunpath(expt.trackingFileLoc, [expt.trackingFileName 'Working.pcf'])); 
+    end
 else
-    ostFN = which('measureFormants.ost');
-    pcfFN = which('measureFormants.pcf');
+    ostFN = which('measureFormantsWorking.ost');
+    pcfFN = which('measureFormantsWorking.pcf');
 end
 check_file(ostFN);
 check_file(pcfFN);
@@ -164,6 +169,7 @@ for itrial = 1:length(trials2run)  % for each trial
         h_break = draw_exptText(h_fig,.5,.5,breaktext,expt.instruct.txtparams);
         pause
         delete_exptText(h_fig,h_break)
+        pause(1)
     end
      
 end

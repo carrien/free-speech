@@ -5,4 +5,7 @@ get_figinds_audapter;
 % make stimulus window current
 figure(h_fig(stim));
 h = text(x,y,txt,varargin{:});
-CloneFig(h_fig(stim),h_fig(dup))
+
+if length(h_fig) >= dup
+    CloneFig(h_fig(stim),h_fig(dup))
+end
