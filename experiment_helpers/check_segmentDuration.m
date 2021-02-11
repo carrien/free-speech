@@ -1,24 +1,63 @@
-function expt = check_segmentDuration(expt)
-% DATA = CHECK_AUDIO(dataPath,trialinds)
-% Find the duration of segments (or parts of segments), based on OST status
-% changes 
-%Inputs:
-%   dataPath: path where data.mat and expt.mat for the "pre" phase are. Default is current
-%   directory
+function expt = check_segmentDuration(expt, startStatus, endStatus, uevent1name, uevent2name)
+% Find the duration of segments (or parts of segments), based on OST status changes 
+% Inputs: 
+% 1. expt: the expt that you are currently working with. Should provide information about tracking file
+% location, name, and the data path (trials are loaded from this path) 
+% 2. startStatus (added 2021/02/02): the OST status that marks the beginning of the segment(s) of interest
+% --- defaults to the trigger status as fetched from the first time warping line from the PCF file
+% 3. endStatus (added 2021/02/02): the OST status that marks the end of the segment(s) of interest
+% --- defaults to startStatus + 2
+% 4. uevent1name (added 2021/02/02): optional user event name for the startStatus
+% 5. uevent2name (added 2021/02/02); optional user event name for the endStatus
+% 
+% Major change: RK 2021/02/02
+% - Now allows flexibility with WHICH statuses you want to use, using two input arguments: 
+% --- startStatus: the beginning of the interval of interest (given as an OST status number)
+% --- endStatus: the end of the interval of interest (given as an OST status number)
 
+%%
 % if nargin < 1 || isempty(dataPath), dataPath = cd; end
-dataPath = fullfile(expt.dataPath,expt.listWords{1},'pre'); 
-
-% addpath('C:\Users\Public\Documents\software\current-studies\timeAdapt')
-
-%% Load in data
-fprintf('Loading trial data... ');
-load(fullfile(dataPath,'data.mat'))
-load(fullfile(dataPath,'expt.mat'))
-fprintf('Done\n');
+dataPath = fullfile(expt.dataPath,expt.listWords{1},'pre'); % This should probably be made better. 
 
 % Get the word
 stimWord = expt.listWords{1}; 
+% Get the target OST values
+if strcmp(stimWord,'god') || strcmp(stimWord,'gar')
+    expt.trackingFileName = 'ada';   
+elseif strcmp(stimWord,'cod') || strcmp(stimWord,'car')    
+    expt.trackingFileName = 'ata';    
+elseif strcmp(stimWord,'sea') || strcmp(stimWord,'C') || strcmp(stimWord,'saw')
+    expt.trackingFileName = 'asa';     
+elseif strcmp(stimWord,'czar') || strcmp(stimWord,'Z')
+    expt.trackingFileName = 'aza';     
+elseif contains(stimWord,'apper')
+    expt.trackingFileName = stimWord; 
+end
+
+% If startStatus empty, get the triggering one
+if nargin < 2 || isempty(startStatus)
+    startStatus = get_pcf(expt.trackingFileLoc, expt.trackingFileName, 'time', '1', 'ostStat_initial'); % Get the triggering status
+end
+% If endStatus empty, get the one immediately after startStatus
+if nargin < 3 || isempty(endStatus)
+    if strcmp(expt.trackingFileName,'ata') || strcmp(expt.trackingFileName,'capper')
+        ostAdd = 4;
+    else
+        ostAdd = 2; 
+    end
+    endStatus = startStatus + ostAdd; 
+end
+
+if nargin < 4 || isempty(uevent1name), uevent1name = 'segStart'; end
+if nargin < 5 || isempty(uevent2name), uevent2name = 'segEnd'; end
+
+%%
+% Load in data
+fprintf('Loading trial data... ');
+load(fullfile(dataPath,'data.mat'))
+% load(fullfile(dataPath,'expt.mat')) % RK 02/02/2021: why is this here? aren't you loading in the expt in the
+% args? 
+fprintf('Done\n');
 
 % get number of trials
 ntrials = expt.ntrials;
@@ -29,34 +68,10 @@ frameLength = expt.audapterParams.frameLen;
 ostFactor = fs/frameLength; 
 
 %% Set up OST recognition 
-% Get the target OST values
-if strcmp(stimWord,'god') || strcmp(stimWord,'gar')
-    dummyWord = 'ada';   
-elseif strcmp(stimWord,'cod') || strcmp(stimWord,'car')    
-    dummyWord = 'ata';    
-elseif strcmp(stimWord,'sea') || strcmp(stimWord,'C') || strcmp(stimWord,'saw')
-    dummyWord = 'asa';     
-elseif strcmp(stimWord,'czar') || strcmp(stimWord,'Z')
-    dummyWord = 'aza';     
-elseif contains(stimWord,'apper')
-    dummyWord = stimWord; 
-end
-
-if strcmp(dummyWord,'ata') || strcmp(dummyWord,'capper')
-    ostAdd = 4;
-else
-    ostAdd = 2; 
-end
-% ostAdd = 2; % I believe this is true for all cases now because we're not trying to hit an OST status for aspiration? 
-
-% Get OST statuses that mark beginning and end of segment of interest
-ostStatBegin = get_pcf(expt.name, dummyWord, 'ostStat_initial'); 
-ostStatEnd = ostStatBegin + ostAdd; 
-
 % Get the buffer amount for the ostStatBegin (so hand correction is more intuitive) 
-ostWorking = ['C:\Users\Public\Documents\software\current-studies\timeAdapt\' dummyWord 'Working.ost'];
-ostStatBeginPrev = ostStatBegin - 2; % this is currently true for all cases
-ostStatEndPrev = ostStatEnd - 2; 
+ostWorking = fullfile(get_gitPath, expt.trackingFileLoc, [expt.trackingFileName 'Working.ost']); 
+ostStatBeginPrev = startStatus - 2; % this is currently true for all cases
+ostStatEndPrev = endStatus - 2; 
 
 % If a working copy doesn't exist, make one
 if exist(ostWorking,'file') ~= 2
@@ -76,26 +91,21 @@ while ischar(tline)
 end
 fclose(fid);
 
-% ostStatBegin_line = find(strncmp(finfo, num2str(ostStatBegin), 1)); 
-% cellfun(@(x) strncmp(x, num2str(ostStatPrev), 1), finfo, 'UniformOutput', 0);
-
-% The additional lag will be the 4th element
-ostStatBeginPrev_components = strsplit(finfo{strncmp(finfo, num2str(ostStatBeginPrev), 1)}, ' '); 
-beginPrevHeur = ostStatBeginPrev_components{2}; 
+% The additional lag will be param2
+[preStartStatHeur, ~, preStartStatParam2] = get_ost(expt.trackingFileLoc, expt.trackingFileName, startStatus-2); 
 % Unless you're using a stretch/span heuristic in which case it will be the number of frames in the 3rd component / framelen
-if contains(beginPrevHeur,'STRETCH')
-    ostStatBeginPrev_lag = str2double(ostStatBeginPrev_components{3}) / expt.audapterParams.frameLen; 
+if contains(preStartStatHeur,'STRETCH')
+    ostStatBeginPrev_lag = preStartStatParam2 / expt.audapterParams.frameLen; 
 else
-    ostStatBeginPrev_lag = str2double(ostStatBeginPrev_components{4}); 
+    ostStatBeginPrev_lag = preStartStatParam2; 
 end
 
 % now again for the ending ost
-ostStatEndPrev_components = strsplit(finfo{strncmp(finfo, num2str(ostStatEndPrev), 1)}, ' '); 
-endPrevHeur = ostStatEndPrev_components{2}; 
-if contains(endPrevHeur,'STRETCH')
-    ostStatEndPrev_lag = str2double(ostStatEndPrev_components{3}) / expt.audapterParams.frameLen; 
+[preEndStatHeur, ~, preEndStatParam2] = get_ost(expt.trackingFileLoc, expt.trackingFileName, endStatus-2); 
+if contains(preEndStatHeur,'STRETCH')
+    ostStatEndPrev_lag = preEndStatParam2 / expt.audapterParams.frameLen; 
 else
-    ostStatEndPrev_lag = str2double(ostStatEndPrev_components{4}); 
+    ostStatEndPrev_lag = preEndStatParam2; 
 end
 
 
@@ -121,7 +131,7 @@ for itrial = 1:ntrials
     
     % Find start and end times of segment of interest
     ost_stat = data(itrial).ost_stat; 
-    segStartIx = find((ost_stat == ostStatBegin),1); 
+    segStartIx = find((ost_stat == startStatus),1); 
     segEndIx = find((ost_stat == ostStatEnd),1); 
     
     % if the right osts failed to trigger
@@ -143,13 +153,16 @@ for itrial = 1:ntrials
     segEndTimePlot = segEndTime - ostStatEndPrev_lag; 
     
     % Generate trialparams and sigmat??? 
+    % Might be able to put this info in the OST file itself... 
     event_params.user_event_times = [segBeginTimePlot segEndTimePlot];
-    if strcmp(dummyWord,'capper') || strcmp(dummyWord,'gapper') || strcmp(dummyWord,'ada') || strcmp(dummyWord,'ata')
-        uev1name = 'cBurst'; 
-    else
-        uev1name = 'cStart';
+    if strcmp(expt.trackingFileName,'capper') || strcmp(expt.trackingFileName,'gapper') || strcmp(expt.trackingFileName,'ada') || strcmp(expt.trackingFileName,'ata')
+        uevent1name = 'cBurst'; 
+        uevent2name = 'vStart'; 
+    elseif strcmp(expt.trackingFileName, 'sapper') || strcmp(expt.trackingFileName, 'zapper')
+        uevent1name = 'cStart';
+        uevent2name = 'vStart'; 
     end
-    event_params.user_event_names = {uev1name 'vStart'}; 
+    event_params.user_event_names = {uevent1name uevent2name}; 
     
     trialparams.sigproc_params = sigproc_params; 
     trialparams.plot_params = plot_params; 
