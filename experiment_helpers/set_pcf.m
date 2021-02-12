@@ -192,8 +192,10 @@ else
             components = warplines{i}; 
             break
         elseif i == length(fileLines) && ostOfComponent ~= ostStatus
-            warning('You are trying to edit the perturbation for an OST status that does not exist. Stopping script.')
-            return
+            ME = MException('AUDAPTER:PCF:edit:badstatus','You are trying to edit the perturbation for an OST status that does not exist. Stopping script.'); 
+            throw(ME); 
+%             warning('You are trying to edit the perturbation for an OST status that does not exist. Stopping script.', 'AUDAPTER:PCF:edit:badstatus')
+%             return
         end
     end
 
