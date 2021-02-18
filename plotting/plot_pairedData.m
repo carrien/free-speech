@@ -159,9 +159,9 @@ for c = 1:nConds
     cond_ci(c) = calcci(cond_data');
     plot(c,nanmean(cond_data),p.avgMarker,'Color',p.avgMarkerColor(c,:),'MarkerFace',p.avgMarkerColor(c,:),'MarkerSize',p.avgMarkerSize)
     if p.bCI
-        errorbar(c,nanmean(cond_data), cond_ci(c),'Color',p.avgMarkerColor(c,:),'LineWidth',p.avgLineWidth)
+        errorbar(c,nanmean(cond_data), cond_ci(c),'Color',p.avgMarkerColor(c,:),'LineWidth',p.avgLineWidth,'CapSize',10)
     else
-        errorbar(c,nanmean(cond_data), cond_se(c),'Color',p.avgMarkerColor(c,:),'LineWidth',p.avgLineWidth)
+        errorbar(c,nanmean(cond_data), cond_se(c),'Color',p.avgMarkerColor(c,:),'LineWidth',p.avgLineWidth,'CapSize',10)
     end
 end
 
