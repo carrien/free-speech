@@ -11,7 +11,7 @@ if nargin < 6 || isempty(bCloseOrig), bCloseOrig = 0; end
 for ifig = 1:length(hfig2copy)
     % get handle to axis
     if strcmp(get(hfig2copy(ifig), 'type'), 'figure')
-        hax = get(hfig2copy(ifig),'Children'); % assume only one axis
+        hax = findobj(hfig2copy(ifig),'Type','Axes'); % assume only one axis
     else
         hax = hfig2copy(ifig);
     end

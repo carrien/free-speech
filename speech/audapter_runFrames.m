@@ -6,7 +6,7 @@ function [dataOut] = audapter_runFrames(data,p)
 %   returned by Audapter).
 
 % set Audapter param fields
-if ~isempty(p.gender)
+if isfield(p,'gender')
     gender = p.gender;
 else
     gender = 'female'; % default gender is female

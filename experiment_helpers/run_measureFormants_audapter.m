@@ -169,6 +169,7 @@ for itrial = 1:length(trials2run)  % for each trial
         h_break = draw_exptText(h_fig,.5,.5,breaktext,expt.instruct.txtparams);
         pause
         delete_exptText(h_fig,h_break)
+        pause(1)
     end
      
 end

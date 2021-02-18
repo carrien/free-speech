@@ -39,6 +39,9 @@ end
 if ~isfield(p,'avgMarkerColor')
     p.avgMarkerColor = colorSpec;
 end
+if ~isfield(p,'avgErrorColor')
+    p.avgErrorColor = p.avgMarkerColor;
+end
 if ~isfield(p,'LineColor')
     p.LineColor = [.7 .7 .7];
 end
@@ -162,6 +165,9 @@ for c = 1:nConds
         errorbar(c,nanmean(cond_data), cond_ci(c),'Color',p.avgMarkerColor(c,:),'LineWidth',p.avgLineWidth,'CapSize',10)
     else
         errorbar(c,nanmean(cond_data), cond_se(c),'Color',p.avgMarkerColor(c,:),'LineWidth',p.avgLineWidth,'CapSize',10)
+%         errorbar(c,nanmean(cond_data), cond_ci(c),'Color',p.avgErrorColor(c,:),'LineWidth',p.avgLineWidth)
+%     else
+%         errorbar(c,nanmean(cond_data), cond_se(c),'Color',p.avgErrorColor(c,:),'LineWidth',p.avgLineWidth)
     end
 end
 

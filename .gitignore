@@ -7,3 +7,7 @@
 
 # folder metadata
 *.DS_Store
+
+# Ignore Working version of Audapter .ost and .pcf files. (Only track Master versions)
+*Working.ost
+*Working.pcf

@@ -134,7 +134,7 @@ for itrial = firstTrial:lastTrial
         h_trialn = text(h_sub(1),0,0.5,ctrltxt,'Color','black', 'FontSize',30, 'HorizontalAlignment','center');
 
         % set text
-        txt2display = expt.listWords{itrial};
+        txt2display = expt.listStimulusText{itrial};
         color2display = expt.colorvals{expt.allColors(itrial)};
 
         % set new perturbation

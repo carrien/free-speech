@@ -16,7 +16,7 @@ function [permIx,conditions] = get_cbPermutation(exptName, permsPath, population
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
 if nargin < 2 || isempty(permsPath), permsPath = get_exptLoadPath(exptName); end  
-if nargin < 3, population = ''; end
+if nargin < 3 || isempty(population), population = ''; end
 
 if isempty(population)
     permsFile = ['cbPermutation_' exptName '.mat']; 

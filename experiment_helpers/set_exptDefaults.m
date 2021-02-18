@@ -36,8 +36,11 @@ expt = set_missingField(expt,'conds',{'test'});
 expt = set_missingField(expt,'words',{'bed'});
 
 % vowels
-if ~isfield(expt,'vowels')
-    [vowels,~,ivowels] = unique(txt2ipa(expt.words));
+expt = set_missingField(expt,'bIgnoreVowels',0);
+if expt.bIgnoreVowels
+    expt.vowels = {'null'};
+elseif ~isfield(expt,'vowels')
+    [vowels,~,ivowels] = unique(txt2arpabet(expt.words));
     if length(vowels) == length(ivowels), vowels = vowels(ivowels); end
     expt = set_missingField(expt,'vowels',vowels);
 end
@@ -70,7 +73,11 @@ expt = set_missingField(expt,'allColors',randi(length(expt.colors),[1,expt.ntria
 expt = set_missingField(expt,'listConds',expt.conds(expt.allConds));
 expt = set_missingField(expt,'listWords',expt.words(expt.allWords));
 if ~isempty(expt.vowels)
-    expt = set_missingField(expt,'listVowels',txt2ipa(expt.listWords));
+    if expt.bIgnoreVowels
+        expt.listVowels = repmat(expt.vowels, [1 expt.ntrials]);
+    else
+        expt = set_missingField(expt,'listVowels',txt2arpabet(expt.listWords));
+    end
     if any(expt.allVowels == 0)
         for t=1:expt.ntrials
             expt.allVowels(t) = find(strcmp(expt.listVowels{t},expt.vowels));
@@ -82,6 +89,15 @@ expt = set_missingField(expt,'listColors',expt.colors(expt.allColors));
 % formant alteration parameters (for Audapter studies)
 expt = set_missingField(expt,'shiftMags',zeros(1,expt.ntrials));
 expt = set_missingField(expt,'shiftAngles',zeros(1,expt.ntrials));
+
+% actual stimulus string shown to participant
+expt = set_missingField(expt,'stimulusText',expt.words);
+expt = set_missingField(expt,'allStimulusText',expt.allWords);
+if all(strcmp(expt.words, expt.stimulusText)) 
+    expt = set_missingField(expt,'listStimulusText',expt.listWords);
+else  %, make list from stimulusText instead of words
+    expt = set_missingField(expt,'listStimulusText',expt.stimulusText(expt.allStimulusText));
+end
 
 %% stimulus timing parameters, in seconds
 timing.stimdur = 1.5;            % time of recording
@@ -95,6 +111,9 @@ durcalc.min_dur = .25;         %
 durcalc.max_dur = .5;
 durcalc.ons_thresh = 0.3;
 durcalc.offs_thresh = 0.4;
+durcalc.bFirst_offs_thresh = 1;
+durcalc.bPrintDuration = 0;
+durcalc.bMeasureOst = 0;
 expt = set_missingField(expt,'durcalc',durcalc);
 
 %% amplitude tracking parameters
