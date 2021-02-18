@@ -1,4 +1,4 @@
-function [fmtdata,f0data,ampldata,durdata,trialinds] = calc_fdata(expt,dataVals,condtype)
+function [fmtdata,f0data,ampldata,durdata,RTdata,trialinds] = calc_fdata(expt,dataVals,condtype)
 % CALC_FDATA  Calculate formant, pitch, and ampl data from dataVals object.
 
 %% exclude bad trials
@@ -68,6 +68,7 @@ for cnd=1:length(conds)
     end
     ampldata.dB.(c).traces.ampl = [];
     durdata.s.(c) = [];
+    RTdata.s.(c) = [];
     trialinds.(c) = [];
 end
 
@@ -98,6 +99,8 @@ for i=goodTrials
     ampldata.dB.(c).traces.ampl = nancat(traces_dB,y);
     % duration
     durdata.s.(c)(end+1) = dataVals(i).dur;
+    % RT
+    RTdata.s.(c)(end+1) = dataVals(i).ftrack_taxis(1);
     % collect indices
     if isfield(dataVals,'token')
         trialinds.(c)(end+1) = dataVals(i).token;
