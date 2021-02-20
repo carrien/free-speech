@@ -69,13 +69,13 @@ ostFactor = fs/frameLength;
 
 %% Set up OST recognition 
 % Get the buffer amount for the ostStatBegin (so hand correction is more intuitive) 
-ostWorking = fullfile(get_gitPath, expt.trackingFileLoc, [expt.trackingFileName 'Working.ost']); 
+ostWorking = fullfile(get_gitPath, 'current-studies', expt.trackingFileLoc, [expt.trackingFileName 'Working.ost']); 
 ostStatBeginPrev = startStatus - 2; % this is currently true for all cases
 ostStatEndPrev = endStatus - 2; 
 
 % If a working copy doesn't exist, make one
 if exist(ostWorking,'file') ~= 2
-    refreshWorkingCopy(expt.name, dummyWord,'ost');
+    refreshWorkingCopy(expt.trackingFileLoc, expt.trackingFileName, 'ost');
 end
 
 % Open file and load file line by line into structure finfo
@@ -132,7 +132,7 @@ for itrial = 1:ntrials
     % Find start and end times of segment of interest
     ost_stat = data(itrial).ost_stat; 
     segStartIx = find((ost_stat == startStatus),1); 
-    segEndIx = find((ost_stat == ostStatEnd),1); 
+    segEndIx = find((ost_stat == endStatus),1); 
     
     % if the right osts failed to trigger
     if ~isempty(segStartIx)
