@@ -91,11 +91,11 @@ while ischar(tline)
 end
 fclose(fid);
 
-% The additional lag will be param2
+% Lags induced by status waiting for the appropriate amount of either time or frames
 [preStartStatHeur, ~, preStartStatParam2] = get_ost(expt.trackingFileLoc, expt.trackingFileName, startStatus-2); 
 % Unless you're using a stretch/span heuristic in which case it will be the number of frames in the 3rd component / framelen
 if contains(preStartStatHeur,'STRETCH')
-    ostStatBeginPrev_lag = preStartStatParam2 / expt.audapterParams.frameLen; 
+    ostStatBeginPrev_lag = preStartStatParam2 * expt.audapterParams.frameLen / expt.audapterParams.sr; 
 else
     ostStatBeginPrev_lag = preStartStatParam2; 
 end
@@ -103,7 +103,7 @@ end
 % now again for the ending ost
 [preEndStatHeur, ~, preEndStatParam2] = get_ost(expt.trackingFileLoc, expt.trackingFileName, endStatus-2); 
 if contains(preEndStatHeur,'STRETCH')
-    ostStatEndPrev_lag = preEndStatParam2 / expt.audapterParams.frameLen; 
+    ostStatEndPrev_lag = preEndStatParam2 * expt.audapterParams.frameLen / expt.audapterParams.sr; 
 else
     ostStatEndPrev_lag = preEndStatParam2; 
 end
