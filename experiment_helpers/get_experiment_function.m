@@ -22,7 +22,7 @@ switch expName
         expFun = @run_sAdapt_audapter;
     case {'vsaAdapt', 'vsaAdapt2'}
         expFun = @run_vsaAdapt_audapter;
-    case {'varModIn', 'varModOut', 'varModOut2'}
+    case {'varModIn', 'varModOut', 'varModOut2', 'varModInOut'}
         expFun = @run_varMod_audapter;
     case 'timeAdapt'
         expFun = @run_timeAdapt_audapter; 
