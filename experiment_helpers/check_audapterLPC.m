@@ -254,22 +254,20 @@ function updatePlots(src)
         end
     end
     
-    %plot F1/F2 scatter
+    %% plot F1/F2 scatter
     delete(UserData.F1F2ax)
     UserData.F1F2ax = axes(UserData.plotPanelF1F2, 'Position', [0.13 0.13 0.775 0.815]);
 
     hold off
     vowels = fields(UserData.expt.inds.vowels);
     
-    %TODO: allow for any number of colors/vowels? Currently only allows for
-    %8... 
-    plotColors = [1 0 0; 0 1 0; 0 0 1; 0 0 0; 1 0.5 0; 1 0.4 0.6; 1 0 1; 0 1 0.7];
-    %plotColors = [.9 0 0; 0 0.8 0; 0 0 1; 0.91 0.41 0.17]; 
+    %Set up colors. Using varycolor allows for any number of vowels
+    plotColors = varycolor(UserData.nVowels);
+    
     for i = 1:UserData.nVowels
         vow = vowels{i};     
         for j = 1:length(f1s(UserData.expt.inds.vowels.(vow)))
             if UserData.expt.bExcl(UserData.expt.inds.vowels.(vow)(j))
-%                 color2plot = [0.6 0.6 0.6];
                 color2plot = plotColors(i,:)*0.5;
                 markerShape = 'x';
             else
@@ -293,7 +291,7 @@ function updatePlots(src)
     xlabel('F1','FontUnits','normalized','FontSize',.05)
     ylabel('F2','FontUnits','normalized','FontSize',.05)
     
-    %plot individual formant tracks
+    %% plot individual formant tracks
     for i = 1:UserData.nVowels
         vow = vowels{i};
         %first, select which trials to plot
