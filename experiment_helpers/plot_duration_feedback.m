@@ -24,10 +24,10 @@ if nargin < 4, ostTrigger = []; end
 
 %default duration tracking parameters
 if ~isfield(params,'offs_thresh')
-    params.offs_thresh = 0.4;
+    params.offs_thresh = 0.55;
 end
 if ~isfield(params,'ons_thresh')
-    params.ons_thresh = 0.3;
+    params.ons_thresh = 0.15;
 end
 if ~isfield(params,'max_dur')
     params.max_dur = 0.6;
