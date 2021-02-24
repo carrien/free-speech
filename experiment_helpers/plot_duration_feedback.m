@@ -11,7 +11,7 @@ function [h_dur,success,vowel_dur] = plot_duration_feedback(h_fig, data, params,
 %                   (0-1), default 0.4
 %      bFirst_offs_thresh:  When searching for an offset threshold, whether
 %                   to look for the first (1) or last (0) frame that drops
-%                   below the offset threshold.
+%                   below the offset threshold. Default 0.
 %      bPrintDuration:  If 1, print vowel_dur for each trial, default 0.
 %      bMeasureOst:     If 1, measure vowel length via duration of ost
 %                       status specified in ostTrigger. Default 0.
@@ -30,10 +30,10 @@ if ~isfield(params,'ons_thresh')
     params.ons_thresh = 0.3;
 end
 if ~isfield(params,'max_dur')
-    params.max_dur = 0.5;
+    params.max_dur = 0.6;
 end
 if ~isfield(params,'min_dur')
-    params.min_dur = 0.25;
+    params.min_dur = 0.4;
 end
 if ~isfield(params, 'circ_pos')
     params.circ_pos = [.45,.15,.1,.1];%define location and size of circle
