@@ -326,11 +326,11 @@ function updatePlots(src)
         framedur = 1 / UserData.data(trial2plot).params.sr*UserData.data(trial2plot).params.frameLen; %get frame duration
         offset = [floor(0.05 / framedur) floor(0.01 / framedur)];
         if isfield(UserData.data(trial2plot), 'calcOST') && ~isempty(UserData.data(trial2plot).calcOST)
-            vowelFrames = find(UserData.data(trial2plot).calcOST == 2); % get indices to vowel, as set by audapter_viewer
+            vowelFrames = find(UserData.data(trial2plot).calcOST == 2 | UserData.data(trial2plot).calcOST == 3); % get indices to vowel, as set by audapter_viewer
         elseif isfield(UserData.data(trial2plot), 'ost_calc') && ~isempty(UserData.data(trial2plot).ost_calc)
-            vowelFrames = find(UserData.data(trial2plot).ost_calc == 2); % get indices to vowel, as set by audapter_viewer
+            vowelFrames = find(UserData.data(trial2plot).ost_calc == 2 | UserData.data(trial2plot).ost_calc == 3); % get indices to vowel, as set by audapter_viewer
         else
-            vowelFrames = find(UserData.data(trial2plot).ost_stat == 2); % get indices to vowel, from initial audapter run
+            vowelFrames = find(UserData.data(trial2plot).ost_stat == 2 | UserData.data(trial2plot).ost_stat == 3); % get indices to vowel, from initial audapter run
         end
         if ~isempty(vowelFrames)
             vowelFrames = vowelFrames(1)-offset(1):vowelFrames(end)-offset(2); %account for offset in ost tracking
