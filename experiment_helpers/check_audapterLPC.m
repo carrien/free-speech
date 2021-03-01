@@ -427,7 +427,7 @@ function goto_audapter_viewer(src,evt)
     hGui = findobj('Tag','audapter_viewer');
     uiwait(hGui);
     
-    % Make sure UserData.data gets calcOST field
+    % Make sure UserData.data gets ost_calc field
     load(fullfile(UserData.dataPath, 'data.mat'), 'data');
     UserData.data = data;
     
