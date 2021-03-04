@@ -28,6 +28,7 @@ for c = 1:length(conds2analyze)
     condname = conds2analyze{c};
     trials2analyze = [trials2analyze expt.inds.conds.(condname)];
 end
+trials2analyze = sort(trials2analyze);
 
 
 % extract formants at middle 50% of vowel
@@ -43,7 +44,7 @@ for itrial = trials2analyze
         F1s(itrial) = nanmedian(midnperc(dataVals(itrial).f1,50));
         F2s(itrial) = nanmedian(midnperc(dataVals(itrial).f2,50));
     elseif any(any(ost==ostInds,2)) 
-        vowelFrames = find(any(ost == ostInds,2)); % get indices to vowel
+        vowelFrames = find(any(ost == ostInds,2)|any(ost == ostInds+1,2)); % get indices to vowel
         vowelFrames = vowelFrames(1)-offset(1):vowelFrames(end)-offset(2); %account for offset in ost tracking
         vowelFmts = data(itrial).fmts(vowelFrames,:);
         F1s(itrial) = nanmedian(midnperc(vowelFmts(:,1),50));
@@ -61,13 +62,14 @@ for itrial = trials2analyze
 end
 
 % get per-vowel means
-allVowels = expt.allVowels(trials2analyze);
 for v = 1:length(expt.vowels)
     vow = expt.vowels{v};
     if isfield(expt,'bExcl')
-        vowInds = allVowels == v & ~expt.bExcl;
+        vowInds = intersect(expt.inds.vowels.(vow),find(~expt.bExcl));
+        vowInds = intersect(vowInds, trials2analyze);
     else
-        vowInds = allVowels == v;
+        vowInds = expt.inds.vowels.(vow);
+        vowInds = intersect(vowInds, trials2analyze);
     end
     if bRmOutliers
         tempDat1 = F1s(vowInds);
