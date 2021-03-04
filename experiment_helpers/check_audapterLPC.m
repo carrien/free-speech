@@ -239,18 +239,43 @@ function updatePlots(src)
     ntrials = length(UserData.data);
     f1s = NaN(1,ntrials);
     f2s = NaN(1,ntrials);
-    for i = 1:ntrials
-        ftrackSamps = find(UserData.data(i).fmts(:,1)>0);
-        ftrack = UserData.data(i).fmts(ftrackSamps,:);
-        ftrackLength = length(ftrack(:,1));
-        if ftrackLength > 4
-            p25 = round(ftrackLength/4);
-            p50 = round(ftrackLength/2);
-            f1s(i) = mean(ftrack(p25:p50,1));
-            f2s(i) = mean(ftrack(p25:p50,2));
+    bWarn = 1;
+    
+    for i = 1:ntrials      
+        %use ost status to plot vowels
+        if isfield(UserData.data(i), 'calcOST') && ~isempty(UserData.data(i).calcOST)
+            vowelFrames = find(UserData.data(i).calcOST == 2 | UserData.data(i).calcOST == 3); % get indices to vowel, as set by audapter_viewer
+        elseif isfield(UserData.data(i), 'ost_calc') && ~isempty(UserData.data(i).ost_calc)
+            vowelFrames = find(UserData.data(i).ost_calc == 2 | UserData.data(i).ost_calc == 3); % get indices to vowel, as set by audapter_viewer
         else
-            f1s(i) = NaN;
-            f2s(i) = NaN;
+            vowelFrames = find(UserData.data(trial2plot).ost_stat == 2 | UserData.data(trial2plot).ost_stat == 3); % get indices to vowel, from initial audapter run
+        end
+        if ~isempty(vowelFrames)
+            %use ost status to plot vowels if possible
+            framedur = 1 / UserData.data(i).params.sr*UserData.data(i).params.frameLen; %get frame duration
+            offset = [floor(0.05 / framedur) floor(0.01 / framedur)];
+            vowelFrames = vowelFrames(1)-offset(1):vowelFrames(end)-offset(2); %account for offset in ost tracking
+            vowelFmts = UserData.data(i).fmts(vowelFrames,:);
+            f1s(i) = nanmedian(midnperc(vowelFmts(:,1),50));
+            f2s(i) = nanmedian(midnperc(vowelFmts(:,2),50));
+        else
+            if bWarn
+                warning('Expected OST statuses not found! Using audapter formant track length to estimate vowel midpoint')
+            end
+            bWarn = 0;
+            % use old method(mean betweeen 25-50% formant track length)
+            ftrackSamps = find(UserData.data(i).fmts(:,1)>0);
+            ftrack = UserData.data(i).fmts(ftrackSamps,:);
+            ftrackLength = length(ftrack(:,1));
+            if ftrackLength > 4
+                p25 = round(ftrackLength/4);
+                p50 = round(ftrackLength/2);
+                f1s(i) = mean(ftrack(p25:p50,1));
+                f2s(i) = mean(ftrack(p25:p50,2));
+            else
+                f1s(i) = NaN;
+                f2s(i) = NaN;
+            end
         end
     end
     
