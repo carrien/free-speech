@@ -248,7 +248,7 @@ function updatePlots(src)
         elseif isfield(UserData.data(i), 'ost_calc') && ~isempty(UserData.data(i).ost_calc)
             vowelFrames = find(UserData.data(i).ost_calc == 2 | UserData.data(i).ost_calc == 3); % get indices to vowel, as set by audapter_viewer
         else
-            vowelFrames = find(UserData.data(trial2plot).ost_stat == 2 | UserData.data(trial2plot).ost_stat == 3); % get indices to vowel, from initial audapter run
+            vowelFrames = find(UserData.data(i).ost_stat == 2 | UserData.data(i).ost_stat == 3); % get indices to vowel, from initial audapter run
         end
         if ~isempty(vowelFrames)
             %use ost status to plot vowels if possible
