@@ -3,6 +3,7 @@ function [] = gen_cbPermutation(dataPath, exptName, conds, population)
 %given conditions
 
 %dataPath: dataPath where counter balance tracking table will be saved
+    %Lab convention is to save this in SMNG/experiments/(exp_name)
 %exptName: name of experiment
 %conds: what conditions are being counterbalanced
     %this could include words (e.g. {'bead', 'bad', 'bed'})
@@ -10,6 +11,9 @@ function [] = gen_cbPermutation(dataPath, exptName, conds, population)
 %population: name of separate populations (e.g. 'control' or 'clinical')
     %or you can use this field if you want separate tracking for groups (i.e. 'control' or 'perturbed') in the study
 %%
+if nargin <1 || isempty(dataPath)
+    dataPath = ['\\wcs-cifs\wc\smng\experiments\' exptName];
+end
 if nargin < 4 || isempty(population)
     bPopulation = 0;
 else
