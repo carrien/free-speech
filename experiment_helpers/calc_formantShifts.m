@@ -29,13 +29,13 @@ end
 vowelList = fieldnames(fmtMeans);
 if ~any(strcmp(vowelList,vowel2shift))
     %first check that the target vowel exists in the formant structure
-    error('Target vowel must be in vowel formant structure')
+    error('Target vowel must be in vowel formant structure. ')
 end
 if nargin < 4 || isempty(targets)
     %default to calculating shifts to all other vowels available
     targets = vowelList(~strcmp(vowelList,vowel2shift));
-    nTargets = length(targets);
-end 
+end
+if size(targets, 1) > 1, targets = targets'; end %force to a row
 
 %calculate formants in mels, if flagged
 if bMels
@@ -47,7 +47,8 @@ end
 %keep a record of the order the shifts are calculated in
 shifts.order = targets;
 
-for i = 1:nTargets
+
+for i = 1:length(targets)
     tar = targets{i};
     %calculate direction in F1/F2 space
     F1diff(i) = fmtMeans.(tar)(1) - fmtMeans.(vowel2shift)(1);
