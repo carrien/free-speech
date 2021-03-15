@@ -1,27 +1,32 @@
-function shifts = calc_formantShifts(fmtMeans, shiftMag, vowel2shift, targets, bMels)
+function [shifts,expt] = calc_formantShifts(fmtMeans, shiftMag, vowel2shift, targets, bMels,expt)
 % Calculate formant shifts for Audapter experiments where the
 % shifts are from one vowel (vowel2shift) towards one or more other vowels
 % (targets) in F1/F2 space.
 % Inputs:   fmtMeans: output of calc_vowelMeans. This is a structure with
 %               vowel (in ARPABET) as fields, each of which has [F1 F2]
 %               values for that vowel midpoint in Hz. Required.
-%           shiftMag: the magnitude of the shift to be applied. Required
+%           shiftMag: the magnitude of the shift to be applied. Required.
 %           vowel2shift: string with lower-case arpabet of vowel that will 
 %               be shifted in the experiment. must match a field in
 %               fmtMeans. Required.
 %           targets: cell array with elements that are strings of the
 %               vowels towards which formants will be shifted. defaults to
 %               all other vowels in fmtMeans, but you should specify these
-%               if you want the shifts to be in a certain order
+%               if you want the shifts to be in a certain order.
 %           bMels: binary flag to calculate formants in mels (1, default)
 %               or Hz (if set to 0). This should match how you are
-%               implementing shifts in Audapter (probably mels)
+%               implementing shifts in Audapter (probably mels).
+%           expt: optionally, pass in an "expt" structure to which
+%               perturbation information will be added.
 %
 % Outputs:  shifts: structure with fields for polar coordinates (shift
 %               angle and magnitude, which are needed for Audapter) and
 %               Cartesian F1/F2 coordinates (which are needed for other
-%               analysis functions)
-%
+%               analysis functions).
+%           expt: if an expt structure is passed in, this returns that expt
+%               structure with completed fields for pertubation
+%               information. otherwise, this will return an expt structure
+%               with only the perturbation information. 
 
 if nargin < 5 || isempty(bMels)
     bMels = 1;
@@ -32,6 +37,7 @@ if ~any(strcmp(vowelList,vowel2shift))
     error('Target vowel must be in vowel formant structure. ')
 end
 if nargin < 4 || isempty(targets)
+    warning('Using default order for targets! It is best to specify the correct order.') 
     %default to calculating shifts to all other vowels available
     targets = vowelList(~strcmp(vowelList,vowel2shift));
 end
@@ -72,4 +78,16 @@ for i = 1:length(targets)
             sin(shifts.shiftAng(i))*shifts.shiftMag(i)];
         shifts.mels{i} = hz2mel(shifts.hz{i});
     end
+    
+    %correct for NaN values when target = vowel2shift
+    if isnan(shifts.shiftAng(i))
+        shifts.shiftAng(i) = 0;
+        shifts.shiftMag(i) = 0;
+        shifts.mels{i} = [0 0];
+        shifts.hz{i} = [0 0];
+    end
 end
+
+%add shift information to expt file
+expt.shifts.mels = shifts.mels;
+expt.shifts.hz = shifts.hz;
