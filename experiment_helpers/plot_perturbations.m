@@ -57,5 +57,6 @@ for p = 1:nPerts
 end
 xlabel('F1 (mels)')
 ylabel('F2 (mels)')
+axis equal
 makeFig4Screen
 
