@@ -1,10 +1,10 @@
-function shifts = calc_formantShifts(fmtMeans, shiftMag, vowel2shift, targets , bMels)
-% funciton to calculate formant shifts for Audapter experiments where the
+function shifts = calc_formantShifts(fmtMeans, shiftMag, vowel2shift, targets, bMels)
+% Calculate formant shifts for Audapter experiments where the
 % shifts are from one vowel (vowel2shift) towards one or more other vowels
 % (targets) in F1/F2 space.
 % Inputs:   fmtMeans: output of calc_vowelMeans. This is a structure with
 %               vowel (in ARPABET) as fields, each of which has [F1 F2]
-%               values for that vowel midpoint in Hz
+%               values for that vowel midpoint in Hz. Required.
 %           shiftMag: the magnitude of the shift to be applied. Required
 %           vowel2shift: string with lower-case arpabet of vowel that will 
 %               be shifted in the experiment. must match a field in
@@ -22,13 +22,14 @@ function shifts = calc_formantShifts(fmtMeans, shiftMag, vowel2shift, targets , 
 %               Cartesian F1/F2 coordinates (which are needed for other
 %               analysis functions)
 %
+
 if nargin < 5 || isempty(bMels)
     bMels = 1;
 end
 vowelList = fieldnames(fmtMeans);
 if ~any(strcmp(vowelList,vowel2shift))
     %first check that the target vowel exists in the formant structure
-    error('target vowel must be in vowel formant structure')
+    error('Target vowel must be in vowel formant structure')
 end
 if nargin < 4 || isempty(targets)
     %default to calculating shifts to all other vowels available
@@ -36,7 +37,7 @@ if nargin < 4 || isempty(targets)
     nTargets = length(targets);
 end 
 
-%caclculate formants in mels, if flagged
+%calculate formants in mels, if flagged
 if bMels
     for i = 1:length(vowelList)
         fmtMeans.(vowelList{i}) = hz2mel(fmtMeans.(vowelList{i}));
