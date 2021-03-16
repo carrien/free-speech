@@ -38,13 +38,21 @@ for i = 1:length(data)
     end
 end
 
+% prep for histograms
+binSize = 0.1;
+maxOnsetBin = ceil(max(onset)/binSize)*binSize;
+maxOffsetBin = ceil(max(offset)/binSize)*binSize;
+
 % plot histograms
+figure;
 subplot(1, 2, 1)
-histogram(onset, 'BinWidth', 0.05);
+%histogram(onset, 'BinWidth', 0.1);
+histogram(onset, 'BinEdges', 0 : binSize : maxOnsetBin);
 title('Onset distance to beginning');
 
 subplot(1, 2, 2)
-histogram(offset, 'BinWidth', 0.05);
+%histogram(offset, 'BinWidth', 0.1);
+histogram(offset, 'BinEdges', 0 : binSize : maxOffsetBin);
 title('Offset distance to end');
 
 % collect trials too close to the edge
@@ -53,6 +61,7 @@ badThresh_offset = badThresh;
 
 onset_bad = find(onset <= badThresh_onset);
 offset_bad = find(offset <= badThresh_offset);
+
 
 
 end
