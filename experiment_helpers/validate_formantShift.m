@@ -1,4 +1,4 @@
-function [h,e] = validate_formantShift(dataPath, p, pertConds)
+function [h,e] = validate_formantShift(dataPath, p)
 % Calculates the average formant for a trial. For certain conditions (those
 %   listed in `pertConds`), plots the average formant from signalIn and
 %   compares it against the average formant from signalOut. Shows different
@@ -29,14 +29,6 @@ h = figure;
 nConds = length(expt.conds);
 nVows = length(expt.vowels);
 
-if nargin < 3 || isempty(pertConds)
-    if length(expt.conds) == 1
-        pertConds = expt.conds(1);
-    else
-        pertConds = expt.conds(2:end);
-    end
-end
-
 %% set default params
 defaultParams.plotColors = [0 .8 0;...
                     0 .2 1; ...
@@ -59,13 +51,6 @@ end
 %%
 for iCond = 1:nConds
     cond = expt.conds{iCond};
-    %if strcmp(cond,'shiftIH') || strcmp(cond, 'shiftAE')
-    %if strcmp(cond,'hold')
-    if any(strcmpi(cond, pertConds))
-        bPert = 1;
-    else
-        bPert = 0;
-    end
     for iVow = p.vowInds
         vow = expt.vowels{iVow};
         trials2analyze = intersect(expt.inds.conds.(cond),expt.inds.vowels.(vow));
@@ -78,23 +63,25 @@ for iCond = 1:nConds
         F2out.(cond).(vow) = NaN(1,nTrials);
         for iTrial = 1:length(trials2analyze)
             trialnum = trials2analyze(iTrial);
+            
+            % find signal in points
             samps2plot = find(data(trialnum).fmts(:,1)>10);
             nSamps = length(samps2plot);
+                % average fmt value from 25%-65% after onset
             fWindow(1) = samps2plot(floor(.25*nSamps));
             fWindow(2) = samps2plot(floor(.65*nSamps));
             F1in.(cond).(vow)(iTrial) = hz2mels(nanmean(data(trialnum).fmts(fWindow(1):fWindow(2),1)));
             F2in.(cond).(vow)(iTrial) = hz2mels(nanmean(data(trialnum).fmts(fWindow(1):fWindow(2),2)));
-
-            if bPert
-                samps2plot = find(data(trialnum).sfmts(:,1)>10);
-                nSamps = length(samps2plot);
-                if nSamps == 0, continue; end % skip to next trial if no sfmts exists
-                
-                fWindow(1) = samps2plot(floor(.25*nSamps));
-                fWindow(2) = samps2plot(floor(.65*nSamps));
-                F1out.(cond).(vow)(iTrial) = hz2mels(nanmean(data(trialnum).sfmts(fWindow(1):fWindow(2),1)));
-                F2out.(cond).(vow)(iTrial) = hz2mels(nanmean(data(trialnum).sfmts(fWindow(1):fWindow(2),2)));
-            end
+            
+            % find signal out points
+            samps2plot = find(data(trialnum).sfmts(:,1)>10);
+            nSamps = length(samps2plot);
+            if nSamps == 0, continue; end % skip to next trial if no sfmts exists
+            
+            fWindow(1) = samps2plot(floor(.25*nSamps));
+            fWindow(2) = samps2plot(floor(.65*nSamps));
+            F1out.(cond).(vow)(iTrial) = hz2mels(nanmean(data(trialnum).sfmts(fWindow(1):fWindow(2),1)));
+            F2out.(cond).(vow)(iTrial) = hz2mels(nanmean(data(trialnum).sfmts(fWindow(1):fWindow(2),2)));
         end
     end
     
@@ -106,22 +93,21 @@ for iCond = 1:nConds
     hold on
     for iVow = p.vowInds
         vow = expt.vowels{iVow};
-        % plot points
+        % plot signal in points
         scatter(F1in.(cond).(vow),F2in.(cond).(vow),p.MarkerSize,inMarkers{iVow},'MarkerEdgeColor',p.plotColors(iVow,:))
         [e.(cond).(vow).in] = FitEllipse(F1in.(cond).(vow),F2in.(cond).(vow));
         plot(e.(cond).(vow).in(:,1),e.(cond).(vow).in(:,2),'Color',p.plotColors(iVow,:),'LineWidth',p.LineWidth)
-        if bPert
-            scatter(F1out.(cond).(vow),F2out.(cond).(vow),p.MarkerSizeShifted,outMarkers{iVow},'MarkerEdgeColor',p.plotColorsShifted(iVow,:))
-            if ~all(isnan(F1out.(cond).(vow)))
-                [e.(cond).(vow).out] = FitEllipse(F1out.(cond).(vow),F2out.(cond).(vow));
-                plot(e.(cond).(vow).out(:,1),e.(cond).(vow).out(:,2),'Color',p.plotColorsShifted(iVow,:),'LineWidth',p.LineWidth)
-            end
-                
-            
-        %plot lines connection points
-            lines = plot([F1out.(cond).(vow)' F1in.(cond).(vow)']',[F2out.(cond).(vow)' F2in.(cond).(vow)']','-','Color',[.8 .8 .8]);
-            uistack(lines, 'bottom');
+        
+        % plot signal out points
+        scatter(F1out.(cond).(vow),F2out.(cond).(vow),p.MarkerSizeShifted,outMarkers{iVow},'MarkerEdgeColor',p.plotColorsShifted(iVow,:))
+        if ~all(isnan(F1out.(cond).(vow)))
+            [e.(cond).(vow).out] = FitEllipse(F1out.(cond).(vow),F2out.(cond).(vow));
+            plot(e.(cond).(vow).out(:,1),e.(cond).(vow).out(:,2),'Color',p.plotColorsShifted(iVow,:),'LineWidth',p.LineWidth)
         end
+        
+        %plot lines connection points
+        lines = plot([F1out.(cond).(vow)' F1in.(cond).(vow)']',[F2out.(cond).(vow)' F2in.(cond).(vow)']','-','Color',[.8 .8 .8]);
+        uistack(lines, 'bottom');
         
     end
     hold off
