@@ -18,14 +18,12 @@ function [h,e] = validate_formantShift(dataPath, p, pertConds)
 %       e:   Properties of the ellipses drawn in the figures.
 %
 %
-% 2021-03 CWN. init. Based very heavily on CN's plot_varMod_byParticipant.
+% 2021-03 CWN. init. Based very heavily on BP's plot_varMod_byParticipant.
 
 if nargin < 1, dataPath = cd; end
 
 load(fullfile(dataPath,'expt.mat'),'expt')
 load(fullfile(dataPath,'data.mat'),'data')
-%signalIn = load(fullfile(dataPath,'dataVals.mat'),'dataVals');
-%signalOut = load(fullfile(dataPath,'dataVals_signalOut.mat'),'dataVals');
 
 h = figure;
 nConds = length(expt.conds);
@@ -74,8 +72,6 @@ for iCond = 1:nConds
         
         nTrials = length(trials2analyze);
         
-        %inds2analyze = intersect(dataVals);
-        
         F1in.(cond).(vow) = NaN(1,nTrials);
         F2in.(cond).(vow) = NaN(1,nTrials);
         F1out.(cond).(vow) = NaN(1,nTrials);
@@ -85,13 +81,15 @@ for iCond = 1:nConds
             samps2plot = find(data(trialnum).fmts(:,1)>10);
             nSamps = length(samps2plot);
             fWindow(1) = samps2plot(floor(.25*nSamps));
-            fWindow(2) = samps2plot(floor(.5*nSamps));
+            fWindow(2) = samps2plot(floor(.65*nSamps));
             F1in.(cond).(vow)(iTrial) = hz2mels(nanmean(data(trialnum).fmts(fWindow(1):fWindow(2),1)));
             F2in.(cond).(vow)(iTrial) = hz2mels(nanmean(data(trialnum).fmts(fWindow(1):fWindow(2),2)));
 
             if bPert
                 samps2plot = find(data(trialnum).sfmts(:,1)>10);
                 nSamps = length(samps2plot);
+                if nSamps == 0, continue; end % skip to next trial if no sfmts exists
+                
                 fWindow(1) = samps2plot(floor(.25*nSamps));
                 fWindow(2) = samps2plot(floor(.65*nSamps));
                 F1out.(cond).(vow)(iTrial) = hz2mels(nanmean(data(trialnum).sfmts(fWindow(1):fWindow(2),1)));
@@ -108,16 +106,21 @@ for iCond = 1:nConds
     hold on
     for iVow = p.vowInds
         vow = expt.vowels{iVow};
+        % plot points
         scatter(F1in.(cond).(vow),F2in.(cond).(vow),p.MarkerSize,inMarkers{iVow},'MarkerEdgeColor',p.plotColors(iVow,:))
         [e.(cond).(vow).in] = FitEllipse(F1in.(cond).(vow),F2in.(cond).(vow));
         plot(e.(cond).(vow).in(:,1),e.(cond).(vow).in(:,2),'Color',p.plotColors(iVow,:),'LineWidth',p.LineWidth)
         if bPert
             scatter(F1out.(cond).(vow),F2out.(cond).(vow),p.MarkerSizeShifted,outMarkers{iVow},'MarkerEdgeColor',p.plotColorsShifted(iVow,:))
-            [e.(cond).(vow).out] = FitEllipse(F1out.(cond).(vow),F2out.(cond).(vow));
-            plot(e.(cond).(vow).out(:,1),e.(cond).(vow).out(:,2),'Color',p.plotColorsShifted(iVow,:),'LineWidth',p.LineWidth)
-        
+            if ~all(isnan(F1out.(cond).(vow)))
+                [e.(cond).(vow).out] = FitEllipse(F1out.(cond).(vow),F2out.(cond).(vow));
+                plot(e.(cond).(vow).out(:,1),e.(cond).(vow).out(:,2),'Color',p.plotColorsShifted(iVow,:),'LineWidth',p.LineWidth)
+            end
+                
+            
         %plot lines connection points
-            plot([F1out.(cond).(vow)' F1in.(cond).(vow)']',[F2out.(cond).(vow)' F2in.(cond).(vow)']','-','Color',[.8 .8 .8])
+            lines = plot([F1out.(cond).(vow)' F1in.(cond).(vow)']',[F2out.(cond).(vow)' F2in.(cond).(vow)']','-','Color',[.8 .8 .8]);
+            uistack(lines, 'bottom');
         end
         
     end
