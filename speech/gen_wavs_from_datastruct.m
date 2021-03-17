@@ -18,5 +18,5 @@ for i=1:length(data)
     sig = int16(sig.*(maxint/max(abs(sig))));
     fs = data(i).params.fs;
     wavfile = fullfile(dataPath,'wavs',sprintf('%03d.wav',i));
-    wavwrite(sig,fs,wavfile);
+    audiowrite(sig,fs,wavfile);
 end
