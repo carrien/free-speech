@@ -1,14 +1,13 @@
 function [h,e] = validate_formantShift(dataPath, p)
-% Calculates the average formant for a trial. For certain conditions (those
-%   listed in `pertConds`), plots the average formant from signalIn and
-%   compares it against the average formant from signalOut. Shows different
-%   plots for different conditions in expt.conds.
+% Calculates the average formant for a trial. Plots the average formant
+%   from signalIn and compares it against the average formant from
+%   signalOut. Shows different plots for different conditions in expt.conds.
 %
 %   Can validate post-hoc that the proper perturbations were applied during
 %   an experiment.
 %
 % In:   dataPath:   Filepath where data.mat and expt.mat files are saved.
-%       p:   Audapter parameters.
+%       p:   Plot parameters.
 %       pertConds:   1xLength cell array of strings (which match elements
 %           in expt.conds). Include any condition names where you want to
 %           plot both the signalIn formants and signalOut formants. Any

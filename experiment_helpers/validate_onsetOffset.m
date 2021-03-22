@@ -24,7 +24,7 @@ frameDur = data(1).params.frameLen / data(1).params.sRate;
 onset  = zeros(1, length(data));
 offset = zeros(1, length(data));
 
-% find onsets and offsets
+% find onsets and offsets, defined using data.fmts
 for i = 1:length(data)
     on = find(data(i).fmts(:, 1), 1, 'first') * frameDur;
     if ~isempty(on)
@@ -49,11 +49,14 @@ subplot(1, 2, 1)
 %histogram(onset, 'BinWidth', 0.1);
 histogram(onset, 'BinEdges', 0 : binSize : maxOnsetBin);
 title('Onset distance to beginning');
+ylabel('Number of trials')
+xlabel('Time (seconds)')
 
 subplot(1, 2, 2)
 %histogram(offset, 'BinWidth', 0.1);
 histogram(offset, 'BinEdges', 0 : binSize : maxOffsetBin);
 title('Offset distance to end');
+xlabel('Time (seconds)')
 
 % collect trials too close to the edge
 badThresh_onset  = badThresh;   
