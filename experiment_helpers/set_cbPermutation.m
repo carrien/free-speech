@@ -1,4 +1,4 @@
-function cbPermutation = set_cbPermutation(exptName, setRow, permsPath, population)
+function cbPermutation = set_cbPermutation(exptName, setRow, permsPath, population, bSubtract)
 % Increments the count column of a given row by one. Should be called after get_cbPermutation
 % It is possible to make this more flexible (see, for example, set_cbPermutation_timeAdapt) but for a standard
 % call in experiments there should be no reason to increase the count by more or less than one. 
@@ -13,7 +13,8 @@ function cbPermutation = set_cbPermutation(exptName, setRow, permsPath, populati
 % 
 
 if nargin < 3 || isempty(permsPath), permsPath = cd; end
-if nargin < 4, population = ''; end
+if nargin < 4 || isempty(population), population = ''; end
+if nargin < 5, bSubtract = 0; end
 
 if isempty(population)
     permsFile = ['cbPermutation_' exptName '.mat']; 
@@ -31,7 +32,11 @@ cbPermutation = perms.(char(varField));
 
 [~,countCol] = size(cbPermutation); % Find the column that counts the number of uses
 currentCount = cbPermutation{setRow,countCol}; 
-newCount = currentCount + 1; 
+if bSubtract == 0
+    newCount = currentCount + 1; 
+elseif bSubtract == 1
+    newCount = currentCount - 1;
+end
 cbPermutation{setRow,countCol} = newCount; 
 
 save(fullfile(permsPath, permsFile),'cbPermutation')
