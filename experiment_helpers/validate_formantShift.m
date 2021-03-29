@@ -1,4 +1,4 @@
-function [h,e] = validate_formantShift(dataPath, p)
+function [h,e] = validate_formantShift(dataPath, p, bInterpret)
 % Calculates the average formant for a trial. Plots the average formant
 %   from signalIn and compares it against the average formant from
 %   signalOut. Shows different plots for different conditions in expt.conds.
@@ -8,10 +8,8 @@ function [h,e] = validate_formantShift(dataPath, p)
 %
 % In:   dataPath:   Filepath where data.mat and expt.mat files are saved.
 %       p:   Plot parameters.
-%       pertConds:   1xLength cell array of strings (which match elements
-%           in expt.conds). Include any condition names where you want to
-%           plot both the signalIn formants and signalOut formants. Any
-%           conditions not in this list will only have signalIn fmts plotted.
+%       bInterpret:   Binary flag for if you want information about how to
+%           interpret the data to be printed to the screen. Default 1 (print).
 %
 % Out:  h:   Handle for the figure.
 %       e:   Properties of the ellipses drawn in the figures.
@@ -20,6 +18,7 @@ function [h,e] = validate_formantShift(dataPath, p)
 % 2021-03 CWN. init. Based very heavily on BP's plot_varMod_byParticipant.
 
 if nargin < 1, dataPath = cd; end
+if nargin < 3 || isempty(bInterpret), bInterpret = 1; end
 
 load(fullfile(dataPath,'expt.mat'),'expt')
 load(fullfile(dataPath,'data.mat'),'data')
@@ -124,6 +123,13 @@ for iCond = 1:nConds
     xlabel('F1')
     title(labels{iCond})
 end
+
+
+%% print interpretation to screen
+if bInterpret
+    %TODO
+end
+
 
 
 end
