@@ -15,7 +15,7 @@ function [onset_bad, offset_bad] = validate_onsetOffset(dataPath, badThresh, bIn
 %   onset_bad. Vector of indexes where the onset was within badThresh
 %     seconds of the recording onset.
 %   offset_bad. Same as onset_bad, but for offsets to close to the end edge.
-%
+
 % 2021-03 CWN initial commit
 
 % input argument validation

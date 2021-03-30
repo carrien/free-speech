@@ -13,8 +13,7 @@ function [h,e] = validate_formantShift(dataPath, p, bInterpret)
 %
 % Out:  h:   Handle for the figure.
 %       e:   Properties of the ellipses drawn in the figures.
-%
-%
+
 % 2021-03 CWN. init. Based very heavily on BP's plot_varMod_byParticipant.
 
 if nargin < 1, dataPath = cd; end
@@ -23,7 +22,6 @@ if nargin < 3 || isempty(bInterpret), bInterpret = 1; end
 load(fullfile(dataPath,'expt.mat'),'expt')
 load(fullfile(dataPath,'data.mat'),'data')
 
-h = figure;
 nConds = length(expt.conds);
 nVows = length(expt.vowels);
 
@@ -40,11 +38,14 @@ defaultParams.LineWidth = 1.5;
 defaultParams.MarkerSize = 15;
 defaultParams.MarkerSizeShifted = 20;
 defaultParams.vowInds = 1:nVows;
+defaultParams.figpos = get(0,'ScreenSize') + [75 150 -150 -300];
 if nargin < 2 || isempty(p)
     p = defaultParams;
 else
     p = set_missingFields(p,defaultParams);
 end
+
+h = figure('Position', p.figpos);
 
 %%
 for iCond = 1:nConds
@@ -88,6 +89,8 @@ for iCond = 1:nConds
     outMarkers = {'x','*','+','.'};
     labels = expt.conds;
     subplot(1,nConds,iCond)
+    h_leg_obj = zeros(p.vowInds(end), 1);
+    leg_txt = cell(p.vowInds(end), 1);
     hold on
     for iVow = p.vowInds
         vow = expt.vowels{iVow};
@@ -107,7 +110,12 @@ for iCond = 1:nConds
         lines = plot([F1out.(cond).(vow)' F1in.(cond).(vow)']',[F2out.(cond).(vow)' F2in.(cond).(vow)']','-','Color',[.8 .8 .8]);
         uistack(lines, 'bottom');
         
+        %prepare objects for legend
+        h_leg_obj(iVow) = plot(nan, nan, inMarkers{iVow}, 'color', p.plotColors(iVow, :));
+        leg_txt(iVow) = {vow};
     end
+    lgd = legend(h_leg_obj, leg_txt, 'Location', 'southwest', 'FontSize', 10);
+    title(lgd, 'signalIn properties');
     hold off
     %xlims = [650 950];
     %ylims = [1200 2000];
