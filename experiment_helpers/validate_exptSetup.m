@@ -105,6 +105,7 @@ if bInterpret
         '  some type of manipulation with multiple categories (other than \n' ...
         '  `words` and `conds`), you should strongly consider adding that grouping\n' ...
         '  to the `expt.inds` structure.\n\n']);
+    fprintf(' Set input argument bInterpret == 0 to stop seeing this message.\n\n');
 end
 
 % revert to previous warning settings
