@@ -1,4 +1,4 @@
-function [h,e] = validate_formantShift(dataPath, p, bInterpret)
+function [h, e, err] = validate_formantShift(dataPath, p, bInterpret)
 % Calculates the average formant for a trial. Plots the average formant
 %   from signalIn and compares it against the average formant from
 %   signalOut. Shows different plots for different conditions in expt.conds.
@@ -13,6 +13,8 @@ function [h,e] = validate_formantShift(dataPath, p, bInterpret)
 %
 % Out:  h:   Handle for the figure.
 %       e:   Properties of the ellipses drawn in the figures.
+%       err: Struct with information necessary to follow up on
+%            discrepancies between fmts and sfmts.
 
 % 2021-03 CWN. init. Based very heavily on BP's plot_varMod_byParticipant.
 
@@ -47,6 +49,9 @@ end
 
 h = figure('Position', p.figpos);
 
+errIx = 1;
+err(errIx).badTrial = [];       % trial number of bad trial
+
 %%
 for iCond = 1:nConds
     cond = expt.conds{iCond};
@@ -61,27 +66,51 @@ for iCond = 1:nConds
         F1out.(cond).(vow) = NaN(1,nTrials);
         F2out.(cond).(vow) = NaN(1,nTrials);
         for iTrial = 1:length(trials2analyze)
-            trialnum = trials2analyze(iTrial);
-            
-            % TODO CWN test same points for in and out, continue if either is zero
+            trialnum = trials2analyze(iTrial); 
             
             % find signal in points
             samps2plot = find(data(trialnum).fmts(:,1)>10);
             nSamps = length(samps2plot);
-            if nSamps == 0, continue; end % skip to next trial if no sfmts exists
+            if nSamps == 0, continue; end % skip to next trial if no fmts exists
+            
                 % average fmt value from 25%-65% after onset
             fWindow(1) = samps2plot(floor(.25*nSamps));
             fWindow(2) = samps2plot(floor(.65*nSamps));
             F1in.(cond).(vow)(iTrial) = hz2mels(nanmean(data(trialnum).fmts(fWindow(1):fWindow(2),1)));
             F2in.(cond).(vow)(iTrial) = hz2mels(nanmean(data(trialnum).fmts(fWindow(1):fWindow(2),2)));
             
-            % find signal out points
-            samps2plot = find(data(trialnum).sfmts(:,1)>10);
-            nSamps = length(samps2plot);
-            if nSamps == 0, continue; end % skip to next trial if no sfmts exists
             
-            fWindow(1) = samps2plot(floor(.25*nSamps));
-            fWindow(2) = samps2plot(floor(.65*nSamps));
+            samps2plot_out = find(data(trialnum).sfmts(:,1)>10);
+            nSamps_out = length(samps2plot_out);
+            
+            if nSamps_out == 0, continue; end % skip to next trial if no sfmts exists
+            
+            % check for fmts and sfmts discrepancies. populate err struct
+            if length(samps2plot) ~= length(samps2plot_out) || any(samps2plot ~= samps2plot_out)
+                err(errIx).badTrial = trialnum; %#ok<*AGROW>
+                err(errIx).diffFrames = setdiff(samps2plot, samps2plot_out);
+                
+                % make table showing discrepancies between fmts and sfmts
+                err(errIx).diffFrames_table = table(hz2mels(data(trialnum).fmts([err(errIx).diffFrames])), ...
+                    hz2mels(data(trialnum).sfmts([err(errIx).diffFrames])), ...
+                    'VariableNames', {'fmts', 'sfmts'});
+                
+                % flag if discrepant frames were within sampling window
+                if any(err(errIx).diffFrames > fWindow(1) & err(errIx).diffFrames < fWindow(2))
+                    err(errIx).errorInWindow = 1;
+                else
+                    err(errIx).errorInWindow = 0;
+                end
+                err(errIx).msg = sprintf('Different fmts and sfmts values for trial %d. Evaluate discrepancy.', trialnum);
+                %warning(err(errIx).msg);
+                
+                errIx = errIx + 1;
+                continue;
+            end
+             
+                %fWindow(1) = samps2plot_out(floor(.25*nSamps_out));
+                %fWindow(2) = samps2plot_out(floor(.65*nSamps_out));
+            % use same sampling window for sfmts as fmts
             F1out.(cond).(vow)(iTrial) = hz2mels(nanmean(data(trialnum).sfmts(fWindow(1):fWindow(2),1)));
             F2out.(cond).(vow)(iTrial) = hz2mels(nanmean(data(trialnum).sfmts(fWindow(1):fWindow(2),2)));
         end
@@ -134,6 +163,14 @@ for iCond = 1:nConds
     xlabel('F1')
     title(labels{iCond})
 end
+
+if errIx > 1        %it's 1 by default
+    warning(sprintf(['\n\nError summary: There were %d trials where fmts and sfmts were different lengths. ' ...
+        'For %d of those trials, the discrepant fmts/sfmts values were inside the ' ...
+        'sampling window (25-65%%), meaning those trials were more severely affected.'], ...
+        length(err), sum([err.errorInWindow]))); %#ok<SPWRN>
+end
+
 
 
 %% print interpretation to screen
