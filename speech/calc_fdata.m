@@ -85,7 +85,7 @@ for i=goodTrials
         traces_mels = fmtdata.mels.(c).traces.(fm);
         fmtdata.mels.(c).traces.(fm) = nancat(traces_mels,hz2mels(y));
     end
-    % pitch
+   % pitch
     y = dataVals(i).f0;
     if size(y,2) == 2, y = y(:,2); end
     traces_hz = f0data.hz.(c).traces.f0;
@@ -130,7 +130,7 @@ for cnd=1:length(conds)
                 fmtdata.(fr).(c).mid50ms.rawavg.(fm)(i) = nanmean(y(round(noNaNlength/2-fs_fmt*.025):round(noNaNlength/2+fs_fmt*.025)));
             end
         end
-        % pitch
+%         % pitch
         if ~isempty(f0data.(fr).(c).traces.f0) && ~sum(~isnan(f0data.(fr).(c).traces.f0(:,1)))
             f0data.(fr).(c).traces.f0 = f0data.(fr).(c).traces.f0(:,2:end); % strip off first column of NaNs
         end
@@ -142,7 +142,7 @@ for cnd=1:length(conds)
             if noNaNlength/2 < ceil(fs_fmt*.025), error('Length of non-NaN portion of pitch signal is only %d samples. (Token %d = trial %d in condition %s)',noNaNlength,trialinds.(c)(i),goodTrials(i),c); end
             f0data.(fr).(c).mid50ms.rawavg.f0(i) = nanmean(y(round(noNaNlength/2-fs_fmt*.025):round(noNaNlength/2+fs_fmt*.025)));
         end
-    end
+     end
     % ampl
     if ~isempty(ampldata.dB.(c).traces.ampl) && ~sum(~isnan(ampldata.dB.(c).traces.ampl(:,1)))
         ampldata.dB.(c).traces.ampl = ampldata.dB.(c).traces.ampl(:,2:end); % strip off first column of NaNs
@@ -218,7 +218,7 @@ for cnd=1:length(conds)
                 fmtdata.(fr).(c).(av).center25 = trialinds.(c)(cent25);
                 fmtdata.(fr).(c).(av).periph25 = trialinds.(c)(peri25);
                 
-                % pitch
+%                 % pitch
                 f0dist_int = f0data.(fr).(c).(av).rawavg.f0 - f0data.(fr).(c).(av).med.f0;
                 if isfield(expt,'tones')
                     f0dist_ext = f0data.(fr).(c).(av).rawavg.f0 - expt.tones(cnd);
@@ -244,7 +244,7 @@ for cnd=1:length(conds)
                 f0data.(fr).(c).(av).center25 = trialinds.(c)(cent25);
                 f0data.(fr).(c).(av).periph25 = trialinds.(c)(peri25);
                 
-            end
+          end
             
             ampldist = ampldata.dB.(c).(av).rawavg.ampl - ampldata.dB.(c).(av).med.ampl;
             ampldata.dB.(c).(av).dist = abs(ampldist);
@@ -367,7 +367,7 @@ end
 % end
 
 %% calculate near and far trials using projection on shiftvec
-if isfield(expt,'shifts')
+if isfield(expt,'shifts1')
     shiftscales = fieldnames(expt.shifts);
     nshifts = length(expt.shifts.(shiftscales{1}));
     shiftnames = expt.conds(end-nshifts+1:end);
