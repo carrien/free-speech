@@ -10,12 +10,12 @@ function [expt] = randomize_stimuli(expt, nTrialsPerPert, nTrialsPerNonpert, nBa
 %   NTRIALSPERPERT. In each block, the number of trials that each unique
 %       word-condition pair should be, for perturbation conditions. For
 %       example, if you have 3 words and 2 perturbation conditions, the
-%       number of trials per block that are "word1 with perturbation cond2"
+%       number of trials PER BLOCK that are "word1 with perturbation cond2"
 %   NTRIALSPERNONPERT. In each block, the number of trials that should be
 %       used for each word-condition pair, for non-perturbation conditions.
 %       For example, if you have three words (and you necessarily only have
-%       one non-perturbation condition), the number of trials that should
-%       be "word1 with no perturbation". 
+%       one non-perturbation condition), the number of trials PER BLOCK
+%       that should be "word1 with no perturbation". 
 %   NBASELINE. Optional. (Default = 0). If there are trials at the
 %       BEGINNING of the experiment where every trial should be the noPert
 %       condition (or specifically, the first indexed condition in expt.conds),
@@ -71,14 +71,14 @@ Lastly, override condition values if nBaseline or nWashout are in use.
 %% Sample input
 %{
 With the following setup:
-   ntrials_per_block = 18
-   nTrialsPerPert = 1
-   nTrialsPerNonpert = 4
    expt.words = {'head' 'bed' 'dead'}, such that length = 3
    expt.conds = {'noPert' 'shiftIH' 'shiftAE'}, such that length = 3
+   expt.ntrials_per_block = 18
+   INPUT ARGUMENT: nTrialsPerPert = 1
+   INPUT ARGUMENT: nTrialsPerNonpert = 4
 
 Then within each block, you would get:
-  12 noPert trials, where 4 are 'head', 4 are 'bed', and 4 are 'dead'
+  12 noPert trials (4 trials for each word)
   3 shiftIH trials (1 trial for each word)
   3 shiftAE trials (1 trial for each word)
 

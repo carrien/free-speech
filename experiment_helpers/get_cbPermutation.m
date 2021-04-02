@@ -35,8 +35,10 @@ cbPermutation = perms.(char(varField));
 [~,countCol] = size(cbPermutation); % Find the column that counts the number of uses
 lastCondCol = countCol-1; 
 
+rng('shuffle')
 if nargin < 4 || isempty(permIx)
-    permIx = find([cbPermutation{:,countCol}] == min([cbPermutation{:,countCol}]), 1); % Find the first row that has the min use
+    permInds = find([cbPermutation{:,countCol}] == min([cbPermutation{:,countCol}])); % Find rows with min use
+    permIx = randi([permInds(1) permInds(length(permInds))]); %choose random permutation set from rows with min use (added LH 3/11/21)
     conditions = cbPermutation(permIx, 1:lastCondCol); 
 else 
     conditions = cbPermutation(permIx, 1:lastCondCol); 

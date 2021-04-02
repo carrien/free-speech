@@ -1,8 +1,14 @@
-function [h] = plot_audapterFormants(data,p)
+function [h] = plot_audapterFormants(data, p, bInterpret)
 %UNTITLED3 Summary of this function goes here
 %   Detailed explanation goes here
 
 if nargin < 2, p = struct; end
+if nargin < 3 || isempty(bInterpret), bInterpret = 1; end
+
+if length(data) > 50
+    error(['Data file too long. Choose a subset of fewer than 50 trials ' ...
+        '(ideally 2 to 10 trials) to view at one time.']);
+end
 
 screenSize = get(0,'ScreenSize');
 
@@ -102,4 +108,15 @@ for nax = 1:ncols
         set(gca, 'YTickLabel', '');
     end
     
+end
+
+
+if bInterpret
+    fprintf(['\nSimply displays the wave form (top), spectrogram (bottom), signalIn\n' ...
+        ' formant track (bottom; cyan), and signalOut formant track (bottom; magenta).\n' ...
+        ' This tool is useful for spot-checking formant tracks and basic duration info.\n\n']);
+    fprintf('Set input argument bInterpret == 0 to stop seeing this message.\n\n');
+end
+
+
 end

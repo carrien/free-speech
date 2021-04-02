@@ -21,7 +21,7 @@ else
 end
 
 % run reaper on wavs
-matlabpool;
+parpool;
 fprintf('Running reaper on %d wav files.\n',length(data))
 if ~isempty(frange)
 fprintf('Calculating f0 tracks between %d and %d Hz.\n',frange(1),frange(2))
@@ -34,7 +34,7 @@ parfor i=1:length(data)
         continue;
     end
 end
-matlabpool close;
+parpool close;
 
 fprintf('Importing reaper outfile files... ')
 for i=1:length(data)

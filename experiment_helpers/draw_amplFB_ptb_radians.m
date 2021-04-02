@@ -60,7 +60,7 @@ else
         end
     end
     
-    fillheight = (fullbarheight * dispAmp; % twice the height for the rectangle...
+    fillheight = (fullbarheight * dispAmp); % twice the height for the rectangle...
     fillwidth = (radius*abs(cos(105))) - 1
     fillradius = sqrt((fillwidth^2) + ((fillheight)^2));
     theta = acosd(fillheight/fillradius);

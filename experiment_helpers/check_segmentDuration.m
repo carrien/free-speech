@@ -69,13 +69,13 @@ ostFactor = fs/frameLength;
 
 %% Set up OST recognition 
 % Get the buffer amount for the ostStatBegin (so hand correction is more intuitive) 
-ostWorking = fullfile(get_gitPath, expt.trackingFileLoc, [expt.trackingFileName 'Working.ost']); 
+ostWorking = fullfile(get_gitPath, 'current-studies', expt.trackingFileLoc, [expt.trackingFileName 'Working.ost']); 
 ostStatBeginPrev = startStatus - 2; % this is currently true for all cases
 ostStatEndPrev = endStatus - 2; 
 
 % If a working copy doesn't exist, make one
 if exist(ostWorking,'file') ~= 2
-    refreshWorkingCopy(expt.name, dummyWord,'ost');
+    refreshWorkingCopy(expt.trackingFileLoc, expt.trackingFileName, 'ost');
 end
 
 % Open file and load file line by line into structure finfo
@@ -91,11 +91,11 @@ while ischar(tline)
 end
 fclose(fid);
 
-% The additional lag will be param2
+% Lags induced by status waiting for the appropriate amount of either time or frames
 [preStartStatHeur, ~, preStartStatParam2] = get_ost(expt.trackingFileLoc, expt.trackingFileName, startStatus-2); 
 % Unless you're using a stretch/span heuristic in which case it will be the number of frames in the 3rd component / framelen
 if contains(preStartStatHeur,'STRETCH')
-    ostStatBeginPrev_lag = preStartStatParam2 / expt.audapterParams.frameLen; 
+    ostStatBeginPrev_lag = preStartStatParam2 * expt.audapterParams.frameLen / expt.audapterParams.sr; 
 else
     ostStatBeginPrev_lag = preStartStatParam2; 
 end
@@ -103,7 +103,7 @@ end
 % now again for the ending ost
 [preEndStatHeur, ~, preEndStatParam2] = get_ost(expt.trackingFileLoc, expt.trackingFileName, endStatus-2); 
 if contains(preEndStatHeur,'STRETCH')
-    ostStatEndPrev_lag = preEndStatParam2 / expt.audapterParams.frameLen; 
+    ostStatEndPrev_lag = preEndStatParam2 * expt.audapterParams.frameLen / expt.audapterParams.sr; 
 else
     ostStatEndPrev_lag = preEndStatParam2; 
 end
@@ -132,7 +132,7 @@ for itrial = 1:ntrials
     % Find start and end times of segment of interest
     ost_stat = data(itrial).ost_stat; 
     segStartIx = find((ost_stat == startStatus),1); 
-    segEndIx = find((ost_stat == ostStatEnd),1); 
+    segEndIx = find((ost_stat == endStatus),1); 
     
     % if the right osts failed to trigger
     if ~isempty(segStartIx)

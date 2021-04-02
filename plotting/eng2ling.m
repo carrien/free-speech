@@ -2,6 +2,8 @@ function [ ] = eng2ling(ax)
 %ENG2LING  Converts between "engineering" and "linguistics" vowel spaces.
 %   ENG2LING(AX)
 
+if nargin < 1, ax = gca; end
+
 % reverse x-axis
 if strcmp(ax.XDir,'normal')
     ax.XDir = 'reverse';

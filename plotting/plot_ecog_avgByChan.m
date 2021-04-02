@@ -1,4 +1,4 @@
-function [alldat] = plot_ecog_avgByChan(neuralY,chnums,trialgroups)
+function [h,alldat] = plot_ecog_avgByChan(neuralY,chnums,trialgroups)
 %PLOT_ECOG_AVG  Plot
 
 if nargin < 3, trialgroups.all = 1:length(neuralY); end
@@ -28,40 +28,47 @@ alldat(ngroups).rfx = [];
 
 datnames = fieldnames(alldat);
 
+t = -.5:1/200:1;
+
 figure;
 for i=1:nplots
     chdata = squeeze(neuralY(chnums(i),:,:))';
     subplot(nrows,nrows,i)
     for j=1:ngroups
         trialinds = trialgroups.(groupnames{j});
-        dat = chdata(trialinds,1:300);
+        dat = chdata(trialinds,1:301);
         alldat(j).ffx = [alldat(j).ffx; dat];
         sig = nanmean(dat);
         alldat(j).rfx = [alldat(j).rfx; sig];
         err = get_errorbars(dat','ci')';
-        t = 1:length(sig);
+        %t = 1:length(sig);
         plot_filled_err(t,sig,err,colors{j});
         hold on;
-        plot(sig,'Color',colors{j});
+        plot(t,sig,'Color',colors{j});
         set(gca,'XTickLabel',[]);
         title(num2str(chnums(i)))
     end
-    vline(100,'k');
+    vline(.475,'k');
 end
 
 set(gcf,'MenuBar','none')
 set(gcf,'Position',pos)
 
 % plot averages across all chans
-figure;
+h = figure;
 for j=1:ngroups
     dat = alldat(j).ffx;
     sig = nanmean(dat);
     err = get_errorbars(dat','ci');
-    t = 1:length(sig);
-    plot_filled_err(t,sig,err',colors{j});
+    %t = 1:length(sig);
+    hleg(j) = plot_filled_err(t,sig,err',colors{j});
     hold on;
-    plot(sig,'Color',colors{j});
-    set(gca,'XTickLabel',[]);
+    plot(t,sig,'Color',colors{j});
+    %set(gca,'XTickLabel',[]);
     title(inputname(3))
+    %vline(0,'k');
+    box off;
+    xlabel('time (s)')
 end
+legend(hleg,{'center','periphery'},'AutoUpdate','off');
+legend box off

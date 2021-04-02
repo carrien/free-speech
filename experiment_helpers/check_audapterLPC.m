@@ -239,37 +239,60 @@ function updatePlots(src)
     ntrials = length(UserData.data);
     f1s = NaN(1,ntrials);
     f2s = NaN(1,ntrials);
-    for i = 1:ntrials
-        ftrackSamps = find(UserData.data(i).fmts(:,1)>0);
-        ftrack = UserData.data(i).fmts(ftrackSamps,:);
-        ftrackLength = length(ftrack(:,1));
-        if ftrackLength > 4
-            p25 = round(ftrackLength/4);
-            p50 = round(ftrackLength/2);
-            f1s(i) = mean(ftrack(p25:p50,1));
-            f2s(i) = mean(ftrack(p25:p50,2));
+    bWarn = 1;
+    
+    for i = 1:ntrials      
+        %use ost status to plot vowels
+        if isfield(UserData.data(i), 'calcOST') && ~isempty(UserData.data(i).calcOST)
+            vowelFrames = find(UserData.data(i).calcOST == 2 | UserData.data(i).calcOST == 3); % get indices to vowel, as set by audapter_viewer
+        elseif isfield(UserData.data(i), 'ost_calc') && ~isempty(UserData.data(i).ost_calc)
+            vowelFrames = find(UserData.data(i).ost_calc == 2 | UserData.data(i).ost_calc == 3); % get indices to vowel, as set by audapter_viewer
         else
-            f1s(i) = NaN;
-            f2s(i) = NaN;
+            vowelFrames = find(UserData.data(i).ost_stat == 2 | UserData.data(i).ost_stat == 3); % get indices to vowel, from initial audapter run
+        end
+        if ~isempty(vowelFrames)
+            %use ost status to plot vowels if possible
+            framedur = 1 / UserData.data(i).params.sr*UserData.data(i).params.frameLen; %get frame duration
+            offset = [floor(0.05 / framedur) floor(0.01 / framedur)];
+            vowelFrames = vowelFrames(1)-offset(1):vowelFrames(end)-offset(2); %account for offset in ost tracking
+            vowelFmts = UserData.data(i).fmts(vowelFrames,:);
+            f1s(i) = nanmedian(midnperc(vowelFmts(:,1),50));
+            f2s(i) = nanmedian(midnperc(vowelFmts(:,2),50));
+        else
+            if bWarn
+                warning('Expected OST statuses not found! Using audapter formant track length to estimate vowel midpoint')
+            end
+            bWarn = 0;
+            % use old method(mean betweeen 25-50% formant track length)
+            ftrackSamps = find(UserData.data(i).fmts(:,1)>0);
+            ftrack = UserData.data(i).fmts(ftrackSamps,:);
+            ftrackLength = length(ftrack(:,1));
+            if ftrackLength > 4
+                p25 = round(ftrackLength/4);
+                p50 = round(ftrackLength/2);
+                f1s(i) = mean(ftrack(p25:p50,1));
+                f2s(i) = mean(ftrack(p25:p50,2));
+            else
+                f1s(i) = NaN;
+                f2s(i) = NaN;
+            end
         end
     end
     
-    %plot F1/F2 scatter
+    %% plot F1/F2 scatter
     delete(UserData.F1F2ax)
     UserData.F1F2ax = axes(UserData.plotPanelF1F2, 'Position', [0.13 0.13 0.775 0.815]);
 
     hold off
     vowels = fields(UserData.expt.inds.vowels);
     
-    %TODO: allow for any number of colors/vowels? Currently only allows for
-    %8... 
-    plotColors = [1 0 0; 0 1 0; 0 0 1; 0 0 0; 1 0.5 0; 1 0.4 0.6; 1 0 1; 0 1 0.7];
-    %plotColors = [.9 0 0; 0 0.8 0; 0 0 1; 0.91 0.41 0.17]; 
+    %Set up colors. Using varycolor allows for any number of vowels
+    plotColors = varycolor(UserData.nVowels);
+    
     for i = 1:UserData.nVowels
         vow = vowels{i};     
         for j = 1:length(f1s(UserData.expt.inds.vowels.(vow)))
             if UserData.expt.bExcl(UserData.expt.inds.vowels.(vow)(j))
-%                 color2plot = [0.6 0.6 0.6];
                 color2plot = plotColors(i,:)*0.5;
                 markerShape = 'x';
             else
@@ -293,7 +316,7 @@ function updatePlots(src)
     xlabel('F1','FontUnits','normalized','FontSize',.05)
     ylabel('F2','FontUnits','normalized','FontSize',.05)
     
-    %plot individual formant tracks
+    %% plot individual formant tracks
     for i = 1:UserData.nVowels
         vow = vowels{i};
         %first, select which trials to plot
@@ -328,11 +351,11 @@ function updatePlots(src)
         framedur = 1 / UserData.data(trial2plot).params.sr*UserData.data(trial2plot).params.frameLen; %get frame duration
         offset = [floor(0.05 / framedur) floor(0.01 / framedur)];
         if isfield(UserData.data(trial2plot), 'calcOST') && ~isempty(UserData.data(trial2plot).calcOST)
-            vowelFrames = find(UserData.data(trial2plot).calcOST == 2); % get indices to vowel, as set by audapter_viewer
+            vowelFrames = find(UserData.data(trial2plot).calcOST == 2 | UserData.data(trial2plot).calcOST == 3); % get indices to vowel, as set by audapter_viewer
         elseif isfield(UserData.data(trial2plot), 'ost_calc') && ~isempty(UserData.data(trial2plot).ost_calc)
-            vowelFrames = find(UserData.data(trial2plot).ost_calc == 2); % get indices to vowel, as set by audapter_viewer
+            vowelFrames = find(UserData.data(trial2plot).ost_calc == 2 | UserData.data(trial2plot).ost_calc == 3); % get indices to vowel, as set by audapter_viewer
         else
-            vowelFrames = find(UserData.data(trial2plot).ost_stat == 2); % get indices to vowel, from initial audapter run
+            vowelFrames = find(UserData.data(trial2plot).ost_stat == 2 | UserData.data(trial2plot).ost_stat == 3); % get indices to vowel, from initial audapter run
         end
         if ~isempty(vowelFrames)
             vowelFrames = vowelFrames(1)-offset(1):vowelFrames(end)-offset(2); %account for offset in ost tracking
@@ -429,7 +452,7 @@ function goto_audapter_viewer(src,evt)
     hGui = findobj('Tag','audapter_viewer');
     uiwait(hGui);
     
-    % Make sure UserData.data gets calcOST field
+    % Make sure UserData.data gets ost_calc field
     load(fullfile(UserData.dataPath, 'data.mat'), 'data');
     UserData.data = data;
     
