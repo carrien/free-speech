@@ -7,6 +7,11 @@ nmeasures = length(measures);
 lengths = zeros(1,nmeasures);
 for m = 1:nmeasures
     measname = measures{m};
+    if isrow(data.(measname))
+        data.(measname) = data.(measname)';
+    elseif ~isvector(data.(measname))
+        error('Input data must be a vector.')
+    end
     lengths(m) = length(data.(measname));
     if m > 1 && lengths(m) ~= lengths(m-1)
         error('Mismatch between %s (length %d) and previous values (length %d).',measname, lengths(m), lengths(m-1))
