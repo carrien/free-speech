@@ -10,6 +10,8 @@ function [h] = plot_audapterFormants(data, p, bInterpret)
 %   p: Struct of parameters to use when plotting. Default: [see code].
 %   bInterpret: A binary flag for whether or not to print information which
 %     may help you interpret your results. Default: 1.
+%
+% Other validation functions at: https://kb.wisc.edu/smng/109809
 
 
 if nargin < 2, p = struct; end
