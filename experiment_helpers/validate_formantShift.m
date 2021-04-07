@@ -158,7 +158,7 @@ for iCond = 1:nConds
         ylabel('F2')
     else
         %set(gca,'XTick',[650 950]);
-        set(gca,'YTick', []);
+        %set(gca,'YTick', []); % can un-comment if all axes are Y-aligned
     end
     xlabel('F1')
     title(labels{iCond})

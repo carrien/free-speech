@@ -1,6 +1,16 @@
 function [h] = plot_audapterFormants(data, p, bInterpret)
-%UNTITLED3 Summary of this function goes here
-%   Detailed explanation goes here
+% Provides a quick plot of the waveform, spectrogram, and signalIn formants
+%   (fmts) and signalOut formants (sfmts) for trial data. Used for
+%   spot-checking a couple trials.
+%
+% IN:
+%   data: The data struct to view data from. Note that the output
+%     looks best when viewing 1-5 trials at a time. Consider passing in data
+%     as `data(1:4)`. Required.
+%   p: Struct of parameters to use when plotting. Default: [see code].
+%   bInterpret: A binary flag for whether or not to print information which
+%     may help you interpret your results. Default: 1.
+
 
 if nargin < 2, p = struct; end
 if nargin < 3 || isempty(bInterpret), bInterpret = 1; end
