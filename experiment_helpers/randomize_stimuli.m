@@ -119,6 +119,10 @@ for i = 0:1:(numWordsConds-1)
     end
 end
 
+if length(pertTrials_ordered) > length(nonpertTrials_ordered)
+    error('There cannot be more pert trials than nonpert trials. (Otherwise adjacency rules are broken.)');
+end
+
 %% Loop for each block
 for iblock = 1:expt.nblocks
     pertTrials = pertTrials_ordered;
