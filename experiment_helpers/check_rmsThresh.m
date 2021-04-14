@@ -9,7 +9,7 @@ else
     bGoodTrial = 0;
 end
 
-if subAxis
+if isgraphics(subAxis)
     subplot(subAxis)
     tAxis = 0 : data.params.frameLen : data.params.frameLen * (size(data.fmts, 1) - 1);
     yyaxis left
