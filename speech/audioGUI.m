@@ -47,8 +47,15 @@ end
 
 % loop through trials
 for itrial = trials2track
+    
     %% prepare inputs
     y = data(itrial).(buffertype);
+    
+    %Skip trials where signalIn is empty
+    if isempty(y)
+        fprintf('Trial %d has an empty SignalIn field, Skipping for now.', itrial)
+        continue;
+    end  
     
     if isfield([data.params],'fs')
         fs = data(itrial).params.fs;
