@@ -17,5 +17,5 @@ end
 
 hax = makeFig4Screen(hax,p,minLineWidth);
 hax.Color = 'none';
-hax.FontSize = 12;
+hax.FontSize = 11;
 hax.LineWidth = 0.75;
