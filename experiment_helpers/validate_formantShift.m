@@ -15,6 +15,8 @@ function [h, e, err] = validate_formantShift(dataPath, p, bInterpret)
 %       e:   Properties of the ellipses drawn in the figures.
 %       err: Struct with information necessary to follow up on
 %            discrepancies between fmts and sfmts.
+%
+% Other validation functions at: https://kb.wisc.edu/smng/109809
 
 % 2021-03 CWN. init. Based very heavily on BP's plot_varMod_byParticipant.
 
@@ -158,7 +160,7 @@ for iCond = 1:nConds
         ylabel('F2')
     else
         %set(gca,'XTick',[650 950]);
-        set(gca,'YTick', []);
+        %set(gca,'YTick', []); % can un-comment if all axes are Y-aligned
     end
     xlabel('F1')
     title(labels{iCond})

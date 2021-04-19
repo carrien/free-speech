@@ -16,6 +16,8 @@ function [Tables] = validate_exptSetup(dataPath, groupings, bInterpret)
 % OUTPUT ARGUMENTS:
 %   Tables. Returns a cell array where each cell is a table of paired
 %     groupings.
+%
+% Other validation functions at: https://kb.wisc.edu/smng/109809
 
 % v1 2021-03 CWN
 
