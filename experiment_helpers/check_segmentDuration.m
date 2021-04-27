@@ -210,6 +210,8 @@ end
         expt.availableDur.(intervalName) = availableDur(s,:); 
         expt.trueDur.(intervalName) = trueDur(s,:); 
     end
+    
+    expt.goodTokens = goodTokens; 
 
     
 end
