@@ -107,7 +107,7 @@ timing.interstimjitter = 0.5;  % maximum extra time between stims (jitter)
 expt = set_missingField(expt,'timing',timing);
 
 %% duration tracking parameters
-durcalc.min_dur = .4;         %
+durcalc.min_dur = .35;         %
 durcalc.max_dur = .6;
 durcalc.ons_thresh = 0.15;
 durcalc.offs_thresh = 0.5;
