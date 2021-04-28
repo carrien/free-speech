@@ -186,6 +186,7 @@ end
     goodTokens = 0; 
     for itrial = 1:ntrials
         load(fullfile(dataPath,trialfolder,sprintf('%d.mat',itrial))); 
+        bInclude(s, itrial) = trialparams.event_params.is_good_trial; 
         if trialparams.event_params.is_good_trial
             for s = 1:nStatusPairs
                 % Get pairs of event times, adjust the starting one by putting the buffer back 
@@ -197,6 +198,7 @@ end
                 trueDur(s, itrial) = endTime - startTime; 
             end
             goodTokens = goodTokens + 1; 
+            
         else
             availableDur(s, itrial) = NaN; 
             trueDur(s, itrial) = NaN; 
@@ -209,6 +211,7 @@ end
         intervalName = durationNames{s}; 
         expt.availableDur.(intervalName) = availableDur(s,:); 
         expt.trueDur.(intervalName) = trueDur(s,:); 
+        expt.bGoodToken.(intervalName) = bInclude(s,:); 
     end
     
     expt.goodTokens = goodTokens; 
