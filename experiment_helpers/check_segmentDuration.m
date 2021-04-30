@@ -143,7 +143,7 @@ for itrial = 1:ntrials
     ueventTime(1) = durInfo(1,itrial).adjusted_startStatusTime; 
     eventBuffer(1) = durInfo(1,itrial).startStatusTime - durInfo(1,itrial).adjusted_startStatusTime; 
     if isnan(ueventTime(1))
-        ueventTime(1) = (length(ost_stat)/2)/ostFactor; % arbitrarily picking midpoint of the file
+        ueventTime(1) = 0.50; % arbitrarily picking 500 ms
         eventBuffer(1) = 0; 
         fprintf('OST status %d didn''t trigger on trial %d\n',statuses(1), trialno);
     end
