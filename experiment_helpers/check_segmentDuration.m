@@ -1,4 +1,4 @@
-function expt = check_segmentDuration(expt, data, statuses, ueventNames, durationNames)
+function expt = check_segmentDuration(expt, data, statuses, ueventNames, durationNames, origCalc)
 % Find the duration of segments (or parts of segments), based on OST status changes 
 % Inputs: 
 % 1. expt: the expt that you are currently working with. Should provide information about tracking file
@@ -54,6 +54,8 @@ if nargin < 5 || isempty(durationNames)
     end
 end
 
+if nargin < 6 || isempty(origCalc), origCalc = 'orig'; end
+
 %% Tracking file information
 
 if isfield(expt, 'trackingFileLoc')
@@ -102,7 +104,7 @@ ostFactor = fs/frameLength;
 %% Call get_segmentDuration 
 
 for s = 1:nStatusPairs
-    durInfo(s,:) = get_segmentDuration(expt, data, statuses(s), statuses(s+1)); 
+    durInfo(s,:) = get_segmentDuration(expt, data, statuses(s), statuses(s+1), origCalc); 
 end
 
 % This creates a structure where the second dimension is number of trials and the first is number of status pairs
