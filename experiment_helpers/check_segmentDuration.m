@@ -189,33 +189,45 @@ end
     for itrial = 1:ntrials
         load(fullfile(dataPath,trialfolder,sprintf('%d.mat',itrial))); 
         bInclude(s, itrial) = trialparams.event_params.is_good_trial; 
-        if trialparams.event_params.is_good_trial
-            for s = 1:nStatusPairs
-                % Get pairs of event times, adjust the starting one by putting the buffer back 
-                startTime = trialparams.event_params.user_event_times(s); 
-                endTime = trialparams.event_params.user_event_times(s+1); 
-                adjusted_startTime = startTime + eventBuffer(s); 
-                
+        
+        for s = 1:nStatusPairs
+            % Get pairs of event times, adjust the starting one by putting the buffer back 
+            startTime = trialparams.event_params.user_event_times(s); 
+            endTime = trialparams.event_params.user_event_times(s+1); 
+            adjusted_startTime = startTime + eventBuffer(s); 
+
+            if trialparams.event_params.is_good_trial
                 availableDur(s, itrial) = endTime - adjusted_startTime; 
                 trueDur(s, itrial) = endTime - startTime; 
+            else
+                availableDur(s, itrial) = NaN; 
+                trueDur(s, itrial) = NaN; 
             end
-            goodTokens = goodTokens + 1; 
-            
-        else
-            availableDur(s, itrial) = NaN; 
-            trueDur(s, itrial) = NaN; 
         end
+
+        for o = 1:length(statuses)
+            if trialparams.event_params.is_good_trial
+                correctedTime.(ueventNames{o})(itrial) = trialparams.event_params.user_event_times(o); 
+            else
+                availableDur(s, itrial) = NaN; 
+                correctedTime.(ueventNames{o})(itrial) = NaN; 
+            end
+
+        end
+        goodTokens = goodTokens + 1; 
+            
         
     end
-    
+   
     % put them into expt
     for s = 1:nStatusPairs
         intervalName = durationNames{s}; 
         expt.availableDur.(intervalName) = availableDur(s,:); 
         expt.trueDur.(intervalName) = trueDur(s,:); 
         expt.bGoodToken.(intervalName) = bInclude(s,:); 
+        
     end
-    
+    expt.correctedTime = correctedTime; 
     expt.goodTokens = goodTokens; 
 
     
