@@ -15,7 +15,7 @@ nSubj = length(dataPaths);
 mu = zeros(1,nSubj);
 sigma = zeros(1,nSubj);
 
-h = figure;
+h = figure('Position',[100 100 560 650]);
 tiledlayout(3,1)
 hax_hists = nexttile;
 hax_pdfs = nexttile;
