@@ -169,6 +169,7 @@ for itrial = firstTrial:lastTrial
         data = AudapterIO('getData');
 
         % plot shifted spectrogram
+        cla(h_sub(2))
         figure(h_fig(ctrl))
         subplot(h_sub(2))
         show_spectrogram(data.signalIn, data.params.sr, 'noFig');
