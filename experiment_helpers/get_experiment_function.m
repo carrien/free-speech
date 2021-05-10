@@ -32,6 +32,10 @@ switch expName
         expFun = @run_vsaGeneralize_audapter;
     case 'attentionComp'
         expFun = @run_attentionComp_audapter;
+    case 'simonSingleWord'
+        expFun = @run_simonSingleWord_audapter;
+    case 'taimComp'
+        expFun = @run_taimComp_audapter;
     otherwise
         fprintf('Function for experiment ''%s'' not found.',expName)
         expFun = [];
