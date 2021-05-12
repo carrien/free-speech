@@ -6,7 +6,7 @@ function gender = get_height(heightResponse)
 if nargin < 1, heightResponse = []; end
 
 if ~any(strcmp(heightResponse,{'y','n'}))
-    heightResponse = input("Does the participant appear to be above the height 5' 8''? (y/n): ", 's');
+    heightResponse = input("Does the participant appear to be above the height 5' 8""? (y/n): ", 's');
     while ~any(strcmp(heightResponse,{'y','n'}))
         heightResponse = input('Invalid response. Please enter y/n: ','s');
     end
