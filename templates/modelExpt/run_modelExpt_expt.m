@@ -86,7 +86,7 @@ if isfile(fullfile(expt.dataPath, 'expt.mat'))
 end
 
 % other expt.mat setup
-if ~isfield(expt,'gender'), expt.gender = get_gender; end
+if ~isfield(expt,'gender'), expt.gender = get_height; end
 expt.words = {'bed', 'dead', 'head'};
 
 
