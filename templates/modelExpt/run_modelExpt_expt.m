@@ -81,7 +81,7 @@ expt.dataPath = get_acoustLocalPath(expt.name, expt.snum);
 if isfile(fullfile(expt.dataPath, 'expt.mat'))
     bOverwrite = input('This participant already exists. Load in existing expt? (y/n): ', 's');
     if strcmp(bOverwrite,'y')
-        load(fullfile(expt.dataPath, 'expt.mat'))
+        load(fullfile(expt.dataPath, 'expt.mat'), 'expt')
     end
 end
 
@@ -107,12 +107,10 @@ if ~isfield(expt,'group')
             %CONV: For text response options like the `input` command
             %below, you can put letters or numbers in parentheses to show
             %the person running your code what their response options are.
-            %Also note in the next line how the code doesn't proceed until
-            %an input of 1 or 2 is received.
-        expt.groupnum = input('Which group? (1) normal or (2) perturbed? ');
-        while ~any(expt.groupnum == [1 2])
-            expt.groupnum = input('Invalid answer. Please enter 1 or 2: ');
-        end
+            %This `askNChoiceQuestion` function (which Robin wrote) also
+            %doesn't let you move on until you give an approved response --
+            %in this case, a 1 or a 2.
+        expt.groupnum = askNChoiceQuestion('Which group? (1) Normal or (2) perturbed?', [1 2]);
         expt.group = groups{expt.groupnum};
     else %if real participant, assign group randomly
         [expt.group, expt.groupnum] = get_sgroup(expt.dataPath, groups);
