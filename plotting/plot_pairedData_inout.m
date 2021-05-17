@@ -63,6 +63,9 @@ end
 if ~isfield(p,'bCI')
     p.bCI = 0;
 end
+if ~isfield(p,'capsize')
+    p.capsize = 10;
+end
 if ~isfield(p,'bPaired')
     p.bPaired = 1;
 end
@@ -167,9 +170,9 @@ for c = 1:nConds
     cond_ci(c) = calcci(cond_data');
     plot(c,nanmean(cond_data),p.avgMarker,'Color',str2num(p.avgMarkerColor{c}),'MarkerFace',str2num(p.avgMarkerColor{c}),'MarkerSize',p.avgMarkerSize)
     if p.bCI
-        errorbar(c,nanmean(cond_data), cond_ci(c),'Color',str2num(p.avgMarkerColor{c}),'LineWidth',p.avgLineWidth,'CapSize',10)
+        errorbar(c,nanmean(cond_data), cond_ci(c),'Color',str2num(p.avgMarkerColor{c}),'LineWidth',p.avgLineWidth,'CapSize',p.capsize)
     else
-        errorbar(c,nanmean(cond_data), cond_se(c),'Color',str2num(p.avgMarkerColor{c}),'LineWidth',p.avgLineWidth,'CapSize',10)
+        errorbar(c,nanmean(cond_data), cond_se(c),'Color',str2num(p.avgMarkerColor{c}),'LineWidth',p.avgLineWidth,'CapSize',p.capsize)
 %         errorbar(c,nanmean(cond_data), cond_ci(c),'Color',p.avgErrorColor(c,:),'LineWidth',p.avgLineWidth)
 %     else
 %         errorbar(c,nanmean(cond_data), cond_se(c),'Color',p.avgErrorColor(c,:),'LineWidth',p.avgLineWidth)

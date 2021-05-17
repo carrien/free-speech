@@ -49,7 +49,7 @@ if ~isfield(p,'LineWidth')
     p.LineWidth = 1;
 end
 if ~isfield(p,'avgLineColor')
-    p.avgLineColor = [0 0 0];
+    p.avgLineColor = colorSpec;%[0 0 0]
 end
 if ~isfield(p,'avgLineWidth')
     p.avgLineWidth = 3;
@@ -59,6 +59,9 @@ if ~isfield(p,'jitterFrac')
 end
 if ~isfield(p,'bCI')
     p.bCI = 0;
+end
+if ~isfield(p,'capsize')
+    p.capsize = 10;
 end
 if ~isfield(p,'bPaired')
     p.bPaired = 1;
@@ -153,7 +156,7 @@ if p.bPaired
         cond = conds{c};
         cond_means(:,c) = dataMeansByCond.(cond);
     end
-    plot(1:nConds,nanmean(cond_means,1),'-','Color',p.avgLineColor,'LineWidth',p.avgLineWidth)
+  plot(1:nConds,nanmean(cond_means,1),'-','Color',p.avgLineColor,'LineWidth',p.avgLineWidth)   
 end
 for c = 1:nConds
     cond = conds{c};
@@ -162,9 +165,9 @@ for c = 1:nConds
     cond_ci(c) = calcci(cond_data');
     plot(c,nanmean(cond_data),p.avgMarker,'Color',p.avgMarkerColor(c,:),'MarkerFace',p.avgMarkerColor(c,:),'MarkerSize',p.avgMarkerSize)
     if p.bCI
-        errorbar(c,nanmean(cond_data), cond_ci(c),'Color',p.avgMarkerColor(c,:),'LineWidth',p.avgLineWidth,'CapSize',10)
+        errorbar(c,nanmean(cond_data), cond_ci(c),'Color',p.avgMarkerColor(c,:),'LineWidth',p.avgLineWidth,'CapSize',p.capsize)
     else
-        errorbar(c,nanmean(cond_data), cond_se(c),'Color',p.avgMarkerColor(c,:),'LineWidth',p.avgLineWidth,'CapSize',10)
+        errorbar(c,nanmean(cond_data), cond_se(c),'Color',p.avgMarkerColor(c,:),'LineWidth',p.avgLineWidth,'CapSize',p.capsize)
 %         errorbar(c,nanmean(cond_data), cond_ci(c),'Color',p.avgErrorColor(c,:),'LineWidth',p.avgLineWidth)
 %     else
 %         errorbar(c,nanmean(cond_data), cond_se(c),'Color',p.avgErrorColor(c,:),'LineWidth',p.avgLineWidth)
