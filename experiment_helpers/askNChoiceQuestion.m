@@ -16,9 +16,9 @@ dbstop if error
 if nargin < 2 || isempty(choices), choices = {'y' 'n'}; end
 
 if iscell(choices)
-    answer = input([question ' (' sprintf('%s/', choices{1:end-1}) choices{end} '): '], 's');
+    answer = strip(input([question ' (' sprintf('%s/', choices{1:end-1}) choices{end} '): '], 's'));
     while ~any(strcmp(answer,choices))
-        answer = input(['Invalid answer. Please enter ' sprintf('%s/', choices{1:end-1}) choices{end} ': '],'s');
+        answer = strip(input(['Invalid answer. Please enter ' sprintf('%s/', choices{1:end-1}) choices{end} ': '],'s'));
     end
 else
     answer = input([question ' (' sprintf('%d/', choices(1:end-1)) num2str(choices(end)) '): ']); 

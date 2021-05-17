@@ -169,12 +169,7 @@ for itrial = firstTrial:lastTrial
         data = AudapterIO('getData');
 
         % plot shifted spectrogram
-        figure(h_fig(ctrl))
-        subplot(h_sub(2))
-        show_spectrogram(data.signalIn, data.params.sr, 'noFig');
-        tAxis = 0 : p.frameLen : p.frameLen * (size(data.fmts, 1) - 1);
-        plot(tAxis/data.params.sr,data.fmts(:, 1 : 2), 'c','LineWidth',3);
-        plot(tAxis/data.params.sr,data.sfmts(:, 1 : 2), 'm','LineWidth',1.5);
+        subplot_expt_spectrogram(data, p, h_fig, h_sub)
         
         %check if good trial (ie, heard pt speak)
         bGoodTrial = check_rmsThresh(data, rmsThresh, h_sub(3));

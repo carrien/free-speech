@@ -17,7 +17,7 @@ function [nBaseline] = get_nBaseline(expt)
 nConds = length(expt.conds);
 
 if nConds == 1
-    warning('Function only works for expts with multiple conds.')
+    %warning('Function only works for expts with multiple conds.')
     nBaseline = 0;
     return;
 end

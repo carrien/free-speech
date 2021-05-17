@@ -1,4 +1,4 @@
-function [varargout] = get_ost(audFileLoc, audFileName, eventNum, masterWorking)
+function [varargout] = get_ost(audFileDir, audFileName, eventNum, masterWorking)
 % CWN
 % This program can:
 % 1.) retrieve info on a specified line in a specified OST file, and
@@ -27,11 +27,11 @@ dbstop if error
 
 %% Set defaults 
 
-if nargin < 1 || isempty(audFileLoc), audFileLoc = 'experiment_helpers'; end
+if nargin < 1 || isempty(audFileDir), audFileDir = 'experiment_helpers'; end
 if nargin < 2 || isempty(audFileName), audFileName = 'measureFormants'; end
 
-if strcmp(audFileName, 'measureFormants') && ~strcmp(audFileLoc, 'experiment_helpers')
-    warning('Using measureFormants OST from experiment_helpers instead of from folder %s. Should not use a measureFormants OST that is not the default.', audFileLoc)
+if strcmp(audFileName, 'measureFormants') && ~strcmp(audFileDir, 'experiment_helpers')
+    warning('Using measureFormants OST from experiment_helpers instead of from folder %s. Should not use a measureFormants OST that is not the default.', audFileDir)
 end
 
 if nargin < 3 || isempty(eventNum)
@@ -45,23 +45,23 @@ if isnumeric(eventNum); eventNum = num2str(eventNum); end
 % CWN 9/11/19 Note that this function only edits the Working copy of an OST.
 % Call refreshWorkingCopy from the source function if needed before calling
 % this function.
-if strcmp(audFileLoc, 'experiment_helpers') || strcmp(audFileName, 'measureFormants')
+if strcmp(audFileDir, 'experiment_helpers') || strcmp(audFileName, 'measureFormants')
     trackingPath = fullfile(get_gitPath, 'free-speech', 'experiment_helpers'); 
 else
-    trackingPath = fullfile(get_gitPath, 'current-studies', audFileLoc); 
+    trackingPath = fullfile(get_gitPath, 'current-studies', audFileDir); 
 end
 
 ostFile = fullfile(trackingPath,[audFileName 'Working.ost']);
 
 % If a working copy doesn't exist, make one
 if exist(ostFile,'file') ~= 2
-    refreshWorkingCopy(audFileLoc,audFileName,'ost');
+    refreshWorkingCopy(audFileDir,audFileName,'ost');
 end
 
 
 % If a working copy doesn't exist, make one
 if exist(ostFile,'file') ~= 2
-    refreshWorkingCopy(audFileLoc, audFileName, 'ost');
+    refreshWorkingCopy(audFileDir, audFileName, 'ost');
 end
 
 % Open file

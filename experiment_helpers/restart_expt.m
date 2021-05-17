@@ -26,7 +26,7 @@ for d = 1:length(tempdirs)
     %check to see if experiment completed. only prompt to rerun if
     %incomplete.
     dataPath = fileparts(strip(tempdirs{d},'right',filesep));
-    load(fullfile(dataPath,'expt.mat')) % get expt file 
+    load(fullfile(dataPath,'expt.mat'), 'expt') % get expt file 
     if lastTrial ~= expt.ntrials
         startName = regexp(dataPath,expt.snum);
         expName = dataPath(startName:end);
@@ -34,13 +34,16 @@ for d = 1:length(tempdirs)
         q = strrep(q,'\','\\'); %add extra \ to string to display correctly in "input" command
         response = input(q, 's');
         if strcmp(response,'y')
-            % restart expt
+            % setup expt
             expt.startTrial = lastTrial+1;      % set starting trial
             expt.startBlock = ceil(expt.startTrial/expt.ntrials_per_block); % get starting block
             expt.isRestart = 1;
             expt.crashTrials = [expt.crashTrials expt.startTrial];
             save(fullfile(dataPath,'expt.mat'),'expt')
+            
+            % run experiment
             expFun(dataPath,expt)
+            
             dataPath = fileparts(strip(tempdirs{d},'right',filesep))
             expPath = fileparts(strip(dataPath,'right',filesep))
             break;

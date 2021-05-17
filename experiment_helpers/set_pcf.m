@@ -1,4 +1,4 @@
-function [varargout] = set_pcf(audFileLoc,audFileName,timeSpace,ostStatus,param,targetVal,varargin)
+function [varargout] = set_pcf(audFileDir,audFileName,timeSpace,ostStatus,param,targetVal,varargin)
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % MAJOR VERSION CHANGE RPK 10/21/2020
 %
@@ -83,7 +83,7 @@ dbstop if error
 
 %% Set up argument defaults, basic information
 
-if nargin < 1 || isempty(audFileLoc), audFileLoc = 'experiment_helpers'; end % this will have to be updated whenever we decide where to put measureFormantsWorking.pcf
+if nargin < 1 || isempty(audFileDir), audFileDir = 'experiment_helpers'; end % this will have to be updated whenever we decide where to put measureFormantsWorking.pcf
 if nargin < 2 || isempty(audFileName), audFileName = 'measureFormants'; end
 if nargin < 3 || isempty(timeSpace), timeSpace = 'time'; end
 
@@ -93,10 +93,10 @@ if nargin < 3 || isempty(timeSpace), timeSpace = 'time'; end
 % Call refreshWorkingCopy from the source function if needed before calling
 % this function.
 
-if strcmp(audFileName, 'measureFormants') || strcmp(audFileLoc, 'experiment_helpers') % So theoretically you could be doing some OTHER PCF file that is in experiment_helpers
-    exptDir = fullfile(get_gitPath, 'free-speech', audFileLoc); % could potentially hard-code this to experiment_helpers but... 
+if strcmp(audFileName, 'measureFormants') || strcmp(audFileDir, 'experiment_helpers') % So theoretically you could be doing some OTHER PCF file that is in experiment_helpers
+    exptDir = fullfile(get_gitPath, 'free-speech', audFileDir); % could potentially hard-code this to experiment_helpers but... 
 else
-    exptDir = fullfile(get_gitPath, 'current-studies', audFileLoc); % ['C:\Users\Public\Documents\software\current-studies\' audFileLoc]; 
+    exptDir = fullfile(get_gitPath, 'current-studies', audFileDir); % ['C:\Users\Public\Documents\software\current-studies\' audFileLoc]; 
 end
 
 pcfName = [audFileName 'Working.pcf']; 
@@ -104,7 +104,7 @@ pcfFile = fullfile(exptDir,pcfName);
 
 % If a working copy doesn't exist, make one
 if exist(pcfFile,'file') ~= 2
-    refreshWorkingCopy(audFileLoc, audFileName,'pcf');
+    refreshWorkingCopy(audFileDir, audFileName,'pcf');
 end
 
 % Open file
