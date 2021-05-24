@@ -161,10 +161,12 @@ for itrial = 1:ntrials
  
     % Put into into event_params 
     event_params.user_event_times = ueventTime;
-    if strcmp(expt.trackingFileName,'capper') || strcmp(expt.trackingFileName,'gapper') || strcmp(expt.trackingFileName,'ada') || strcmp(expt.trackingFileName,'ata')
-        ueventNames = {'cBurst' 'vStart'}; 
-    elseif strcmp(expt.trackingFileName, 'sapper') || strcmp(expt.trackingFileName, 'zapper')
-        ueventNames = {'cStart' 'vStart'}; 
+    if strcmp(expt.name, 'timeAdapt')
+        if strcmp(expt.trackingFileName,'capper') || strcmp(expt.trackingFileName,'gapper') || strcmp(expt.trackingFileName,'ada') || strcmp(expt.trackingFileName,'ata')
+            ueventNames = {'cBurst' 'vStart'}; 
+        elseif strcmp(expt.trackingFileName, 'sapper') || strcmp(expt.trackingFileName, 'zapper')
+            ueventNames = {'cStart' 'vStart'}; 
+        end
     end
     event_params.user_event_names = ueventNames; 
     

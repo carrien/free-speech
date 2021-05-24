@@ -8,8 +8,8 @@ end
 
 vowels = {'aa' 'ae' 'ah' 'ay' 'eh' 'ey' 'ih' 'iy' 'ow' 'uw' 'er' 'oe' 'ou' 'uh' 'xx', 'os', 'uu'};
 
-aa = ismember(txtcell,{'aa' 'ah' 'a' 'bod' 'sop' 'sock' 'sod' 'shop' 'shock' 'shot' 'shawl' 'saw' 'car' 'gar' 'czar' 'cod' 'god' 'odd'}); % added 'a' because this was the original vowel name for this category. Possibly will need to change it if we ever use the indefinite article.
-ae = ismember(txtcell,{'ae' 'add' 'ad' 'bad' 'bat' 'dad' 'pat' 'rad' 'sad' 'sat' 'yallow' 'capper' 'gapper' 'sapper' 'zapper'});
+aa = ismember(txtcell,{'aa' 'ah' 'a' 'bod' 'sop' 'sock' 'sod' 'shop' 'shock' 'shot' 'shawl' 'saw' 'car' 'gar' 'czar' 'cod' 'god' 'odd' 'copper' 'shopper'}); % added 'a' because this was the original vowel name for this category. Possibly will need to change it if we ever use the indefinite article.
+ae = ismember(txtcell,{'ae' 'add' 'ad' 'bad' 'bat' 'dad' 'pat' 'rad' 'sad' 'sat' 'yallow' 'capper' 'gapper' 'sapper' 'tapper' 'zapper'});
 ah = ismember(txtcell,{'ah' 'above' 'bud'});
 ay = ismember(txtcell,{'ay' 'bide' 'idea' 'side' 'sigh' 'shy' });
 eh = ismember(txtcell,{'eh' 'E' 'Ed' 'bed' 'bet' 'blend' 'dead' 'des' 'desk' 'debt' 'fed' 'head' 'ted' 'red' 'glen'  'hais' 'eff' 'fait' 'adept' 'meta' 'pet' 'sekt' 'set' 'said' 'shed' 'Ted' 'yellow' 'bedhead'});
