@@ -13,7 +13,9 @@ if nargin < 4 || isempty(bSaveCheck), bSaveCheck = 1; end
 if nargin < 5, params2overwrite = []; end
 
 % load data
+fprintf('Loading data...')
 load(fullfile(dataPath,'data.mat'),'data');
+fprintf(' done.\n')
 
 % pick trials
 if isempty(trialinds)
@@ -120,7 +122,8 @@ for itrial = trials2track
 
     if exist('new_sigproc_params','var') && isstruct(new_sigproc_params)
         fields2overwrite = fieldnames(new_sigproc_params);
-    else fields2overwrite = [];
+    else
+        fields2overwrite = [];
     end
     for i=1:length(fields2overwrite)
         sigproc_params.(fields2overwrite{i}) = new_sigproc_params.(fields2overwrite{i});
@@ -155,10 +158,29 @@ for itrial = trials2track
             sigmat = tracks;
         end
         trialparams.sigproc_params = sigproc_params;    % only overwrite sigproc_params (leave event/plot_params if they exist)
-
-        if exist('bCopyParams','var') & bCopyParams == 1 %overwrite event_params if copying from signalIn to signalOut
+        
+        if exist('bCopyParams','var') && bCopyParams == 1 %overwrite event_params if copying from signalIn to signalOut
             trialparams.event_params = event_params;
         end
+        
+        % if TextGrid exists (and isn't in event list), add TextGrid events
+        tgFilename = sprintf('AudioData_%d.TextGrid',itrial);
+        tgPath = fullfile(dataPath,'PostAlignment',tgFilename);
+        if exist(tgPath,'file')
+            if ~isfield(trialparams,'event_params') || ~isfield(trialparams.event_params,'user_event_names')
+                trialparams.event_params.user_event_names = [];
+                trialparams.event_params.user_event_times = [];
+            end
+            if isempty(trialparams.event_params.user_event_names) ... % if there are no events
+                    || all(strncmp(trialparams.event_params.user_event_names,'uev',3)) % or if all event names start with uev
+                % no TextGrid events exist: add them
+                fprintf('Adding events from TextGrid.\n')
+                [tg_user_event_times, tg_user_event_names] = get_uev_from_tg_mpraat(tgPath);
+                trialparams.event_params.user_event_times = [trialparams.event_params.user_event_times, tg_user_event_times];
+                trialparams.event_params.user_event_names = [trialparams.event_params.user_event_names, tg_user_event_names];
+            end
+        end
+        
         save(savefile,'sigmat','trialparams');
     end
     
