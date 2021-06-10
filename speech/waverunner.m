@@ -25,7 +25,7 @@ else
 end
 
 % set trial folder
-if strcmp(buffertype,'signalIn') 
+if strcmp(buffertype,'signalIn')
     trialfolder = 'trials';
 else
     trialfolder = sprintf('trials_%s',buffertype);
@@ -46,16 +46,20 @@ if (exist(wvpfile,'file') == 2)
         sigproc_params.(fieldns{i}) = wvp.sigproc_params.(fieldns{i});
     end
 else
-    sigproc_params.fs = data(1).params.fs;
+    if isfield([data.params],'fs')
+        sigproc_params.fs = data(1).params.fs;
+    else
+        sigproc_params.fs = data(1).params.sr;
+    end
 end
 
 %% loop through trials
 fprintf('Processing trial: ');
 counter = 0;
-for itrial = trials2track  
+for itrial = trials2track
     %% prepare inputs
     y = data(itrial).(buffertype);
-   
+    
     % if trial data exists, load it
     savefile = fullfile(dataPath,trialfolder,sprintf('%d.mat',itrial));
     if (exist(savefile,'file') == 2)
@@ -68,9 +72,9 @@ for itrial = trials2track
                 if ~sum(strcmp(fieldns{i},params2overwrite))
                     sigproc_params.(fieldns{i}) = trialparams.sigproc_params.(fieldns{i});
                 end
-            end        
+            end
         end
-    elseif ~strcmp(buffertype,'signalIn') 
+    elseif ~strcmp(buffertype,'signalIn')
         if exist(fullfile(dataPath,trialfolderSigIn,sprintf('%d.mat',itrial)),'file') && ~exist(fullfile(dataPath,trialfolder,sprintf('%d.mat',itrial)),'file')
             bCopyParams = 1;
             copyfile = fullfile(dataPath,trialfolderSigIn,sprintf('%d.mat',itrial));
@@ -119,7 +123,7 @@ for itrial = trials2track
     %new_sigproc_params.preemph = 1.95;
     %new_sigproc_params.nlpc = 11;
     % etc.
-
+    
     if exist('new_sigproc_params','var') && isstruct(new_sigproc_params)
         fields2overwrite = fieldnames(new_sigproc_params);
     else
@@ -136,7 +140,7 @@ for itrial = trials2track
     if ~mod(counter,25), fprintf('\n'); end
     counter = counter + 1;
     fprintf('%d ',itrial);
-
+    
     
     %% process the audio
     tracks = wave_proc(y,sigproc_params);
