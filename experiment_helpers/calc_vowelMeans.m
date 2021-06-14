@@ -3,7 +3,7 @@ function [fmtMeans, fmtStds] = calc_vowelMeans(dataPath,conds2analyze,bRmOutlier
 %   FMTMEANS = CALC_VOWELMEANS(DATAPATH) calculates mean formants for each
 %   vowel in an Audapter experiment. DATAPATH is the path to a folder
 %   containing data.mat (Audapter output data) and expt.mat (experiment
-%   metadata) files. OSTIND is the desired OST status to track.
+%   metadata) files. OSTINDS is the desired OST status to track.
 
 if nargin < 1 || isempty(dataPath), dataPath = pwd; end
 load(fullfile(dataPath,'expt.mat'),'expt');
