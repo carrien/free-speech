@@ -18,6 +18,7 @@ function [] = set_ost(audFileDir, audFileName, eventNum, varargin)
 % --- varargin{1}: if you want to change the actual HEURISTIC
 % --- varargin{2}: if you want to change the first parameter
 % --- varargin{3}: if you want to change the second parameter 
+% --- varargin{4}: if you want to change the third parameter (not all heuristics take this parameter) 
 % For any values you do not want to change, use some version of empty: {}, [], etc. 
 % (former versions allowed -1; this is not good because stretch/span I believe uses negative numbers, possibly including -1) 
 % 
@@ -28,6 +29,7 @@ function [] = set_ost(audFileDir, audFileName, eventNum, varargin)
 % RPK 2019/11/25 added ability to set single line back to master params
 % RPK 2020/10/31 changed exptName -> audFileLoc and word -> audFileName. Made defaults for new experiment_helpers location
 % and measureFormants. 
+% RPK 5/24/2021 added capabilities for third parameter
 
 dbstop if error
 
@@ -48,11 +50,14 @@ if nargin < 3 || isempty(eventNum)
 end
 if isnumeric(eventNum); eventNum = num2str(eventNum); end
 
-if length(varargin) < 3 && ~strcmp(varargin{1},'reset')
-   editParam = input('What are you trying to edit? (heuristic, param1, param2): ', 's');
-   while ~any(strcmp(editParam,{'heuristic','param1','param2'}))
-       editParam = input('Invalid choice. Please enter heuristic/param1/param2: ','s');
-   end
+% RPK 5/24/2021: this is redone to make more elegant from previously. Now you can just leave arguments empty if you don't
+% want to change them
+if length(varargin) < 1 
+   editParam = askNChoiceQuestion('What are you trying to edit?', {'heuristic' 'param1' 'param2' 'param3'}); 
+   %input('What are you trying to edit? (heuristic, param1, param2): ', 's');
+%    while ~any(strcmp(editParam,{'heuristic','param1','param2'}))
+%        editParam = input('Invalid choice. Please enter heuristic/param1/param2: ','s');
+%    end
    params = strsplit(editParam, ','); 
    if any(strcmp(params,'heuristic'))
        newHeurValue = input('What would you like as the new heuristic? ', 's'); 
@@ -69,13 +74,27 @@ if length(varargin) < 3 && ~strcmp(varargin{1},'reset')
    else 
        newParam2Value = []; 
    end
-elseif length(varargin) == 3
-    newHeurValue = varargin{1}; 
-    newParam1Value = varargin{2}; 
-    newParam2Value = varargin{3};
+   if any(strcmp(params,'param3'))
+       newParam3Value = input('What value would you like to insert as parameter 3? '); 
+   else 
+       newParam3Value = []; 
+   end
 elseif strcmp(varargin{1},'reset')
-    [newHeurValue, newParam1Value, newParam2Value] = get_ost(audFileDir, audFileName, eventNum, 'master'); 
+    [newHeurValue, newParam1Value, newParam2Value, newParam3Value] = get_ost(audFileDir, audFileName, eventNum, 'master'); 
 end
+
+% Initiate arguments as empty
+newHeurValue = {}; 
+newParam1Value = {}; 
+newParam2Value = {}; 
+newParam3Value = {}; 
+
+% Assign new values if their positions are specified
+try newHeurValue = varargin{1}; catch; end
+try newParam1Value = varargin{2}; catch; end
+try newParam2Value = varargin{3}; catch; end
+try newParam3Value = varargin{4}; catch; end
+
 
 
 %% Grab necessary info from OST file
@@ -132,6 +151,13 @@ if ~isempty(newParam1Value)
 end
 if ~isempty(newParam2Value)
     components{4} = sprintf('%.3f',newParam2Value);
+end
+if ~isempty(newParam3Value)
+    if isnan(newParam3Value)
+        components{5} = '{}'; 
+    else
+        components{5} = sprintf('%.3f',newParam3Value);
+    end
 end
     
     newLine = strjoin(components,' ');

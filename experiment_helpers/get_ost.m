@@ -22,6 +22,7 @@ function [varargout] = get_ost(audFileDir, audFileName, eventNum, masterWorking)
 % RPK 2019/11/25 get from master (utility for refreshing single line) 
 % RPK 2020/10/31 changed exptName -> audFileLoc and word -> audFileName. Made defaults for new experiment_helpers location
 % and measureFormants. 
+% RPK 2021/5/24 added functionality to get back third argument
 
 dbstop if error
 
@@ -105,10 +106,12 @@ else
     heurName = components{2}; 
     heuristicParam1 = str2double(components{3});
     heuristicParam2 = str2double(components{4});
+    heuristicParam3 = str2double(components{5}); % Adding for third parameter functionality. Gives NaN if empty ('{}')
     
     varargout{1} = heurName; 
     varargout{2} = heuristicParam1; 
     varargout{3} = heuristicParam2; 
+    varargout{4} = heuristicParam3; 
 end
     
 
