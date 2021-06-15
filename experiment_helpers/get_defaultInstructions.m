@@ -11,5 +11,9 @@ instruct.waittxt = 'Please wait.';
 instruct.txtparams.Color = 'white';
 instruct.txtparams.FontSize = 45;
 instruct.txtparams.HorizontalAlignment = 'Center';
-
+instruct.moveintro={'During the task' '' 'stay still and minimize your head and jaw movement' };
+instruct.restintro={'You will be given rest time when finish each session.' '' 'Press the space bar to continue.'};
+instruct.starttxt_speaking={'Get ready to SPEAK.' '' 'Press the space bar to start.' 'Stay still.' };
+instruct.starttxt_listening={'Get ready to LISTEN.' '' 'Press the space bar to start.' 'Stay still.' };
+instruct.resttxt={'Rest time' '' 'Press the space bar to continue when ready.'};
 end
