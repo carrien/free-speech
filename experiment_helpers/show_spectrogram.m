@@ -14,8 +14,15 @@ end
 if isempty(fsic(varargin, 'noFig'))
     figure;
 end
-% [s, f, t]=spectrogram(w, 128, 96, 1024, fs);
-[s, f, t]=spectrogram(w, 256, 192, 1024, fs);
+
+% RPK addition June 2021: option for specifying wide- or narrow-band spectrogram. Defaults to wide. Argument can be in any
+% position after 2
+if isempty(fsic(varargin, 'narrow')) %If narrow isn't specified, then do wide-band
+    [s, f, t]=spectrogram(w, 128, 96, 1024, fs);
+else % If it is, then do narrow
+    [s, f, t]=spectrogram(w, 256, 192, 1024, fs);
+end
+
 imagesc(t, f, 10 * log10(abs(s))); hold on;
 axis xy;
 hold on;
