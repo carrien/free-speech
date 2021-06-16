@@ -1,4 +1,4 @@
-function [h_fig] = setup_exptFigs()
+function [h_fig] = setup_exptFigs(expt)
 %SETUP_EXPTFIGS  Creates figures for experimenter and participant.
 %   SETUP_EXPTFIGS() creates and returns handles to figures for:
 %   (1) displaying stimuli to the participant (monitor 2)
@@ -27,3 +27,19 @@ end
 
 % set experimenter view to gray bg
 set(h_fig(ctrl),'Color',[.75 .75 .75]);
+% add button
+adjustPanel = uipanel(h_fig(ctrl), 'Title','Main Panel','FontSize',12,...
+             'BackgroundColor',[.7 .7 .7],...
+             'Position',[.05 .05 .9 .1], 'Units', 'normalized', 'BorderType', 'none');
+adjustBtn = uicontrol(adjustPanel, 'Style', 'pushbutton', ...
+    'Units', 'normalized', 'Position', [0.4, 0.4, 0.2, 0.3], 'Callback', @(hObject, eventdata)callme(hObject, eventdata, expt, h_fig)); 
+
+
+
+tic
+toc
+end
+
+function callme(hObject,eventdata,expt,h_fig)
+    adjustOsts(expt, h_fig)
+end
