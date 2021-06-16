@@ -22,8 +22,11 @@ load(fullfile(dataPath,'data.mat'),'data');
 if ~exist(fullfile(dataPath,'data_uncorrectedLPC.mat'))
     save(fullfile(dataPath,'data_uncorrectedLPC.mat'),'data') %save original data
 end
-UserData.data = data;
 load(fullfile(dataPath,'expt.mat'),'expt');
+if length(data) < expt.ntrials
+    warning('Experiment has %d trials but only %d data trials found. Using trials 1-%d.',expt.ntrials,length(data),length(data))
+end
+UserData.data = data;
 UserData.expt = expt;
 if ~isfield(UserData.expt,'bExcl')
     UserData.expt.bExcl = zeros(1,UserData.expt.ntrials);
@@ -289,27 +292,25 @@ function updatePlots(src)
     %Set up colors. Using varycolor allows for any number of vowels
     plotColors = varycolor(UserData.nVowels);
     
-    for i = 1:UserData.nVowels
-        vow = vowels{i};     
-        for j = 1:length(f1s(UserData.expt.inds.vowels.(vow)))
-            if UserData.expt.bExcl(UserData.expt.inds.vowels.(vow)(j))
-                color2plot = plotColors(i,:)*0.5;
+    for v = 1:UserData.nVowels
+        vow = vowels{v};
+        vowTrials = intersect(UserData.expt.inds.vowels.(vow),1:length(f1s));
+        for i = 1:length(f1s(vowTrials))
+            if UserData.expt.bExcl(vowTrials(i))
+                color2plot = plotColors(v,:)*0.5;
                 markerShape = 'x';
             else
-                color2plot = plotColors(i,:);
+                color2plot = plotColors(v,:);
                 markerShape = 'o';
             end
-            UserData.scatterPlot.(vow)(j) = plot(f1s(UserData.expt.inds.vowels.(vow)(j)),...
-            f2s(UserData.expt.inds.vowels.(vow)(j)),...
-            markerShape,'MarkerEdgeColor',color2plot);
+            UserData.scatterPlot.(vow)(i) = plot(f1s(vowTrials(i)),f2s(vowTrials(i)),...
+                markerShape,'MarkerEdgeColor',color2plot);
             hold on
-            set(UserData.scatterPlot.(vow)(j),'ButtonDownFcn',{@pickTrial,vow,j,i})
+            set(UserData.scatterPlot.(vow)(i),'ButtonDownFcn',{@pickTrial,vow,i,v})
         end
-        currTrials = UserData.expt.inds.vowels.(vow);
-        currTrials = currTrials(~UserData.expt.bExcl(currTrials));
-        plot(nanmean(f1s(currTrials)),...
-            nanmean(f2s(currTrials)),...
-            '+','MarkerEdgeColor',plotColors(i,:));
+        goodTrials = vowTrials(~UserData.expt.bExcl(vowTrials));
+        plot(nanmean(f1s(goodTrials)),nanmean(f2s(goodTrials)),...
+            '+','MarkerEdgeColor',plotColors(v,:));
     end
     hold off
     set(UserData.plotPanelF1F2,'FontUnits','normalized','FontSize',.025)
@@ -317,33 +318,34 @@ function updatePlots(src)
     ylabel('F2','FontUnits','normalized','FontSize',.05)
     
     %% plot individual formant tracks
-    for i = 1:UserData.nVowels
-        vow = vowels{i};
+    for v = 1:UserData.nVowels
+        vow = vowels{v};
+        vowTrials = intersect(UserData.expt.inds.vowels.(vow),1:length(f1s));
         %first, select which trials to plot
         if ~isempty(UserData.trial2plot.(vow))
             trialInd = UserData.trial2plot.(vow);
         else
-            currF1s = f1s(UserData.expt.inds.vowels.(vow));
-            currF2s = f2s(UserData.expt.inds.vowels.(vow));
+            currF1s = f1s(vowTrials);
+            currF2s = f2s(vowTrials);
             meanF1 = nanmean(currF1s);
             meanF2s = nanmean(currF2s);
             dists = sqrt((currF1s-meanF1).^2+(currF2s-meanF2s).^2);
             [~,trialInd] = max(dists);
             UserData.trial2plot.(vow) = trialInd;
         end
-        trial2plot = UserData.expt.inds.vowels.(vow)(trialInd);
+        trial2plot = vowTrials(trialInd);
         
         %then, plot it
-        subplot(UserData.hsubTracks(i));
-        cla(UserData.hsubTracks(i))
+        subplot(UserData.hsubTracks(v));
+        cla(UserData.hsubTracks(v))
         ySpec = my_preemph(UserData.data(trial2plot).signalIn,1);
 %         ySpec = UserData.data(trial2plot).signalIn;
         show_spectrogram(ySpec, UserData.data(trial2plot).params.sr, 'noFig');
         tAxis = 0 : UserData.data(trial2plot).params.frameLen : UserData.data(trial2plot).params.frameLen * (size(UserData.data(trial2plot).fmts, 1) - 1);        
-        if UserData.expt.bExcl(UserData.expt.inds.vowels.(vow)(trialInd))
-            color2plot = plotColors(i,:)*0.5;
+        if UserData.expt.bExcl(vowTrials(trialInd))
+            color2plot = plotColors(v,:)*0.5;
         else
-            color2plot = plotColors(i,:);
+            color2plot = plotColors(v,:);
         end
         UserData.formantTracks.(vow) = plot(tAxis/UserData.data(trial2plot).params.sr,UserData.data(trial2plot).fmts(:,1:2), 'Color',color2plot,'LineWidth',3);
         
@@ -377,7 +379,7 @@ function updatePlots(src)
         title(vow,'FontUnits','normalized','FontSize',0.1)
         
         %highlight selected token
-        set(UserData.scatterPlot.(vow)(trialInd),'MarkerFaceColor',plotColors(i,:));
+        set(UserData.scatterPlot.(vow)(trialInd),'MarkerFaceColor',plotColors(v,:));
     end
     if isfield(UserData,'selTrial')
         set(UserData.scatterPlot.(vowels{UserData.selTrial.vow})(UserData.selTrial.trial),'MarkerSize',12);
