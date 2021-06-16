@@ -8,7 +8,7 @@ function [h_fig] = setup_exptFigs()
 % set figure positions
 get_figinds_audapter;
 pos{stim} = [1 0 1 1];         % participant view
-pos{ctrl} = [0.6 0.3 0.4 0.7]; % experimenter view and formant tracking
+pos{ctrl} = [0.6 0.2 0.4 0.8]; % experimenter view and formant tracking
 pos{dup} = [0 0.3 0.6 0.7];    % duplicate participant view for experimenter
 
 % define figure attributes
