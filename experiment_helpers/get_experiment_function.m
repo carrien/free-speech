@@ -24,6 +24,8 @@ switch expName
         expFun = @run_vsaAdapt_audapter;
     case {'varModIn', 'varModOut', 'varModOut2', 'varModInOut'}
         expFun = @run_varMod_audapter;
+    case 'varModMEG'
+        expFun = @run_varMod_audapter_blocked;
     case 'timeAdapt'
         expFun = @run_timeAdapt_audapter; 
     case 'cif1'
@@ -35,7 +37,7 @@ switch expName
     case 'simonSingleWord'
         expFun = @run_simonSingleWord_audapter;
     case 'taimComp'
-        expFun = @run_taimComp_audapter;
+        expFun = @run_taimComp_audapter;        
     otherwise
         fprintf('Function for experiment ''%s'' not found.',expName)
         expFun = [];
