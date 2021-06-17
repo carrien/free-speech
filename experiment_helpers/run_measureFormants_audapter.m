@@ -71,7 +71,7 @@ AudapterIO('init', p);
 
 %% run experiment
 % setup figures
-h_fig = setup_exptFigs;
+h_fig = setup_exptFigs(expt); % *** addition for mid-expt button
 get_figinds_audapter; % names figs: stim = 1, ctrl = 2, dup = 3;
 
 h_sub = get_subfigs_audapter(h_fig(ctrl),1);

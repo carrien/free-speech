@@ -28,16 +28,13 @@ end
 % set experimenter view to gray bg
 set(h_fig(ctrl),'Color',[.75 .75 .75]);
 % add button
-adjustPanel = uipanel(h_fig(ctrl), 'Title','Main Panel','FontSize',12,...
+adjustPanel = uipanel(h_fig(ctrl), 'FontSize',12,...
              'BackgroundColor',[.7 .7 .7],...
-             'Position',[.05 .05 .9 .1], 'Units', 'normalized', 'BorderType', 'none');
-adjustBtn = uicontrol(adjustPanel, 'Style', 'pushbutton', ...
+             'Position',[.05 .85 .9 .1], 'Units', 'normalized', 'BorderType', 'none');
+adjustBtn = uicontrol(adjustPanel, 'Style', 'pushbutton', 'String', 'Adjust OSTs', ...
     'Units', 'normalized', 'Position', [0.4, 0.4, 0.2, 0.3], 'Callback', @(hObject, eventdata)callme(hObject, eventdata, expt, h_fig)); 
 
 
-
-tic
-toc
 end
 
 function callme(hObject,eventdata,expt,h_fig)
