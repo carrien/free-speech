@@ -39,7 +39,11 @@ framedur = 1 / data(1).params.sr*data(1).params.frameLen; %get frame duration
 offset = [floor(0.05 / framedur) floor(0.01 / framedur)]; %account for hold time in ost tracking
 if bTest;figure;end
 for itrial = trials2analyze
-    ost = data(itrial).ost_stat;
+    if isfield(data, 'ost_calc')
+        ost = data(itrial).ost_calc; %user-configured values
+    else
+        ost = data(itrial).ost_stat; %values from initial settings
+    end
     if bdataVals
         F1s(itrial) = nanmedian(midnperc(dataVals(itrial).f1,50));
         F2s(itrial) = nanmedian(midnperc(dataVals(itrial).f2,50));
