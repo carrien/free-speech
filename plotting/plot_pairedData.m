@@ -20,55 +20,28 @@ if sum(abs(diff(nObsPerCond)))
     warning('Different numbers of observations found across conditions. Treating data as unpaired.');
     p.bPaired = 0;
 end
+
 %% set default params
-if ~isfield(p,'Marker')
-    p.Marker = '.';
-end
-if ~isfield(p,'MarkerSize')
-    p.MarkerSize = 25;
-end
-if ~isfield(p,'MarkerAlpha')
-    p.MarkerAlpha = .25;
-end
-if ~isfield(p,'avgMarker')
-    p.avgMarker = 'o';
-end
-if ~isfield(p,'avgMarkerSize')
-    p.avgMarkerSize = 12;
-end
-if ~isfield(p,'avgMarkerColor')
-    p.avgMarkerColor = colorSpec;
-end
-if ~isfield(p,'avgErrorColor')
-    p.avgErrorColor = p.avgMarkerColor;
-end
-if ~isfield(p,'LineColor')
-    p.LineColor = [.7 .7 .7];
-end
-if ~isfield(p,'LineWidth')
-    p.LineWidth = 1;
-end
-if ~isfield(p,'avgLineColor')
-    p.avgLineColor = colorSpec;%[0 0 0]
-end
-if ~isfield(p,'avgLineWidth')
-    p.avgLineWidth = 3;
-end
-if ~isfield(p,'jitterFrac')
-    p.jitterFrac = 0.25;
-end
-if ~isfield(p,'bCI')
-    p.bCI = 0;
-end
-if ~isfield(p,'capsize')
-    p.capsize = 10;
-end
-if ~isfield(p,'bPaired')
-    p.bPaired = 1;
-end
-if ~isfield(p,'bMeansOnly')
-    p.bMeansOnly = 0;
-end
+defaultParams.Marker = '.';
+defaultParams.MarkerSize = 25;
+defaultParams.MarkerAlpha = .25;
+defaultParams.avgMarker = 'o';
+defaultParams.avgMarkerSize = 12;
+defaultParams.avgMarkerColor = colorSpec;
+defaultParams.LineColor = [.7 .7 .7];
+defaultParams.LineWidth = 1;
+defaultParams.avgLineColor = colorSpec; %[0 0 0]
+defaultParams.avgLineWidth = 3;
+defaultParams.jitterFrac = 0.25;
+defaultParams.bCI = 0;
+defaultParams.capsize = 10;
+defaultParams.bPaired = 1;
+defaultParams.bMeansOnly = 0;
+p = set_missingFields(p,defaultParams,0);
+
+defaultParams.avgErrorColor = p.avgMarkerColor; % default: same as marker color
+p = set_missingFields(p,defaultParams,0);
+
 %% colors
 if iscell(colorSpec(1)) %if colors are specified as character strings
     warning('Colors must be entered as RBG values, not character strings.')
@@ -99,6 +72,7 @@ for c=1:nConds
         dataMeansByCond.(cond) = dataMeansByCond.(cond)';
     end
 end
+
 %% plot
 
 h = figure;

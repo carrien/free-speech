@@ -1,5 +1,5 @@
-function [ipa] = txt2arpabet(txt)
-%TXT2ARPABET   Converts text string to IPA equivalent.
+function [arpa] = txt2arpabet(txt)
+%TXT2ARPABET  Convert text string to ARPABET equivalent.
 
 if iscellstr(txt), txtcell = txt; %#ok<ISCLSTR>
 elseif ischar(txt), txtcell = {txt}; % if string, convert to cell array
@@ -14,10 +14,8 @@ ah = ismember(txtcell,{'ah' 'above' 'bud'});
 ay = ismember(txtcell,{'ay' 'bide' 'idea' 'side' 'sigh' 'shy' });
 eh = ismember(txtcell,{'eh' 'E' 'Ed' 'bed' 'bet' 'blend' 'dead' 'des' 'desk' 'debt' 'fed' 'head' 'ted' 'red' 'glen'  'hais' 'eff' 'fait' 'adept' 'meta' 'pet' 'sekt' 'set' 'said' 'shed' 'Ted' 'yellow' 'bedhead'});
 ey = ismember(txtcell,{'ey' 'eI' 'grain' 'beta' 'abate' 'bayed' 'shaper' 'caper'});
-ih = ismember(txtcell,{'ih' 'I' 'bit' 'bid' 'bink' 'rid' 'grin' 'yillow' 'pink' 'pit' 'sip' 'sin' 'sit' 'shin' 'ship' 'tipper' 'sipper'});
-iy = ismember(txtcell,{'iy' 'i' 'bead' 'ee' 'eat' 'reed' 'green' 'bleed' 'creed' 'kreen' 'Yves' 'Eve' 'see' 'seep' 'seat' 'sea' 'sheep' 'sheet' 'she' 'Sie' 'vee' 'vie' 'Wie' 'wie' 'Z' 'C' 'zee' 'ease'});
 ih = ismember(txtcell,{'ih' 'I' 'bit' 'bid' 'bink' 'rid' 'grin' 'yillow' 'pink' 'pit' 'sip' 'sin' 'sit' 'shin' 'ship' 'tipper' 'sipper' 'zipper'});
-iy = ismember(txtcell,{'iy' 'i' 'bead' 'ee' 'eat' 'reed' 'green' 'bleed' 'creed' 'kreen' 'Yves' 'Eve' 'see' 'seep' 'seat' 'sea' 'sheep' 'sheet' 'she' 'Sie' 'vee' 'vie' 'Wie' 'wie' 'Z' 'C' 'zee'});
+iy = ismember(txtcell,{'iy' 'i' 'bead' 'ee' 'eat' 'reed' 'green' 'bleed' 'creed' 'kreen' 'Yves' 'Eve' 'see' 'seep' 'seat' 'sea' 'sheep' 'sheet' 'she' 'Sie' 'vee' 'vie' 'Wie' 'wie' 'Z' 'C' 'zee' 'ease'});
 ow = ismember(txtcell,{'ow' 'o' 'oh' 'blow' 'bode' 'so' 'sore' 'show' 'shore'});
 uw = ismember(txtcell,{'uw' 'u' 'booed' 'oo' 'rude' 'groom' 'blue' 'plume' 'plue' 'sue' 'suit' 'soon' 'shoe' 'shoot' 'shoes'});
 er = ismember(txtcell,{'er' 'blur' 'bird'});
@@ -34,6 +32,6 @@ if any(~vowelinds)
     notfound = unique(txtcell(~vowelinds));
     error('Text ''%s'' not found in Arpabet conversion table. ',notfound{:});
 end
-ipa = vowels(vowelinds);
+arpa = vowels(vowelinds);
 
-if ischar(txt), ipa = ipa{1}; end % if input was string, convert back
+if ischar(txt), arpa = arpa{1}; end % if input was string, convert back

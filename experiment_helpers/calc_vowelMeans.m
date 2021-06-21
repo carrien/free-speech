@@ -1,16 +1,16 @@
-function [fmtMeans, fmtStds] = calc_vowelMeans(dataPath,conds2analyze,bRmOutliers,ostInd,bTest)
+function [fmtMeans, fmtStds] = calc_vowelMeans(dataPath,conds2analyze,bRmOutliers,ostInds,bTest)
 %CALC_VOWELMEANS  Calculates mean vowel formants from Audapter OST data.
 %   FMTMEANS = CALC_VOWELMEANS(DATAPATH) calculates mean formants for each
 %   vowel in an Audapter experiment. DATAPATH is the path to a folder
 %   containing data.mat (Audapter output data) and expt.mat (experiment
-%   metadata) files. OSTIND is the desired OST status to track.
+%   metadata) files. OSTINDS is the desired OST status to track.
 
 if nargin < 1 || isempty(dataPath), dataPath = pwd; end
 load(fullfile(dataPath,'expt.mat'),'expt');
 load(fullfile(dataPath,'data.mat'),'data');
 if nargin < 2 || isempty(conds2analyze), conds2analyze = expt.conds; end
 if nargin < 3 || isempty(bRmOutliers), bRmOutliers = 1; end
-if nargin < 4 || isempty(ostInd), ostInds = 2; end
+if nargin < 4 || isempty(ostInds), ostInds = 2; end
 if nargin < 5 || isempty (bTest), bTest = 0;end
 
 %load data

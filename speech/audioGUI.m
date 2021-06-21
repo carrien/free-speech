@@ -17,9 +17,10 @@ if nargin < 3 || isempty(buffertype), buffertype = 'signalIn'; end
 if nargin < 4, figpos = []; end
 if nargin < 5, bSaveCheck = 1; end
 
-
 % load data
+fprintf('Loading data...')
 load(fullfile(dataPath,'data.mat'),'data');
+fprintf(' done.\n')
 
 % pick trials
 if isempty(trialnums)
@@ -36,6 +37,7 @@ if strcmp(buffertype,'signalIn'), trialfolder = 'trials';
 else, trialfolder = sprintf('trials_%s',buffertype);
 end
 if ~exist(fullfile(dataPath,trialfolder),'dir')
+    fprintf('Creating trial directory: %s\n',fullfile(dataPath,trialfolder));
     mkdir(fullfile(dataPath,trialfolder))
 end
 
@@ -53,9 +55,9 @@ for itrial = trials2track
     
     %Skip trials where signalIn is empty
     if isempty(y)
-        fprintf('Trial %d has an empty SignalIn field, Skipping for now.', itrial)
+        fprintf('Trial %d has an empty signalIn field. Skipping for now.\n', itrial)
         continue;
-    end  
+    end
     
     if isfield([data.params],'fs')
         fs = data(itrial).params.fs;
@@ -65,78 +67,35 @@ for itrial = trials2track
     
     % if trial data exists, load event params and overwrite default params
     savefile = fullfile(dataPath,trialfolder,sprintf('%d.mat',itrial));
-    tgFilename = sprintf('AudioData_%d.TextGrid',itrial);
-    tgPath =  fullfile(dataPath,'PostAlignment',tgFilename);
     if exist(savefile,'file')
         load(savefile);
-        run_get_tgs = 1;
+        if ~exist('sigmat','var'), sigmat = []; end % needed in case trial has been marked as bad but not analyzed yet
         if isfield(trialparams,'sigproc_params'), sigproc_params = trialparams.sigproc_params; else, sigproc_params = [];end
         if isfield(trialparams,'plot_params'), plot_params = trialparams.plot_params; else, plot_params = []; end
-        if isfield(trialparams,'event_params'), event_params = trialparams.event_params;
-            % if ~any events that do not begin with uev, then run get
-            % events from tgs
-            if isfield(trialparams.event_params,'user_event_names')
-                if ~isempty(event_params.user_event_names)
-                    for ev = 1:length(event_params.user_event_names)
-                        if strncmp(event_params.user_event_names(ev),'uev',3)
-                            continue
-                        else
-                            run_get_tgs = 0;
-                            break
-                        end
-                    end
-                end
-            end
-        else
-            event_params = [];
+        if isfield(trialparams,'event_params'), event_params = trialparams.event_params; else, event_params = []; end
+    else % if trial doesn't already exist...
+        sigmat = [];
+        sigproc_params = [];
+        plot_params = [];
+        event_params = [];
+    end
+    
+    % if TextGrid exists (and isn't in event list), add TextGrid events
+    tgFilename = sprintf('AudioData_%d.TextGrid',itrial);
+    tgPath = fullfile(dataPath,'PostAlignment',tgFilename);
+    if exist(tgPath,'file')
+        if ~isfield(event_params,'user_event_names')
+            event_params.user_event_names = [];
+            event_params.user_event_times = [];
         end
-        if (exist(tgPath,'file') && (run_get_tgs == 1))
+        if isempty(event_params.user_event_names) ... % if there are no events
+                || all(strncmp(event_params.user_event_names,'uev',3)) % or if all event names start with uev
+            % no TextGrid events exist: add them
             [tg_user_event_times, tg_user_event_names] = get_uev_from_tg_mpraat(tgPath);
-            if ~isfield(event_params,'user_event_times')
-                event_params.user_event_times = [];
-                event_params.user_event_names = [];
-            end
             event_params.user_event_times = [event_params.user_event_times, tg_user_event_times];
             event_params.user_event_names = [event_params.user_event_names, tg_user_event_names];
         end
-        
-        
-    else
-        % if trial doesn't already exist...
-        sigproc_params = [];
-        event_params = [];
-        plot_params = [];
-        sigmat = [];
-        if exist(tgPath,'file')
-            % % check to see if UEV's exist, delete and replace textgrid uevs
-            %         rmTG = [];
-            %         for i=1:length(event_params.user_event_names)
-            %             if strncmp(event_params.user_event_names(i),'uev',3)
-            %                 continue;
-            %             else
-            %                 rmTG = [rmTG, i];
-            %             end
-            %         end
-            %         rmTG = fliplr(rmTG);
-            %         for i=1:length(rmTG)
-            %             event_params.user_event_names(rmTG(i)) = [];
-            %             event_params.user_event_times(rmTG(i)) = [];
-            %         end
-            
-            [tg_user_event_times, tg_user_event_names] = get_uev_from_tg_mpraat(tgPath);
-            %...if trial doesn't already exist,
-            %event_params.user_event_times won't exist yet either.
-            event_params.user_event_times = [tg_user_event_times];
-            event_params.user_event_names = [tg_user_event_names];
-        end
     end
-    
-    if ~exist('sigmat','var')
-        sigmat = []; %needed in case trial has been marked as bad but not analyzed yet
-    end
-    % check for existence of TextGrids from alignment and append events if
-    % necessary
-    
     
     if isempty(sigproc_params)
         if exist('wvp','var') % otherwise, use param file if it exists
