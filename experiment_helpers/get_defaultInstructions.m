@@ -13,7 +13,7 @@ instruct.txtparams.FontSize = 45;
 instruct.txtparams.HorizontalAlignment = 'Center';
 instruct.moveintro={'During this section, remember to' '' 'stay as still as possible ' '' 'and minimize your head and jaw movement' };
 instruct.restintro={'You will be given rest time when finish each session.' '' 'Press the space bar to continue.'};
-instruct.starttxt_speaking={'Get ready to SPEAK.' '' 'Remember to stay still.' '' 'Press the space bar to start.' };
-instruct.starttxt_listening={'Get ready to LISTEN.' '' 'Remember to stay still.' '' 'Press the space bar to start.' };
+instruct.starttxt_speaking={'Get ready to SPEAK.' '' 'Remember to stay still, keep your eyes open and look at the screen .' '' 'Press the space bar to start.' };
+instruct.starttxt_listening={'Get ready to LISTEN.' '' 'Remember to stay still, keep your eyes open and look at the screen.' '' 'Press the space bar to start.' };
 instruct.resttxt={'Rest time' '' 'Press the space bar to continue when ready.'};
 end
