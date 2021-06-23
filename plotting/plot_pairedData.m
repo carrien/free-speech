@@ -39,9 +39,6 @@ defaultParams.bPaired = 1;
 defaultParams.bMeansOnly = 0;
 p = set_missingFields(p,defaultParams,0);
 
-defaultParams.avgErrorColor = p.avgMarkerColor; % default: same as marker color
-p = set_missingFields(p,defaultParams,0);
-
 %% colors
 if iscell(colorSpec(1)) %if colors are specified as character strings
     warning('Colors must be entered as RBG values, not character strings.')
@@ -63,6 +60,9 @@ if nAvgColors == 1 || nColors~=nConds
     end
     p.avgMarkerColor = repmat(p.avgMarkerColor,nConds,1);
 end
+
+defaultParams.avgErrorColor = p.avgMarkerColor; % default: same as marker color
+p = set_missingFields(p,defaultParams,0);
 
 %% check that data is in the right orientation
 for c=1:nConds
