@@ -62,6 +62,8 @@ if isfield(expt, 'trackingFileLoc')
     trackingFileDir = expt.trackingFileLoc; 
 elseif isfield(expt, 'trackingFileDir')
     trackingFileDir = expt.trackingFileDir; 
+else
+    trackingFileDir = 'experiment_helpers'; 
 end 
 
 % Get the word
@@ -87,7 +89,12 @@ elseif contains(stimWord,'apper')
 end
 
 % If a working copy doesn't exist, make one
-ostWorking = fullfile(get_gitPath, trackingFileDir, [trackingFileName 'Working.ost']); 
+if strcmp(trackingFileDir, 'experiment_helpers')
+    leadingDir = 'free-speech'; 
+else
+    leadingDir = 'current-studies'; 
+end
+ostWorking = fullfile(get_gitPath, leadingDir, trackingFileDir, [trackingFileName 'Working.ost']); 
 if exist(ostWorking,'file') ~= 2
     refreshWorkingCopy(trackingFileDir, trackingFileName, 'ost');
 end

@@ -33,11 +33,11 @@ set(h_fig(ctrl),'Color',[.75 .75 .75]);
 %              'Position',[.05 .9 .9 .5], 'Units', 'normalized', 'BorderType', 'none');
 adjustBtn = uicontrol(h_fig(ctrl), 'Style', 'pushbutton', 'String', 'Adjust OSTs', ...
     'Units', 'normalized', 'Position', [0.1, 0.9, 0.2, 0.05],...
-    'Callback', @(hObject, eventdata)callme(hObject, eventdata, expt, h_fig)); 
+    'Callback', @(hObject, eventdata)adjustCall(hObject, eventdata, expt, h_fig)); 
 
 
 end
 
-function callme(hObject,eventdata,expt,h_fig)
+function adjustCall(hObject,eventdata,expt,h_fig)
     adjustOsts(expt, h_fig)
 end

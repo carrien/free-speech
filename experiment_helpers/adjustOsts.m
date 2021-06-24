@@ -19,14 +19,24 @@ dbstop if error
 % Number of trials to compile
 nCompiledTrials = 18; 
 
+% OST file information 
+if (~isfield(expt, 'trackingFileDir') && ~isfield(expt, 'trackingFileLoc')) 
+    ostPath = 'C:\Users\Public\Documents\software\free-speech\experiment_helpers'; 
+elseif isfield(expt, 'trackingFileDir')
+    ostPath = get_exptRunpath(expt.trackingFileDir); 
+elseif isfield(expt, 'trackingFileLoc')
+    ostPath = get_exptRunpath(expt.trackingFileLoc); 
+end
+
+if ~isfield(expt, 'trackingFileName')
+    trackingFileName = 'measureFormants'; 
+else
+    trackingFileName = expt.trackingFileName; 
+end
+
+ostWorking = fullfile(get_exptRunpath(expt.name), [trackingFileName 'Working.ost']); 
  
 
-%% Information on participant screen
-% 
-% 
-% waitMessage = 'Please wait. The experiment will begin again shortly.'; 
-% h_wait = draw_exptText(h_fig, 0.5, 0.5, waitMessage, expt.instruct.txtparams);
-% 
 %% Get temporary data files
 
 % Look for temporary trial directory
@@ -56,8 +66,6 @@ for t = 1:length(trials2compile)
     compiledData = [compiledData; data]; 
 end
     
-
-
 % Set last trial's bChangeOst -> 1
 load(fullfile(tempdir, [num2str(max(trials2compile)), '.mat'])); 
 data.bChangeOst = 1; 
@@ -75,6 +83,7 @@ audapter_viewer(data,expt);
 hGui = findobj('Tag','audapter_viewer'); 
 
 % Pause the experiment
+fprintf('Unpause the experiment when you have finished adjusting OST parameters.\n')
 pause_trial(h_fig); 
 
 % Backup in case you accidentally unpause it before you are done setting
@@ -84,8 +93,9 @@ catch
 end
 
 
-%%
-
+%% Feed in new OST value to Audapter
+Audapter('ost', ostWorking, 0);
+fprintf('New OST values fed into Audapter.\n')
 
 
 end
