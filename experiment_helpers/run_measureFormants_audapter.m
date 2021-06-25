@@ -71,11 +71,11 @@ AudapterIO('init', p);
 
 %% run experiment
 % setup figures
-h_fig = setup_exptFigs; % *** addition for mid-expt button
+h_fig = setup_exptFigs; 
 get_figinds_audapter; % names figs: stim = 1, ctrl = 2, dup = 3;
 
 h_sub = get_subfigs_audapter(h_fig(ctrl),1);
-adjustButton = add_adjustOstButton(expt, h_fig); 
+adjustButton = add_adjustOstButton(h_fig); % ****** pull request 
 % give instructions and wait for keypress
 h_ready = draw_exptText(h_fig,.5,.5,expt.instruct.introtxt,expt.instruct.txtparams);
 pause
@@ -94,7 +94,7 @@ for itrial = 1:length(trials2run)  % for each trial
         if get_pause_state(h_fig,'p')
             pause_trial(h_fig);
         end
-        if get_pause_state(h_fig,'a') % pause for adjusting OSTs
+        if get_pause_state(h_fig,'a') % ***** pull request. pause for adjusting OSTs
             adjustOsts(expt, h_fig);
         end
 
@@ -128,6 +128,9 @@ for itrial = 1:length(trials2run)  % for each trial
 
         % plot shifted spectrogram  
         subplot_expt_spectrogram(data, p, h_fig, h_sub)
+        % ***** in pull request for trial-specific OSTs
+        subjOstParams = get_ost('experiment_helpers', 'measureFormants', 'full', 'working'); 
+        data.subjOstParams = subjOstParams; 
 
         %plot amplitude and ost tracking
         bGoodTrial = check_rmsThresh(data,rmsThresh,h_sub(3));
