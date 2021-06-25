@@ -4,11 +4,16 @@ function [] = adjustOsts(expt, h_fig)
 % longer working (especially talking louder or something, where your thresholds may no longer be accurate)
 % 
 % Process: 
-% 1. Takes in expt and h_fig (so that you can run the normal pause_trial script) 
-% 2. Compiles data from last 9 (-18?) temp trials into one data file so it can be read by audapter_viewer all at once 
+% 1. Takes in expt and h_fig (so that you can run a split version of pause_trial) 
+% 2. Compiles data from last 18 temp trials into one data file so it can be read by audapter_viewer all at once (if you don't
+% have 18, it will just take the last however many you have) 
 % 3. Opens audapter_viewer with that data file and the expt 
 % 4. Use audapter_viewer as normal 
 % 5. Marks last temporary trial 1 for bChangedOsts
+% 6. Saves a data file with those compiled trials (data_ostChange.mat)
+% 7. Feeds new OST parameters into Audapter (so you don't have to do it in your own experiment) 
+% 
+% Accompanies function add_adjustOstButton to add a button to control screen to get to this script
 % 
 % Initiated RPK 6/2/2021
 % 
@@ -130,14 +135,6 @@ pause(1)
 delete(h_text)                          % clear continue text
 CloneFig(h_fig(stim),h_fig(dup))
 pause(1)
-
-
-%% Do some variable clearing? It might be the case that you need to do this if you call the adjust function multiple times
-
-clear compiledData
-clear trialnums
-clear trials2compile
-
 
 
 
