@@ -131,6 +131,7 @@ for itrial = 1:length(trials2run)  % for each trial
         % ***** in pull request for trial-specific OSTs
         subjOstParams = get_ost('experiment_helpers', 'measureFormants', 'full', 'working'); 
         data.subjOstParams = subjOstParams; 
+        data.bChangeOst = 0; 
 
         %plot amplitude and ost tracking
         bGoodTrial = check_rmsThresh(data,rmsThresh,h_sub(3));
