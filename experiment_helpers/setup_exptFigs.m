@@ -1,4 +1,4 @@
-function [h_fig] = setup_exptFigs(expt)
+function [h_fig] = setup_exptFigs()
 %SETUP_EXPTFIGS  Creates figures for experimenter and participant.
 %   SETUP_EXPTFIGS() creates and returns handles to figures for:
 %   (1) displaying stimuli to the participant (monitor 2)
