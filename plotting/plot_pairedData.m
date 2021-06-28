@@ -30,7 +30,11 @@ defaultParams.avgMarkerSize = 12;
 defaultParams.avgMarkerColor = colorSpec;
 defaultParams.LineColor = [.7 .7 .7];
 defaultParams.LineWidth = 1;
-defaultParams.avgLineColor = colorSpec; %[0 0 0]
+if size(colorSpec,1)==1
+    defaultParams.avgLineColor = colorSpec;
+else
+    defaultParams.avgLineColor = [0 0 0];
+end
 defaultParams.avgLineWidth = 3;
 defaultParams.jitterFrac = 0.25;
 defaultParams.bCI = 0;
