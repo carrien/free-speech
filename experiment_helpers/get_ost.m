@@ -63,7 +63,12 @@ else
     trackingPath = fullfile(get_gitPath, 'current-studies', audFileDir); 
 end
 
-ostFile = fullfile(trackingPath,[audFileName 'Working.ost']);
+switch masterWorking
+    case 'master' 
+        ostFile = fullfile(trackingPath,[audFileName 'Master.ost']); % I'm lazy and don't feel like making the first letter be capital
+    case 'working' 
+        ostFile = fullfile(trackingPath,[audFileName 'Working.ost']);
+end
 
 % If a working copy doesn't exist, make one
 if exist(ostFile,'file') ~= 2
