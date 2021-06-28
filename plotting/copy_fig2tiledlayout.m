@@ -11,11 +11,13 @@ if nargin < 7 || isempty(bCloseOrig), bCloseOrig = 0; end
 if nargin < 8, plotParams = []; end
 
 defaultParams.TileSpacing = 'none';
+defaultParams.Padding = 'compact';
 plotParams = set_missingFields(plotParams,defaultParams,0);
 
 % create tiledlayout in new figure
 tl = tiledlayout(hnewfig,nrows,ncols);
 tl.TileSpacing = plotParams.TileSpacing;
+tl.Padding = plotParams.Padding;
 
 for ifig = 1:length(hfig2copy)
     % get handle to axis
