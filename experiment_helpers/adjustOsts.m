@@ -46,14 +46,6 @@ CloneFig(h_fig(stim),h_fig(dup))
 nCompiledTrials = 18; 
 
 % OST file information 
-if (~isfield(expt, 'trackingFileDir') && ~isfield(expt, 'trackingFileLoc')) 
-    ostPath = 'C:\Users\Public\Documents\software\free-speech\experiment_helpers'; 
-elseif isfield(expt, 'trackingFileDir')
-    ostPath = get_exptRunpath(expt.trackingFileDir); 
-elseif isfield(expt, 'trackingFileLoc')
-    ostPath = get_exptRunpath(expt.trackingFileLoc); 
-end
-
 if ~isfield(expt, 'trackingFileName')
     trackingFileName = 'measureFormants'; 
 else
@@ -70,7 +62,6 @@ tempdirs = regexp(genpath(expt.dataPath),'[^;]*temp_trials','match')';
 if isempty(tempdirs)
     % If there isn't one
     fprintf('No trials left to adjust OSTs for.\n')
-    expPath = [];
     return;
 elseif length(tempdirs) > 1
     fprintf('Too many temp directories. Aborting. \n')
@@ -88,12 +79,12 @@ trials2compile = trialnums(trials2compile); % Just in case your trial list for s
 
 for t = 1:length(trials2compile)
     trialNo = trials2compile(t); 
-    load(fullfile(tempdir, [num2str(trialNo) '.mat'])); 
+    load(fullfile(tempdir, [num2str(trialNo) '.mat']), 'data'); 
     compiledData = [compiledData; data]; 
 end
     
 % Set last trial's bChangeOst -> 1
-load(fullfile(tempdir, [num2str(max(trials2compile)), '.mat'])); 
+load(fullfile(tempdir, [num2str(max(trials2compile)), '.mat']), 'data'); 
 data.bChangeOst = 1; 
 save(fullfile(tempdir, [num2str(max(trials2compile)), '.mat']), 'data'); 
 
@@ -128,12 +119,11 @@ Audapter('ost', ostWorking, 0);
 fprintf('New OST values fed into Audapter.\n')
 
 % Refresh text
-delete(h_text)
-h_text = text(.5,.5,conttxt,txtparams); % display continue text
-CloneFig(h_fig(stim),h_fig(dup))
-pause(1)
-delete(h_text)                          % clear continue text
-CloneFig(h_fig(stim),h_fig(dup))
+delete_exptText(h_fig, h_text)
+pause(0.25)
+h_text(1) = draw_exptText(h_fig, 0.5, 0.5, conttxt, txtparams); % display continue text
+pause(2)
+delete_exptText(h_fig, h_text)      % clear continue text
 pause(1)
 
 
