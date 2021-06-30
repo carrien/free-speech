@@ -24,19 +24,8 @@ for i=1:length(pos)
     xlim([0 1]);
     ylim([0 1]);
 end
+
 % set experimenter view to gray bg
 set(h_fig(ctrl),'Color',[.75 .75 .75]);
 
-% Only display this if you've provided expt. (Otherwise the button will just error on you)
-% if nargin == 1
-% adjustBtn = uicontrol(h_fig(ctrl), 'Style', 'pushbutton', 'String', 'Adjust OSTs', ...
-%     'Units', 'normalized', 'Position', [0.1, 0.9, 0.2, 0.05],...
-%     'Callback', @(hObject, eventdata)adjustCall(hObject, eventdata, expt, h_fig)); 
-% end
-
-
 end
-
-% function adjustCall(hObject,eventdata,expt,h_fig)
-%     adjustOsts(expt, h_fig)
-% end
