@@ -13,6 +13,9 @@ function [] = adjustOsts(expt, h_fig)
 % 6. Saves a data file with those compiled trials (data_ostChange.mat)
 % 7. Feeds new OST parameters into Audapter (so you don't have to do it in your own experiment) 
 % 
+% WARNING: DO NOT USE during the actual experimental phase of an experiment that simply turns on formant perturbation for an
+% entire trial. This script indiscriminately feeds the OST file back into Audapter, which prevents trial-wide perturbation.
+% 
 % Accompanies function add_adjustOstButton to add a button to control screen to get to this script
 % 
 % Initiated RPK 6/2/2021
@@ -47,11 +50,17 @@ nCompiledTrials = 18;
 
 % OST file information 
 if (~isfield(expt, 'trackingFileDir') && ~isfield(expt, 'trackingFileLoc')) 
-    ostPath = 'C:\Users\Public\Documents\software\free-speech\experiment_helpers'; 
+    trackingFileDir = 'experiment_helpers'; 
 elseif isfield(expt, 'trackingFileDir')
-    ostPath = get_exptRunpath(expt.trackingFileDir); 
+    trackingFileDir = expt.trackingFileDir; 
 elseif isfield(expt, 'trackingFileLoc')
-    ostPath = get_exptRunpath(expt.trackingFileLoc); 
+    trackingFileDir = expt.trackingFileLoc; 
+end
+
+if strcmp(trackingFileDir, 'experiment_helpers')
+    ostPath = 'C:\Users\Public\Documents\software\free-speech\experiment_helpers\'; 
+else
+    ostPath = get_exptRunpath(trackingFileDir); 
 end
 
 if ~isfield(expt, 'trackingFileName')
@@ -60,7 +69,7 @@ else
     trackingFileName = expt.trackingFileName; 
 end
 
-ostWorking = fullfile(get_exptRunpath(expt.name), [trackingFileName 'Working.ost']); 
+ostWorking = fullfile(ostPath, [trackingFileName 'Working.ost']); 
  
 
 %% Get temporary data files

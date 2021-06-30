@@ -9,6 +9,8 @@ function adjustBtn = add_adjustOstButton(h_fig)
 %    adjustOsts(expt, h_fig);
 % end
 % 
+% WARNING: DO NOT USE during the actual experimental phase of an experiment that simply turns on formant perturbation for an
+% entire trial. This script indiscriminately feeds the OST file back into Audapter, which prevents trial-wide perturbation.
 
 get_figinds_audapter; 
 adjustPanel = uipanel(h_fig(ctrl), 'FontSize',12,...
