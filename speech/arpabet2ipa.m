@@ -16,8 +16,12 @@ for a = 1:length(arpacell)
         case 'ae'
             ipa{a} = char(230);
         case 'ah'
+            ipa{a} = char(652);
+        case 'ax'
             ipa{a} = char(601);
         case 'ay'
+            ipa{a} = sprintf('e^%s',char(618));
+        case 'ey'
             ipa{a} = sprintf('e^%s',char(618));
         case 'eh'
             ipa{a} = char(603);
