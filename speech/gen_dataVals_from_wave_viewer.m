@@ -42,17 +42,6 @@ shortTracks = [];
 % Append '.mat' and load
 dataVals = struct([]);
 for i = 1:length(sortedfiles)
-    if strcmp(expt.name, 'simonSingleWord')
-        numVowels = 2;
-    else
-        numVowels = 1;
-    end
-    
-    for v = 1:numVowels %TODO eventually all of the below will have to go in this loop
-        
-    end
-    
-    
     trialnum = sortedfiles(i);
     filename = sprintf('%d.mat',trialnum);
     load(fullfile(trialPath,filename));
