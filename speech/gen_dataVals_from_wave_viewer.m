@@ -54,7 +54,8 @@ for i = 1:length(sortedfiles)
         filename = sprintf('%d.mat',trialnum);
         load(fullfile(trialPath,filename), 'sigmat', 'trialparams');
         
-        % skip bad trials, except for adding metadata
+        % skip bad trials, except for adding metadata (and making cell 
+        % structure for expts with multiple words in a trial)
         if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params) && ~trialparams.event_params.is_good_trial
             dataVals(i).word = expt.allWords(trialnum);
             dataVals(i).vowel = expt.allVowels(trialnum);
@@ -64,6 +65,10 @@ for i = 1:length(sortedfiles)
             dataVals(i).cond = expt.allConds(trialnum);
             dataVals(i).token = trialnum;
             dataVals(i).bExcl = 1;
+            
+            if numVowels > 1
+                dataVals = makeEmptyCells(dataVals, i, numVowels, sigmat);
+            end
         else
             % find onset
             if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params) && ~isempty(trialparams.event_params.user_event_times)
@@ -225,7 +230,8 @@ end
 save(savefile,'dataVals');
 fprintf('%d trials saved in %s.\n',length(sortedfiles),savefile)
 
-end
+end %EOF
+
 
 function [ind] = get_index_at_time(taxis,t)
 % Simple binary search to find the corresponding t-axis value
@@ -243,6 +249,25 @@ end
 
 if abs(high-t) > abs(low-t), ind = low;
 else ind = high;
+end
+
+end
+
+
+function [dataVals] = makeEmptyCells(dataVals, i, numVowels, sigmat)
+% Populates certain fields with the right number of empty cell arrays.
+
+for v = 1:numVowels
+    dataVals(i).f0{v} = [];
+    for f=1:size(sigmat.ftrack,1)
+        fname=sprintf('f%d',f);
+        dataVals(i).(fname){v}  = [];
+    end
+    dataVals(i).int{v}          = [];
+    dataVals(i).pitch_taxis{v}  = [];
+    dataVals(i).ftrack_taxis{v} = [];
+    dataVals(i).ampl_taxis{v}   = [];
+    dataVals(i).dur{v}          = [];
 end
 
 end
