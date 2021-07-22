@@ -28,4 +28,7 @@ end
 % set experimenter view to gray bg
 set(h_fig(ctrl),'Color',[.75 .75 .75]);
 
+% set stim full screen
+set(h_fig(stim),'WindowState','fullscreen');
+
 end
