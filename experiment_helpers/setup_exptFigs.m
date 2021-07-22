@@ -24,8 +24,11 @@ for i=1:length(pos)
     xlim([0 1]);
     ylim([0 1]);
 end
-
+   
 % set experimenter view to gray bg
 set(h_fig(ctrl),'Color',[.75 .75 .75]);
+
+% set stim full screen
+set(h_fig(stim),'WindowState','fullscreen');
 
 end
