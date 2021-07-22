@@ -7,7 +7,7 @@ function [expt] = run_measureFormants_audapterMEG(expt,fbMode,usetrigs)
 
 if nargin < 1, expt = []; end
 if nargin < 2 || isempty(fbMode); fbMode = 1;end
-if nargin < 3, usetrigs = 1; end
+if nargin < 3, usetrigs = 0; end
 
 if isfield(expt,'dataPath')
     outputdir = expt.dataPath;
