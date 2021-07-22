@@ -1,7 +1,15 @@
 function [fs,tstep] = get_fs_from_taxis(taxis)
 %GET_FS_FROM_TAXIS  Computes fs and step size from a time axis.
 
-tdiffs = diff(taxis);
+if iscell(taxis)
+    tdiffs = [];
+    for c = 1:length(taxis)
+        tdiffs = [tdiffs; diff(taxis{c})];
+    end
+else
+    tdiffs = diff(taxis);
+end
+
 if all(tdiffs==tdiffs(1))
     tstep = tdiffs(1);
 else
