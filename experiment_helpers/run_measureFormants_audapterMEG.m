@@ -1,4 +1,4 @@
-function [expt] = run_measureFormants_audapterMEG(expt,fbMode,usetrigs)
+function [expt] = run_measureFormants_audapterMEG(expt,fbMode,usetrigs,Numbvist)
 % Template for altered feedback studies. Based on FUSP template but changed
 % to work with Audapter.
 %                   outputdir: directory where data is saved
@@ -30,7 +30,7 @@ stimtxtsize = 200;
 
 % set missing expt fields to defaults
 expt = set_exptDefaults(expt);
-
+expt.instruct.txtparams.Color = '#A6ACAF';
 %set RMS threshold for deciding if a trial is good or not
 rmsThresh = 0.04;
 
@@ -66,6 +66,13 @@ else
     ostFN = which('measureFormantsWorking.ost');
     pcfFN = which('measureFormantsWorking.pcf');
 end
+
+%% load subjOstParams from the first visit
+if  Numbvist~=1    
+    first_expt=load(fullfile(expt.subjPath,expt.expo_conds{1,1},'expt.mat'));  
+    set_subjOstParams([],[],first_expt.expt,'orig');
+end
+
 check_file(ostFN);
 check_file(pcfFN);
 Audapter('ost', ostFN, 0);
@@ -76,6 +83,10 @@ p = getAudapterDefaultParams(expt.gender); % get default params
 p.bShift = 0;
 if isfield(expt,'audapterParams') && isfield(expt.audapterParams,'nLPC')
     p.nLPC = expt.audapterParams.nLPC;
+end
+% load nLPC from the first visit
+if  Numbvist~=1    
+p= add2struct(p,first_expt.expt.audapterParams);
 end
 
 % set noise
@@ -104,8 +115,18 @@ h_restinstr = draw_exptText(h_fig,.5,.5,expt.instruct.restintro,expt.instruct.tx
 pause;
 delete_exptText(h_fig,h_restinstr);
 
-% give instructions and wait for keypress
-h_ready = draw_exptText(h_fig,.5,.5,expt.instruct.starttxt_speaking,expt.instruct.txtparams);
+% give instructions for speaking 
+h_speak = draw_exptText(h_fig,.5,.5,expt.instruct.starttxt_speaking,expt.instruct.txtparams);
+pause
+delete_exptText(h_fig,h_speak)
+
+% instruction for head position correction
+h_head = draw_exptText(h_fig,.5,.5,expt.instruct.headcorr,expt.instruct.txtparams);
+pause
+delete_exptText(h_fig,h_head)
+
+% ready for start
+h_ready = draw_exptText(h_fig,.5,.5,expt.instruct.starttxt,expt.instruct.txtparams);
 pause
 delete_exptText(h_fig,h_ready)
 
@@ -136,7 +157,7 @@ for itrial = 1:length(trials2run)  % for each trial
 
         % set text
         txt2display = expt.listWords{trial_index};
-        color2display = expt.colorvals{expt.allColors(trial_index)};
+        color2display = expt.instruct.txtparams.Color; % was expt.colorvals{expt.allColors(trial_index)};
 
         % run trial in Audapter
         Audapter('reset'); %reset Audapter
@@ -196,7 +217,9 @@ for itrial = 1:length(trials2run)  % for each trial
         end
         % add intertrial interval + jitter
         pause(expt.timing.interstimdur + rand*expt.timing.interstimjitter);
-
+        
+        % save ost information for this trial
+        data.subjOstParams = get_ost([], [], 'full', 'working');  
         % save trial
         trialfile = fullfile(trialdir,sprintf('%d.mat',trial_index));
         save(trialfile,'data')
@@ -207,11 +230,11 @@ for itrial = 1:length(trials2run)  % for each trial
     end
     % display break text
     if itrial == length(trials2run)
-        breaktext = sprintf('Thank you!\n\nPlease wait.');
+        breaktext = sprintf('Thank you!\n\n Time for a long break.');% 'Thank you!\n\nPlease wait.'
         draw_exptText(h_fig,.5,.5,breaktext,expt.instruct.txtparams);
         pause(3);
     elseif any(expt.breakTrials == trial_index)
-        breaktext = sprintf('Time for a break!\n%d of %d trials done.\n\nPress the space bar to continue.',itrial,expt.ntrials);
+        breaktext = sprintf('Time for a break!\n%d of %d trials done.\n\n next trial will start within 10 seconds.',itrial,length(trials2run));
         h_break = draw_exptText(h_fig,.5,.5,breaktext,expt.instruct.txtparams);
         pause
         delete_exptText(h_fig,h_break)
