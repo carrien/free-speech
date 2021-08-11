@@ -116,17 +116,12 @@ pause;
 delete_exptText(h_fig,h_restinstr);
 
 % give instructions for speaking 
-h_speak = draw_exptText(h_fig,.5,.5,expt.instruct.starttxt_speaking,expt.instruct.txtparams);
+h_speak = draw_exptText(h_fig,.5,.5,expt.instruct.speaking,expt.instruct.txtparams);
 pause
 delete_exptText(h_fig,h_speak)
 
-% instruction for head position correction
-h_head = draw_exptText(h_fig,.5,.5,expt.instruct.headcorr,expt.instruct.txtparams);
-pause
-delete_exptText(h_fig,h_head)
-
 % ready for start
-h_ready = draw_exptText(h_fig,.5,.5,expt.instruct.starttxt,expt.instruct.txtparams);
+h_ready = draw_exptText(h_fig,.5,.5,expt.instruct.checktxt_speak,expt.instruct.txtparams);
 pause
 delete_exptText(h_fig,h_ready)
 
@@ -230,11 +225,11 @@ for itrial = 1:length(trials2run)  % for each trial
     end
     % display break text
     if itrial == length(trials2run)
-        breaktext = sprintf('Thank you!\n\n Time for a long break.');% 'Thank you!\n\nPlease wait.'
+        breaktext = sprintf('Thank you!\n Time for a long break.');% 'Thank you!\n\nPlease wait.'
         draw_exptText(h_fig,.5,.5,breaktext,expt.instruct.txtparams);
         pause(3);
     elseif any(expt.breakTrials == trial_index)
-        breaktext = sprintf('Time for a break!\n%d of %d trials done.\n\n next trial will start within 10 seconds.',itrial,length(trials2run));
+        breaktext = sprintf('Time for a break!\n%d of %d trials done.\n next trial will start within 30 seconds.',itrial,length(trials2run));
         h_break = draw_exptText(h_fig,.5,.5,breaktext,expt.instruct.txtparams);
         pause
         delete_exptText(h_fig,h_break)
