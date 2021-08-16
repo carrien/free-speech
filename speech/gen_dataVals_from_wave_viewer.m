@@ -42,10 +42,11 @@ shortTracks = [];
 % Append '.mat' and load
 dataVals = struct([]);
 
-if strcmp(expt.name, 'simonSingleWord')
-    numVowels = 2;
-else
-    numVowels = 1;
+switch expt.name
+    case 'simonSingleWord'
+        numVowels = 2;
+    otherwise
+        numVowels = 1;
 end
 
 for i = 1:length(sortedfiles)
