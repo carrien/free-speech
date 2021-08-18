@@ -30,7 +30,7 @@ stimtxtsize = 200;
 
 % set missing expt fields to defaults
 expt = set_exptDefaults(expt);
-expt.instruct.txtparams.Color = '#A6ACAF';
+expt.instruct.txtparams.Color = '#696969';%'#A6ACAF';
 %set RMS threshold for deciding if a trial is good or not
 rmsThresh = 0.04;
 
@@ -132,7 +132,7 @@ if expt.isRestart
 end
 pause(1)
 for itrial = 1:length(trials2run)  % for each trial
-    bGoodTrial = 0;
+   bGoodTrial = 0;
     while ~bGoodTrial
         % pause if 'p' is pressed
         if get_pause_state(h_fig,'p')
