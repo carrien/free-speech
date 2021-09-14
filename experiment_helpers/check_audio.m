@@ -31,6 +31,17 @@ UserData.dataPath = dataPath;
 load(fullfile(dataPath,'data.mat'),'data');
 UserData.data = data;
 load(fullfile(dataPath,'expt.mat'),'expt');
+if ~exist('expt','var')
+    load(fullfile(dataPath,'expt.mat'));
+    vars = who;
+    expLoc = contains(vars,'expt');
+    if sum(expLoc)>1
+        error('Too many expt variables found.')
+    elseif sum(expLoc)==0
+        error('No expt variable found.')
+    end
+    eval(strcat('expt =', vars{expLoc},';'))
+end
 UserData.expt = expt;
 if exist(fullfile(dataPath,'dataVals.mat'),'file')
     UserData.bDataVals = 1;
