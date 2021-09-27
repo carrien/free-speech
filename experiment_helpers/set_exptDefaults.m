@@ -24,7 +24,7 @@ if ~isfield(expt,'dataPath') % prompt for dataPath if not defined
 end
 
 %% environment parameters
-expt = set_missingField(expt,'date',datetime);    %sets date to current date if not defined
+expt = set_missingField(expt,'date',date);    %sets date to current date if not defined
 expt = set_missingField(expt,'time',datestr(now,'HH:MM:SS')); %set time to current time
 expt = set_missingField(expt,'compName',getenv('COMPUTERNAME'));  %gets name of computer
 expt = set_missingField(expt,'username',getenv('username'));  %gets current username (whoever is logged in while running experiment)
