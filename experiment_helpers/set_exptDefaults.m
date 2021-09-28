@@ -15,7 +15,7 @@ else                         % otherwise validate snum
     expt.snum = get_snum(expt.snum);
 end
 if ~isfield(expt,'gender')   % prompt for gender if not defined
-    expt.gender = get_gender;
+    expt.gender = get_height;
 else                         % otherwise validate gender
     expt.gender = get_gender(expt.gender);
 end
@@ -25,6 +25,7 @@ end
 
 %% environment parameters
 expt = set_missingField(expt,'date',date);    %sets date to current date if not defined
+expt = set_missingField(expt,'time',datestr(now,'HH:MM:SS')); %set time to current time
 expt = set_missingField(expt,'compName',getenv('COMPUTERNAME'));  %gets name of computer
 expt = set_missingField(expt,'username',getenv('username'));  %gets current username (whoever is logged in while running experiment)
     
