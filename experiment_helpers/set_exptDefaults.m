@@ -143,6 +143,10 @@ expt.inds = get_exptInds(expt,{'conds', 'words', 'vowels', 'colors'});
 
 fprintf('Done setting defaults.\n');
 
+%% Audapter OST and PCF file paths
+expt = set_missingField(expt, 'trackingFileLoc',  'experiment_helpers');
+expt = set_missingField(expt, 'trackingFileName', 'measureFormants');
+
 end
 
 function [dataPath] = get_dataPath()
