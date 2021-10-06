@@ -106,7 +106,7 @@ try newParam3Value = varargin{4}; catch; end
 if strcmp(audFileDir, 'experiment_helpers') || strcmp(audFileName, 'measureFormants')
     trackingPath = fullfile(get_gitPath, 'free-speech', 'experiment_helpers'); 
 elseif isfolder(audFileDir) %if audFileDir was provided as full path
-    if contains('\',audFileDir) || contains('/',audFileDir)
+    if contains(audFileDir,'/') || contains(audFileDir,'\')
         trackingPath = audFileDir;
     else
         trackingPath = fullfile(get_gitPath, 'current-studies', audFileDir);
