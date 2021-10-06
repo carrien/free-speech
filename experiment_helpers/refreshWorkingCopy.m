@@ -27,8 +27,12 @@ if nargin < 1 || isempty(audFileLoc), audFileLoc = 'experiment_helpers'; end
 if nargin < 2 || isempty(audFileName), audFileName = 'measureFormants'; end
 if nargin < 3 || isempty(files2refresh), files2refresh = 'both'; end
 
-if exist(audFileLoc,'dir')
-    audFilePath = audFileLoc;
+if isfolder(audFileLoc)
+    if contains('\',audFileDir) || contains('/',audFileDir)
+        audFilePath = audFileLoc;
+    else
+        audFilePath = fullfile(get_gitPath, 'current-studies', audFileLoc);
+    end
 else
     audFilePath = fullfile(get_gitPath, 'current-studies', audFileLoc);
 end
