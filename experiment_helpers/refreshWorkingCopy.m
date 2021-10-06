@@ -27,7 +27,11 @@ if nargin < 1 || isempty(audFileLoc), audFileLoc = 'experiment_helpers'; end
 if nargin < 2 || isempty(audFileName), audFileName = 'measureFormants'; end
 if nargin < 3 || isempty(files2refresh), files2refresh = 'both'; end
 
-audFilePath = fullfile(get_gitPath, 'current-studies', audFileLoc);
+if exist(audFileLoc,'dir')
+    audFilePath = audFileLoc;
+else
+    audFilePath = fullfile(get_gitPath, 'current-studies', audFileLoc);
+end
     
 try  %current-studies repo
     if strcmp(files2refresh,'ost') || strcmp(files2refresh,'both')

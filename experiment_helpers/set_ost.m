@@ -105,6 +105,8 @@ try newParam3Value = varargin{4}; catch; end
 % Get the name of the OST, take out any .ost extensions if they exist
 if strcmp(audFileDir, 'experiment_helpers') || strcmp(audFileName, 'measureFormants')
     trackingPath = fullfile(get_gitPath, 'free-speech', 'experiment_helpers'); 
+elseif exist(audFileDir,'dir') %if audFileDir was provided as full path
+    trackingPath = audFileDir;
 else
     trackingPath = fullfile(get_gitPath, 'current-studies', audFileDir); 
 end
