@@ -1,4 +1,4 @@
-function [] = gen_dataVals_from_wave_viewer(dataPath,trialdir,bSaveCheck)
+function [] = gen_dataVals_from_wave_viewer(dataPath,trialdir,bSaveCheck, bSingleVowel)
 %GEN_DATAVALS  Scrape subject trial files for data and save.
 %   GEN_DATAVALS(DATAPATH,TRIALDIR) scrapes the files from a subject's
 %   DATAPATH/TRIALDIR directory and collects formant data into the single
@@ -9,6 +9,8 @@ function [] = gen_dataVals_from_wave_viewer(dataPath,trialdir,bSaveCheck)
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
 if nargin < 2 || isempty(trialdir), trialdir = 'trials'; end
 if nargin < 3 || isempty(bSaveCheck), bSaveCheck = 1; end
+if nargin < 4 || isempty(bSingleVowel), bSingleVowel = 0; end
+mfa_vowels = {'IY' 'IH' 'EH' 'AE' 'AA' 'AH' 'OW' 'UW' 'EY' 'UH'};
 
 
 savefile = fullfile(dataPath,sprintf('dataVals%s.mat',trialdir(7:end)));
@@ -19,7 +21,7 @@ else
 end
 if ~bSave, return; end
 
-load(fullfile(dataPath,'expt.mat'));
+load(fullfile(dataPath,'expt.mat'), 'expt');
 if exist(fullfile(dataPath,'wave_viewer_params.mat'),'file')
     load(fullfile(dataPath,'wave_viewer_params.mat'));
 else
@@ -47,7 +49,7 @@ for i = 1:length(sortedfiles)
     load(fullfile(trialPath,filename));
     
     % skip bad trials, except for adding metadata
-    if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params) && ~trialparams.event_params.is_good_trial
+    if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params) && isfield(trialparams.event_params, 'is_good_trial') && ~trialparams.event_params.is_good_trial
         dataVals(i).word = expt.allWords(trialnum);
         dataVals(i).vowel = expt.allVowels(trialnum);
         if isfield(expt,'allColors')
@@ -64,7 +66,10 @@ for i = 1:length(sortedfiles)
             %                 trialparams.event_params.user_event_times(1) = [];
             %                 trialparams.event_params.user_event_names = trialparams.event_params.user_event_names{2:end};
             %             end
-            if (isfield(expt,'name') && (strcmpi(expt.name,'brut') || strcmpi(expt.name,'port')|| strcmpi(expt.name,'brutGerman')|| strcmpi(expt.name,'portGerman')))
+            if bSingleVowel && any(ismember(trialparams.event_params.user_event_names, mfa_vowels))
+                onset_ix = find(ismember(trialparams.event_params.user_event_names, mfa_vowels)); %the first uev with a "vowel" name
+                onset_time = trialparams.event_params.user_event_times(onset_ix);
+            elseif (isfield(expt,'name') && (strcmpi(expt.name,'brut') || strcmpi(expt.name,'port')|| strcmpi(expt.name,'brutGerman')|| strcmpi(expt.name,'portGerman')))
                 % if (strcmpi(expt.name, 'brut') || strcmpi(expt.name,'port'))
                 uevnames = trialparams.event_params.user_event_names;
                 vow = expt.listVowels{trialnum};
@@ -123,7 +128,16 @@ for i = 1:length(sortedfiles)
         end
         
         % find offset
-        if exist('user_event_times','var') && length(user_event_times) > 1 && user_event_times(1) ~= user_event_times(end)
+        if bSingleVowel && any(ismember(trialparams.event_params.user_event_names, mfa_vowels))
+            % TODO CWN finish this
+            if onset_ix < length(trialparams.event_params.user_event_times)
+                offset_time = trialparams.event_params.user_event_times(onset_ix + 1);
+            else
+                offset_time = onset_time + 0.0001;
+            end            
+            timediff = sigmat.ampl_taxis - offset_time;
+            [~, offsetIndAmp] = min(abs(timediff));
+        elseif exist('user_event_times','var') && length(user_event_times) > 1 && user_event_times(1) ~= user_event_times(end)
             % find time of user-created offset event
             offset_time = user_event_times(end);
             timediff = sigmat.ampl_taxis - offset_time;
