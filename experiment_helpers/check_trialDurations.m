@@ -28,45 +28,48 @@ load(fullfile(dataPath,'data.mat'),'data');
 fprintf('Loading Expt...\n');
 load(fullfile(dataPath,'expt.mat'),'expt');
 
-%% Determine average trial duration
-
-recordLength = expt.timing.stimdur; %+ expt.timing.interstimdur + expt.timing.interstimjitter;
-thresholdPercentage = .10;
-threshold = recordLength * thresholdPercentage;
-upperThreshold = recordLength + threshold;
-lowerThreshold = recordLength - threshold;
+%% Determine signalIn durations
 
 trialLength = zeros(1,expt.ntrials);
-longTrials = [];
-shortTrials = [];
 
+%TODO: vectorize this?
 for trialNum = 1:expt.ntrials
     trialLength(trialNum) = length(data(trialNum).signalIn)/data(trialNum).params.sr;
-    if trialLength(trialNum) > upperThreshold
-        longTrials = [longTrials trialNum];
-    elseif trialLength(trialNum) < lowerThreshold
-        shortTrials = [shortTrials trialNum];
-    end
 end
 
-warning('Throughout this experiment, there were %s long trials (>10 percent above expt.timing.stimdur) and %s short trials (<10 above expt.timing.stimdur).\n\n', num2str(length(longTrials)), num2str(length(shortTrials)))
+meanDur = mean(trialLength);
+stdDur = std(trialLength);
 
-warning('These trials were: \n Long trials: %s \n Short trials: %s', num2str(longTrials), num2str(shortTrials)) 
+upperThreshold = meanDur + 2*(stdDur);
+lowerThreshold = meanDur - 2*(stdDur);
+longTrials = find(trialLength > upperThreshold);
+shortTrials = find(trialLength < lowerThreshold);
+
+fprintf('Throughout this experiment there were: \n %s long trials (2 std above mean) \n and %s short trials (2 below mean).\n\n', num2str(length(longTrials)), num2str(length(shortTrials)));
+fprintf('The mean signalIn duration is %s seconds \n and the standard deviation is %s seconds \n\n', num2str(meanDur), num2str(stdDur));
+
+if stdDur > .1 %standard deviation greater than 100 ms
+    warning('The standard deviation of this data is very high (greater than 100 ms), its possible something is causing your trials grow in length');
+end
+
+fprintf('These trials were: \n Long trials: %s \n Short trials: %s \n', num2str(longTrials), num2str(shortTrials)); 
 
 
 if bPlot
     
     figure();
     hold on
+    title(sprintf('SignalIn Duration per Trial for %s %s', expt.name, expt.snum))
     plot(1:expt.ntrials,trialLength)
+    xlim([1 expt.ntrials])
     xlabel('Trial Number')
     ylabel('Duration of SignalIn (Seconds)')
     window = 5; %5 Trials in moving mean window.
     movAvg = movmean(trialLength,window);
     plot(1:expt.ntrials,movAvg,'k-','LineWidth',2)
-    yline(expt.timing.stimdur,'-','expt.timing.stimdur');
-    yline(upperThreshold,'r--','+10%')
-    yline(lowerThreshold,'r--','-10%')
+    yline(meanDur,'-','mean duration');
+    yline(upperThreshold,'r--','+2std')
+    yline(lowerThreshold,'r--','-2std')
     legend('Trial Lengths','5-Trial Moving Average','Location','northwest')
     
 end
