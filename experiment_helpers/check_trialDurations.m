@@ -12,10 +12,12 @@ function [] = check_trialDurations(dataPath,bPlot)
 %
 %   OUTPUT
 %       A figure is created with the signalIn data, a moving average of
-%       durations, and lines indicating expt.timing.stimdur, 10 percent
-%       above that, and 10 percent below it. Also information about the
-%       number of trials above/below the 10 percent lines is sent to the
-%       console for viewing. 
+%       durations, and lines indicating the mean and 2 standard deviations 
+%       from mean. Also information about the number of trials above/below 
+%       the 2std marks are sent to the console for viewing. A high std is a
+%       good indication that something is changing your trial lengths more
+%       generally, and the long/short trials are useful for finding individual
+%       instances of anomalous trial lengths. 
 %
 
 %% Default Arguments
