@@ -1,4 +1,4 @@
-function [] = waverunner(dataPath,trialinds,buffertype,bSaveCheck,params2overwrite)
+function [] = waverunner(dataPath,trialinds,buffertype,bSaveCheck,params2overwrite,folderSuffix)
 %WAVERUNNER  Calls wave_proc on each trial in an experiment.
 %   WAVERUNNER(DATAPATH,TRIALINDS,BUFFERTYPE,BSAVECHECK,PARAMS2OVERWRITE)
 %   loads experiment data from DATAPATH and calls wave_proc on trials given
@@ -11,6 +11,7 @@ if nargin < 2, trialinds = []; end
 if nargin < 3 || isempty(buffertype), buffertype = 'signalIn'; end
 if nargin < 4 || isempty(bSaveCheck), bSaveCheck = 1; end
 if nargin < 5, params2overwrite = []; end
+if nargin < 6, folderSuffix = []; end
 
 % load data
 fprintf('Loading data...')
@@ -25,11 +26,20 @@ else
 end
 
 % set trial folder
-if strcmp(buffertype,'signalIn')
-    trialfolder = 'trials';
+if isempty(folderSuffix)
+    if strcmp(buffertype,'signalIn')
+        trialfolder = 'trials';
+    else
+        trialfolder = sprintf('trials_%s',buffertype);
+        trialfolderSigIn = 'trials';
+    end
 else
-    trialfolder = sprintf('trials_%s',buffertype);
-    trialfolderSigIn = 'trials';
+    if strcmp(buffertype,'signalIn')
+        trialfolder = sprintf('trials_%s',folderSuffix);
+    else
+        trialfolder = sprintf('trials_%s_%s',folderSuffix,buffertype);
+        trialfolderSigIn = sprintf('trials_%s',folderSuffix);
+    end
 end
 if ~exist(fullfile(dataPath,trialfolder),'dir')
     fprintf('Creating trial directory: %s\n',fullfile(dataPath,trialfolder));
