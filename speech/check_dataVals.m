@@ -224,13 +224,6 @@ function [dataVals,expt] = load_dataVals(UserData,dataPath,bCalc)
             dataValsID = sprintf('dataVals%s%s.mat',['_' UserData.folderSuffix],trialdir(7:end));
         end
     end
-    %     if strcmp(UserData.buffertype,'signalIn')
-%         trialdir = 'trials';
-%         dataValsID = 'dataVals';
-%     else
-%         trialdir = sprintf('trials_%s',UserData.buffertype);
-%         dataValsID = sprintf('dataVals%s.mat',trialdir(7:end));
-%     end
     if bCalc
         gen_dataVals_from_wave_viewer(dataPath,trialdir);
     end
