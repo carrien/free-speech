@@ -1,4 +1,4 @@
-function errors = check_dataVals(dataPath,bCalc,buffertype,dataVals)
+function errors = check_dataVals(dataPath,bCalc,buffertype,dataVals, folderSuffix)
 %check formant data for errors and return trial numbers where errors are
 %detected. Types of errors:
 %             * jumpTrials in F1/F2 trajectory
@@ -16,12 +16,16 @@ function errors = check_dataVals(dataPath,bCalc,buffertype,dataVals)
 %                       Defualt is 0 if not specified.
 %                   buffertype: 'signalIn' or 'signalOut'
 %                   dataVals: dataVals stored as a variable
+%                   folderSuffix: if not 'trials' folder, which folder to
+%                       pull trial files from in audioGUI. eg, 'transfer'
+%                       will use 'trials_transfer' folder.
 %
 % rewritten to include GUI JAN 2019
 
 if nargin < 1 || isempty(dataPath), dataPath = pwd; end
 if nargin < 2 || isempty(bCalc), bCalc = 1; end
 if nargin < 3 || isempty(buffertype), buffertype = 'signalIn'; end
+if nargin < 5, folderSuffix = []; end
 
 %% create GUI
 f = figure('Visible','on','Units','Normalized','Position',[.1 .1 .8 .8]);
@@ -30,6 +34,7 @@ UserData = guihandles(f);
 UserData.dataPath = dataPath;
 UserData.f = f;
 UserData.buffertype = buffertype;
+UserData.folderSuffix = folderSuffix;
 
 %% create warning field in GUI
 UserData.xPosMax = 0.975;
@@ -110,7 +115,7 @@ end
 
 function launch_GUI(src,evt)
     UserData = guidata(src);
-    audioGUI(UserData.dataPath,UserData.trialset,UserData.buffertype,[],0)
+    audioGUI(UserData.dataPath,UserData.trialset,UserData.buffertype,[],0, UserData.folderSuffix)
 end
 
 function reload_dataVals(src,evt)
@@ -202,13 +207,30 @@ function [dataVals,expt] = load_dataVals(UserData,dataPath,bCalc)
     set(UserData.warnPanel,'HighlightColor','yellow')
     set(UserData.warnText,'String',outstring)
     %if yesCalc == 1, generate dataVals
-    if strcmp(UserData.buffertype,'signalIn')
-        trialdir = 'trials';
-        dataValsID = 'dataVals';
+    if isempty(UserData.folderSuffix)
+        if strcmp(UserData.buffertype, 'signalIn')
+            trialdir = 'trials';
+            dataValsID = 'dataVals';
+        else
+            trialdir = sprintf('trials_%s',UserData.buffertype);
+            dataValsID = sprintf('dataVals%s.mat',trialdir(7:end));
+        end
     else
-        trialdir = sprintf('trials_%s',UserData.buffertype);
-        dataValsID = sprintf('dataVals%s.mat',trialdir(7:end));
+        if strcmp(UserData.buffertype,'signalIn')
+            trialdir = sprintf('trials_%s', UserData.folderSuffix);
+            dataValsID = sprintf('dataVals%s.mat',trialdir(7:end));
+        else
+            trialdir = sprintf('trials_%s_%s',UserData.folderSuffix,UserData.buffertype);
+            dataValsID = sprintf('dataVals%s%s.mat',['_' UserData.folderSuffix],trialdir(7:end));
+        end
     end
+    %     if strcmp(UserData.buffertype,'signalIn')
+%         trialdir = 'trials';
+%         dataValsID = 'dataVals';
+%     else
+%         trialdir = sprintf('trials_%s',UserData.buffertype);
+%         dataValsID = sprintf('dataVals%s.mat',trialdir(7:end));
+%     end
     if bCalc
         gen_dataVals_from_wave_viewer(dataPath,trialdir);
     end
