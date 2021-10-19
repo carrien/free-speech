@@ -1,4 +1,4 @@
-function [] = gen_dataVals_from_wave_viewer(dataPath,trialdir,bSaveCheck)
+function [] = gen_dataVals_from_wave_viewer(dataPath,trialdir,bSaveCheck,bMultiSyllable)
 %GEN_DATAVALS  Scrape subject trial files for data and save.
 %   GEN_DATAVALS(DATAPATH,TRIALDIR) scrapes the files from a subject's
 %   DATAPATH/TRIALDIR directory and collects formant data into the single
@@ -9,7 +9,11 @@ function [] = gen_dataVals_from_wave_viewer(dataPath,trialdir,bSaveCheck)
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
 if nargin < 2 || isempty(trialdir), trialdir = 'trials'; end
 if nargin < 3 || isempty(bSaveCheck), bSaveCheck = 1; end
-
+if nargin < 4, bMultiSyllable = []; end   %gets set to 0 or 1 later
+if ~isempty(bMultiSyllable) && ~any(bMultiSyllable == [0 1])
+        error('The input variable bMultiSyllable must be 0, 1, or empty.')
+end
+mfa_vowels = {'IY' 'IH' 'EH' 'AE' 'AA' 'AH' 'OW' 'UW' 'EY' 'UH'};
 
 savefile = fullfile(dataPath,sprintf('dataVals%s.mat',trialdir(7:end)));
 if bSaveCheck
@@ -38,26 +42,62 @@ for i = 1:length(matFiles)
 end
 sortedfiles = sort(filenums);
 shortTracks = [];
+tooManyEvents = [];
 
 % Append '.mat' and load
 dataVals = struct([]);
 
-switch expt.name
-    case 'simonSingleWord'
-        numVowels = 2;
-    otherwise
-        numVowels = 1;
+%use number of user events in first trial to evaluate if settings are reasonable
+trialnum = sortedfiles(i);
+filename = sprintf('%d.mat',trialnum);
+load(fullfile(trialPath,filename), 'trialparams');
+numUserEventsInTrial1 = length(trialparams.event_params.user_event_times);
+
+%verbose info about how trials will be evaluated, and setting defaults
+if ~isempty(bMultiSyllable)
+    if numUserEventsInTrial1 <= 2 && bMultiSyllable == 0
+        %default settings for single syllable expts
+    elseif numUserEventsInTrial1 > 2 && bMultiSyllable == 0
+        %will use special settings for MFA-aligned single vowels (e.g., vsaSentence transfer trials)
+    elseif numUserEventsInTrial1 <= 2 && bMultiSyllable == 1
+        error(['bMultiSyllable is set to 1 but fewer than 3 user events were detected in first trial. ' ...
+            'These settings are incompatible.']);
+    elseif numUserEventsInTrial1 > 2 && bMultiSyllable == 1
+        %will use cell array system
+    end
+else
+    if numUserEventsInTrial1 <= 2 && isempty(bMultiSyllable)
+        bMultiSyllable = 0;
+        fprintf('Setting bMultiSyllable to 0; looking for one vowel per trial.\n')
+    elseif numUserEventsInTrial1 > 2 && isempty(bMultiSyllable)
+        fprintf('First trial has >2 user events, indicative of multiple vowels in this dataset.\n');
+        resp = askNChoiceQuestion('Track multiple vowels, or just first MFA-aligned vowel?', {'multiple' 'one'});
+        if strcmp(resp, 'multiple')
+            bMultiSyllable = 1;
+        else
+            bMultiSyllable = 0;
+        end
+    end
 end
 
+
 for i = 1:length(sortedfiles)
+    trialnum = sortedfiles(i);
+    filename = sprintf('%d.mat',trialnum);
+    load(fullfile(trialPath,filename), 'sigmat', 'trialparams');
+    
+    numUserEvents = length(trialparams.event_params.user_event_times);
+    
+    if bMultiSyllable
+        numVowels = numUserEvents - 1;
+    else
+        numVowels = 1;
+    end
+    
     for v = 1:numVowels
-        trialnum = sortedfiles(i);
-        filename = sprintf('%d.mat',trialnum);
-        load(fullfile(trialPath,filename), 'sigmat', 'trialparams');
-        
-        % skip bad trials, except for adding metadata (and making cell 
-        % structure for expts with multiple words in a trial)
-        if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params) && ~trialparams.event_params.is_good_trial
+        % skip bad trials, except for adding metadata, and making cell structure if bMultiSyllable
+        if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params) ...
+                && isfield(trialparams.event_params, 'is_good_trial') && ~trialparams.event_params.is_good_trial
             dataVals(i).word = expt.allWords(trialnum);
             dataVals(i).vowel = expt.allVowels(trialnum);
             if isfield(expt,'allColors')
@@ -67,26 +107,23 @@ for i = 1:length(sortedfiles)
             dataVals(i).token = trialnum;
             dataVals(i).bExcl = 1;
             
-            if numVowels > 1
+            if bMultiSyllable
                 dataVals = makeEmptyCells(dataVals, i, numVowels, sigmat);
             end
         else
             % find onset
-            if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params) && ~isempty(trialparams.event_params.user_event_times)
-                % disregard if earliest is sil or sp
-                %             if (strcmpi(uevnames{1},'silStart'))% || (strcmpi(uevnames{1},'spStart'))
-                %                 trialparams.event_params.user_event_times(1) = [];
-                %                 trialparams.event_params.user_event_names = trialparams.event_params.user_event_names{2:end};
-                %             end
-                if (isfield(expt,'name') && (strcmpi(expt.name,'brut') || strcmpi(expt.name,'port')|| strcmpi(expt.name,'brutGerman')|| strcmpi(expt.name,'portGerman')))
-                    % if (strcmpi(expt.name, 'brut') || strcmpi(expt.name,'port'))
+            if exist('trialparams','var') && isfield(trialparams,'event_params') && ...
+                    ~isempty(trialparams.event_params) && ~isempty(trialparams.event_params.user_event_times)
+                if ~bMultiSyllable && any(ismember(trialparams.event_params.user_event_names, mfa_vowels))
+                    onset_ix = find(ismember(trialparams.event_params.user_event_names, mfa_vowels)); %the first uev with a "vowel" name
+                    onset_time = trialparams.event_params.user_event_times(onset_ix);
+                elseif isfield(expt,'name') && contains(expt.name, {'brut', 'port' 'brutGerman' 'portGerman'}, 'IgnoreCase', true)
                     uevnames = trialparams.event_params.user_event_names;
                     vow = expt.listVowels{trialnum};
                     if strcmpi(vow,'oe')
                         vow = 'ah';
                     end
                     
-                    %                if ~exist('uevind','var') || isempty(uevind)
                     if (strcmpi(expt.listWords{trialnum}, 'hais') || strcmpi(expt.listWords{trialnum},'fait'))
                         vow = 'ey';
                     elseif strcmpi(expt.listWords{trialnum},'oeuf')
@@ -106,16 +143,14 @@ for i = 1:length(sortedfiles)
                         end
                     end
                     
-                    %                end
                     if exist('uevind','var')
                         onset_time = trialparams.event_params.user_event_times(uevind);
                     end
                     sprintf('trialnumber %d, word %s',trialnum, expt.listWords{trialnum})
-                    % end
                 else
                     % find time of user-created onset event
                     user_event_times = sort(trialparams.event_params.user_event_times);
-                    onset_time = user_event_times(2*v - 1);
+                    onset_time = user_event_times(v);
                 end
                 timediff = sigmat.ampl_taxis - onset_time;
                 [~, onsetIndAmp] = min(abs(timediff));
@@ -128,15 +163,23 @@ for i = 1:length(sortedfiles)
                     onsetIndAmp = find(sigmat.ampl > sigproc_params.ampl_thresh4voicing);
                 end
                 if onsetIndAmp, onsetIndAmp = onsetIndAmp(1) + 1;
-                else onsetIndAmp = 1; % set trial BAD here? reason: no onset found?
+                else, onsetIndAmp = 1; % set trial BAD here? reason: no onset found?
                 end
                 onset_time = sigmat.ampl_taxis(onsetIndAmp);
             end
             
             % find offset
-            if exist('user_event_times','var') && length(user_event_times) > (2*v - 1) && user_event_times(2*v - 1) ~= user_event_times(2*v)
+            if ~bMultiSyllable && exist('user_event_times', 'var') && any(ismember(trialparams.event_params.user_event_names, mfa_vowels))
+                if onset_ix < length(trialparams.event_params.user_event_times)
+                    offset_time = trialparams.event_params.user_event_times(onset_ix + 1);
+                else
+                    offset_time = onset_time + 0.0001;
+                end
+                timediff = sigmat.ampl_taxis - offset_time;
+                [~, offsetIndAmp] = min(abs(timediff));
+            elseif exist('user_event_times','var') && length(user_event_times) > (v) && user_event_times(v) ~= user_event_times(v+1)
                 % find time of user-created offset event
-                offset_time = user_event_times(2*v);
+                offset_time = user_event_times(v+1);
                 timediff = sigmat.ampl_taxis - offset_time;
                 [~, offsetIndAmp] = min(abs(timediff));
             elseif exist('uevind','var')
@@ -171,7 +214,7 @@ for i = 1:length(sortedfiles)
             offsetIndfx = get_index_at_time(sigmat.ftrack_taxis,offset_time);
             
             % convert to dataVals struct
-            if numVowels == 1
+            if ~bMultiSyllable
                 dataVals(i).f0 = sigmat.pitch(onsetIndf0:offsetIndf0)';                     % f0 track from onset to offset
                 for f=1:size(sigmat.ftrack,1)
                     fname=sprintf('f%d',f);
@@ -208,13 +251,18 @@ for i = 1:length(sortedfiles)
             end
             
             % warn about short tracks
-            if ~dataVals(i).bExcl && (numVowels == 1 && sum(~isnan(dataVals(i).f0)) < 20) || (numVowels > 1 && sum(~isnan(dataVals(i).f0{v})) < 20)
-                shortTracks = [shortTracks dataVals(i).token];
+            if ~dataVals(i).bExcl && ~bMultiSyllable && sum(~isnan(dataVals(i).f0)) < 20
+                shortTracks = [shortTracks dataVals(i).token]; %#ok<*AGROW>
                 warning('Short pitch track: trial %d',dataVals(i).token);
             end
-            if ~dataVals(i).bExcl && (numVowels == 1 && sum(~isnan(dataVals(i).f1)) < 20) || (numVowels > 1 && sum(~isnan(dataVals(i).f1{v})) < 20)
+            if ~dataVals(i).bExcl && ~bMultiSyllable && sum(~isnan(dataVals(i).f1)) < 20
                 shortTracks = [shortTracks dataVals(i).token];
                 warning('Short formant track: trial %d',dataVals(i).token);
+            end
+            %warn about >= 2 user events, if we're doing "normal" tracking that's neither forced-aligned nor multiSyllable
+            if numUserEvents > 2 && ~bMultiSyllable && numUserEventsInTrial1 <= 2
+                tooManyEvents = [tooManyEvents dataVals(i).token];
+                warning('Trial %d has %d user events when 0-2 were expected', dataVals(i).token, numUserEvents);
             end
         end
     
@@ -226,6 +274,11 @@ end
 if ~isempty(shortTracks)
     shortTracks = unique(shortTracks);
     warning('Short track list: %s',num2str(shortTracks));
+end
+
+if ~isempty(tooManyEvents)
+    tooManyEvents = unique(tooManyEvents);
+    warning('Trials with more than 2 user events: %s', num2str(tooManyEvents));
 end
 
 save(savefile,'dataVals');
@@ -249,7 +302,7 @@ while (high - low > 1)
 end
 
 if abs(high-t) > abs(low-t), ind = low;
-else ind = high;
+else, ind = high;
 end
 
 end
