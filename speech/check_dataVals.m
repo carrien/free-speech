@@ -59,7 +59,7 @@ UserData.warnText = uicontrol(UserData.warnPanel,'style','text',...
 if nargin < 4
     [dataVals,expt] = load_dataVals(UserData,dataPath,bCalc);
 else
-    load(fullfile(dataPath,'expt')); 
+    load(fullfile(dataPath,'expt'), 'expt'); 
 end
 UserData.dataVals = dataVals;
 UserData.expt = expt;
@@ -158,7 +158,7 @@ function errors = get_dataVals_errors(UserData,dataVals)
 
     for i = 1:length(dataVals)
         if dataVals(i).bExcl
-            badTrials = [badTrials dataVals(i).token];
+            badTrials = [badTrials dataVals(i).token]; %#ok<*AGROW>
         elseif dataVals(i).dur < shortThresh %check for too short trials
             shortTrials = [shortTrials dataVals(i).token];
         elseif dataVals(i).dur > longThresh %check for too long trials
@@ -175,8 +175,14 @@ function errors = get_dataVals_errors(UserData,dataVals)
             fishyF1Trials = [fishyF1Trials dataVals(i).token];
         elseif dataVals(i).ampl_taxis(1) < .0001
             earlyTrials = [earlyTrials dataVals(i).token];
-        elseif dataVals(i).ampl_taxis(end) > 1.5
-            lateTrials = [lateTrials dataVals(i).token];
+        elseif (isfield(UserData.expt, 'timing') && isfield(UserData.expt.timing, 'stimdur') && dataVals(i).ampl_taxis(end) > 0.96*UserData.expt.timing.stimdur) || ...
+                ~(isfield(UserData.expt, 'timing') && isfield(UserData.expt.timing, 'stimdur')) && dataVals(i).ampl_taxis(end) > 1.5
+            % check vowel endpoint relative to stimdur if possible. Otherwise, use arbitrary duration
+            if isfield(UserData.expt, 'timing') && isfield(UserData.expt.timing, 'stimdur') && dataVals(i).ampl_taxis(end) > 0.96*UserData.expt.timing.stimdur
+                lateTrials = [lateTrials dataVals(i).token];
+            elseif ~(isfield(UserData.expt, 'timing') && isfield(UserData.expt.timing, 'stimdur')) && dataVals(i).ampl_taxis(end) > 1.5
+                lateTrials = [lateTrials dataVals(i).token];
+            end
         else
             goodTrials = [goodTrials dataVals(i).token];
         end
@@ -228,7 +234,7 @@ function [dataVals,expt] = load_dataVals(UserData,dataPath,bCalc)
         gen_dataVals_from_wave_viewer(dataPath,trialdir);
     end
     load(fullfile(dataPath,dataValsID))
-    load(fullfile(dataPath,'expt'))
+    load(fullfile(dataPath,'expt'), 'expt')
     set(UserData.warnText,'String',[])
     set(UserData.warnPanel,'HighlightColor',[1 1 1])
 end
