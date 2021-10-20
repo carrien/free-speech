@@ -1,7 +1,7 @@
 function [] = check_trialDurations(dataPath,bPlot)
 %CHECK_TRIALDURATIONS Function for visualizing the length of signalIn over
 %the course of an experiment.
-%   CHECK_TRIALDURATIONS(DATAPATH)
+%   CHECK_TRIALDURATIONS(DATAPATH,BPLOT)
 %       This function plots the signalIn durations over the course of an
 %       experiment run given the DATAPATH containing it's data.mat file
 %
