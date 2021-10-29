@@ -210,7 +210,7 @@ function [dataVals,expt] = load_dataVals(UserData,dataPath,bCalc)
         dataValsID = sprintf('dataVals%s.mat',trialdir(7:end));
     end
     if bCalc
-        gen_dataVals_from_wave_viewer(dataPath,trialdir, [], 0); % due to 4th param == 0, check_dataVals will only work with one-vowel experiments
+        gen_dataVals_from_wave_viewer(dataPath,trialdir, []);
     end
     load(fullfile(dataPath,dataValsID))
     load(fullfile(dataPath,'expt'))
