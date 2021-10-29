@@ -1,4 +1,4 @@
-function [] = gen_dataVals_from_wave_viewer(dataPath,trialdir,bSaveCheck,bMultiSyllable)
+function [] = gen_dataVals_from_wave_viewer(dataPath,trialdir,bSaveCheck, mode)
 %GEN_DATAVALS  Scrape subject trial files for data and save.
 %   GEN_DATAVALS(DATAPATH,TRIALDIR) scrapes the files from a subject's
 %   DATAPATH/TRIALDIR directory and collects formant data into the single
@@ -9,10 +9,37 @@ function [] = gen_dataVals_from_wave_viewer(dataPath,trialdir,bSaveCheck,bMultiS
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
 if nargin < 2 || isempty(trialdir), trialdir = 'trials'; end
 if nargin < 3 || isempty(bSaveCheck), bSaveCheck = 1; end
-if nargin < 4, bMultiSyllable = []; end   %gets set to 0 or 1 later
-if ~isempty(bMultiSyllable) && ~any(bMultiSyllable == [0 1])
-        error('The input variable bMultiSyllable must be 0, 1, or empty.')
+if nargin < 4 || isempty(mode)
+    mode = 1;
+elseif ~any(mode == [1 2 3])
+    error('The input variable mode must be 1, 2, 3, or empty.')
 end
+% EXPLAINING MODES:
+% MODE 1 is the default and traditional use case. Each trial has one
+% segment which is tracked. This segment is one of:
+%   * [If no user events] The period of the first contiguous formant track
+%   * [If 2+ user events] The period between the first and last user events
+%   * [If 1 user event] The period between the only user event and:
+%         ** the end of the current contiguous formant track
+%         ** when the amplitude goes below the default amplitude threshold
+% MODE 2 also tracks one segment. It tracks the first vowel, when the trial
+%   was passed through the Montreal Forced Aligner (MFA). The tracked
+%   segment is:
+%   * the period between the first user event whose name is the
+%       same as one of the mfa_vowels, and the next user event.
+%   * the period between the first user event whose name is the same as
+%       one of the mfa_vowels, and the end of the current formant track
+%   * the period between the first user event whose name is the same as
+%       one of the mfa_vowels, and when the amplitude goes below the
+%       default amplitude threshold
+% MODE 3 tracks multiple segments. It tracks the period between any two
+%   consecutive user events. It saves dataVals as a cell array, where each
+%   cell is the data from one segment.
+%
+%   For example, a trial with 4 user events will have a 3-cell array in
+%   dataVals, representing the periods between user events 1-2, 2-3, & 3-4.
+
+
 mfa_vowels = {'IY' 'IH' 'EH' 'AE' 'AA' 'AH' 'OW' 'UW' 'EY' 'UH'};
 
 savefile = fullfile(dataPath,sprintf('dataVals%s.mat',trialdir(7:end)));
@@ -44,42 +71,17 @@ sortedfiles = sort(filenums);
 shortTracks = [];
 tooManyEvents = [];
 
-% Append '.mat' and load
 dataVals = struct([]);
 
 %use number of user events in first trial to evaluate if settings are reasonable
-trialnum = sortedfiles(i);
-filename = sprintf('%d.mat',trialnum);
+filename = sprintf('%d.mat',sortedfiles(1));
 load(fullfile(trialPath,filename), 'trialparams');
 numUserEventsInTrial1 = length(trialparams.event_params.user_event_times);
 
-%verbose info about how trials will be evaluated, and setting defaults
-if ~isempty(bMultiSyllable)
-    if numUserEventsInTrial1 <= 2 && bMultiSyllable == 0
-        %default settings for single syllable expts
-    elseif numUserEventsInTrial1 > 2 && bMultiSyllable == 0
-        %will use special settings for MFA-aligned single vowels (e.g., vsaSentence transfer trials)
-    elseif numUserEventsInTrial1 <= 2 && bMultiSyllable == 1
-        error(['bMultiSyllable is set to 1 but fewer than 3 user events were detected in first trial. ' ...
+if numUserEventsInTrial1 <= 2 && mode == 3
+    error(['mode is set to track multiple segments, but fewer than 3 user events were detected in first trial. ' ...
             'These settings are incompatible.']);
-    elseif numUserEventsInTrial1 > 2 && bMultiSyllable == 1
-        %will use cell array system
-    end
-else
-    if numUserEventsInTrial1 <= 2 && isempty(bMultiSyllable)
-        bMultiSyllable = 0;
-        fprintf('Setting bMultiSyllable to 0; looking for one vowel per trial.\n')
-    elseif numUserEventsInTrial1 > 2 && isempty(bMultiSyllable)
-        fprintf('First trial has >2 user events, indicative of multiple vowels in this dataset.\n');
-        resp = askNChoiceQuestion('Track multiple vowels, or just first MFA-aligned vowel?', {'multiple' 'one'});
-        if strcmp(resp, 'multiple')
-            bMultiSyllable = 1;
-        else
-            bMultiSyllable = 0;
-        end
-    end
 end
-
 
 for i = 1:length(sortedfiles)
     trialnum = sortedfiles(i);
@@ -88,14 +90,15 @@ for i = 1:length(sortedfiles)
     
     numUserEvents = length(trialparams.event_params.user_event_times);
     
-    if bMultiSyllable
-        numVowels = numUserEvents - 1;
+    if mode == 3
+        nSegments = numUserEvents - 1;
     else
-        numVowels = 1;
+        nSegments = 1;
     end
     
-    for v = 1:numVowels
-        % skip bad trials, except for adding metadata, and making cell structure if bMultiSyllable
+    for v = 1:nSegments
+        % skip bad trials, except for adding metadata, and making cell
+        % structure if mode == 3
         if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params) ...
                 && isfield(trialparams.event_params, 'is_good_trial') && ~trialparams.event_params.is_good_trial
             dataVals(i).word = expt.allWords(trialnum);
@@ -107,14 +110,13 @@ for i = 1:length(sortedfiles)
             dataVals(i).token = trialnum;
             dataVals(i).bExcl = 1;
             
-            if bMultiSyllable
-                dataVals = makeEmptyCells(dataVals, i, numVowels, sigmat);
+            if mode == 3
+                dataVals = makeEmptyCells(dataVals, i, nSegments, sigmat);
             end
         else
             % find onset
-            if exist('trialparams','var') && isfield(trialparams,'event_params') && ...
-                    ~isempty(trialparams.event_params) && ~isempty(trialparams.event_params.user_event_times)
-                if ~bMultiSyllable && any(ismember(trialparams.event_params.user_event_names, mfa_vowels))
+            if numUserEvents
+                if mode == 2
                     onset_ix = find(ismember(trialparams.event_params.user_event_names, mfa_vowels)); %the first uev with a "vowel" name
                     onset_time = trialparams.event_params.user_event_times(onset_ix);
                 elseif isfield(expt,'name') && contains(expt.name, {'brut', 'port' 'brutGerman' 'portGerman'}, 'IgnoreCase', true)
@@ -169,11 +171,11 @@ for i = 1:length(sortedfiles)
             end
             
             % find offset
-            if ~bMultiSyllable && exist('user_event_times', 'var') && any(ismember(trialparams.event_params.user_event_names, mfa_vowels))
+            if mode == 2
                 if onset_ix < length(trialparams.event_params.user_event_times)
                     offset_time = trialparams.event_params.user_event_times(onset_ix + 1);
                 else
-                    offset_time = onset_time + 0.0001;
+                    offset_time = onset_time + 0.0001; % TODO change this, if it gets retained in this fx
                 end
                 timediff = sigmat.ampl_taxis - offset_time;
                 [~, offsetIndAmp] = min(abs(timediff));
@@ -214,7 +216,7 @@ for i = 1:length(sortedfiles)
             offsetIndfx = get_index_at_time(sigmat.ftrack_taxis,offset_time);
             
             % convert to dataVals struct
-            if ~bMultiSyllable
+            if mode < 3
                 dataVals(i).f0 = sigmat.pitch(onsetIndf0:offsetIndf0)';                     % f0 track from onset to offset
                 for f=1:size(sigmat.ftrack,1)
                     fname=sprintf('f%d',f);
@@ -251,16 +253,16 @@ for i = 1:length(sortedfiles)
             end
             
             % warn about short tracks
-            if ~dataVals(i).bExcl && ~bMultiSyllable && sum(~isnan(dataVals(i).f0)) < 20
+            if ~dataVals(i).bExcl && mode < 3 && sum(~isnan(dataVals(i).f0)) < 20
                 shortTracks = [shortTracks dataVals(i).token]; %#ok<*AGROW>
                 warning('Short pitch track: trial %d',dataVals(i).token);
             end
-            if ~dataVals(i).bExcl && ~bMultiSyllable && sum(~isnan(dataVals(i).f1)) < 20
+            if ~dataVals(i).bExcl && mode < 3 && sum(~isnan(dataVals(i).f1)) < 20
                 shortTracks = [shortTracks dataVals(i).token];
                 warning('Short formant track: trial %d',dataVals(i).token);
             end
-            %warn about >= 2 user events, if we're doing "normal" tracking that's neither forced-aligned nor multiSyllable
-            if numUserEvents > 2 && ~bMultiSyllable && numUserEventsInTrial1 <= 2
+            %warn about >= 2 user events, if we're doing single segment tracking that's not MFA
+            if numUserEvents > 2 && mode == 1 && numUserEventsInTrial1 <= 2
                 tooManyEvents = [tooManyEvents dataVals(i).token];
                 warning('Trial %d has %d user events when 0-2 were expected', dataVals(i).token, numUserEvents);
             end
