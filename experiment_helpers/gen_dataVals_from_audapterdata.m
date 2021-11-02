@@ -1,14 +1,15 @@
-function [] = gen_dataVals_from_audapterdata(dataPath,bSaveCheck)
+function [] = gen_dataVals_from_audapterdata(dataPath,trialdir,bSaveCheck)
 %GEN_DATAVALS_FROM_AUDAPTERDATA create dataVals from audapter
 %   GEN_DATAVALS_FROM_AUDAPTERDATA(DATAPATH,TRIALDIR,BSAVECHECK) use
 %   data.mat audpater fmts and sfmts to create dataVals
 
 
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
-if nargin < 2 || isempty(bSaveCheck), bSaveCheck = 1; end
+if nargin < 2 || isempty(trialdir), trialdir = 'trials'; end
+if nargin < 3 || isempty(bSaveCheck), bSaveCheck = 1; end
 
 
-savefile = fullfile(dataPath,sprintf('dataVals.mat'));
+savefile = fullfile(dataPath,sprintf('dataVals%s_audapter.mat',trialdir(7:end)));
 if bSaveCheck
     bSave = savecheck(savefile);
 else
