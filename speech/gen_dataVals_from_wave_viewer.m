@@ -13,7 +13,7 @@ if nargin < 4 || isempty(bSingleVowel), bSingleVowel = 0; end
 mfa_vowels = {'IY' 'IH' 'EH' 'AE' 'AA' 'AH' 'OW' 'UW' 'EY' 'UH'};
 
 
-savefile = fullfile(dataPath,sprintf('dataVals%s_audapter.mat',trialdir(7:end)));
+savefile = fullfile(dataPath,sprintf('dataVals%s.mat',trialdir(7:end)));
 if bSaveCheck
     bSave = savecheck(savefile);
 else
