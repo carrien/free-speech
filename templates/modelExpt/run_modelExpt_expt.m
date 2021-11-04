@@ -72,10 +72,10 @@ expt.name = 'modelExpt';
 expt.trackingFileLoc = 'experiment_helpers'; % Where the OST/PCF files are kept (for audapter_viewer)
 expt.trackingFileName = 'measureFormants'; % What the files are called
 if ~isfield(expt,'snum'), expt.snum = get_snum; end     %eg, sp247
-expt.dataPath = get_acoustLocalPath(expt.name, expt.snum);
+expt.dataPath = get_acoustSavePath(expt.name, expt.snum);
     %CONV Your expt file should be saved to:
     % 'C:\Users\Public\Documents\experiments\[expt.name]\acousticdata\[expt.snum]\'.
-    % `get_acoustLocalPath` will return that, given the input arguments.
+    % `get_acoustSavePath` will return that, given the input arguments.
 
 % Load in existing expt.mat, if there is one
 if isfile(fullfile(expt.dataPath, 'expt.mat'))
