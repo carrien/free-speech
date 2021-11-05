@@ -5,6 +5,15 @@ function [exptPath] = get_exptSavePath(exptName,varargin)
 %       argument) local directory in the shared/public documents folder. If
 %       no EXPTNAME is provided, returns the path to the computers
 %       'experiments' folder. Can use VARARGIN to specify subfolders. 
+%       
+%       ARGUMENTS:
+%           EXPTNAME - character array containing name of experiment
+%           VARARGIN - one or more extra character array arguments to be
+%           added to the path, used to specify subfolders of the experiment
+%           folder.
+%           
+%       OUTPUT:
+%           EXPTPATH - full path as joined together via fullfile()
 %
 %       Currently accounts for Mac vs PC distinction, and Lab PC / iEEG
 %       Cart PC / Waisman MRI room PC.
