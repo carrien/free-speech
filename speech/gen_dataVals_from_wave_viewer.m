@@ -138,7 +138,8 @@ for i = 1:length(sortedfiles)
         
         % convert certain dataVals fields from cell to single instance array
         if mode < 3 && iscell(dataVals(i).f0)
-            for field = {'f0' 'f1' 'f2' 'int' 'pitch_taxis' 'ftrack_taxis' 'ampl_taxis'}
+            % TODO F/U how 'dur' will be handled.
+            for field = {'f0' 'f1' 'f2' 'int' 'pitch_taxis' 'ftrack_taxis' 'ampl_taxis' 'dur'}
                 dataVals(i).(field{:}) = dataVals(i).(field{:}){:};
             end
         end
