@@ -2,8 +2,7 @@ function [rangeSig] = rangeperc(signal,range)
 %RANGEPERC Returns a the section of a signal within a provided range.
 %   RANGEPERC(SIGNAL,RANGE)
 %       Returns the samples of input SIGNAL that fall within a
-%       provided RANGE. The range can be specified with TYPE as a
-%       percentage between 0 and 100.
+%       provided RANGE of percentages between 0 and 100.
 %
 %       SIGNAL: non empty vector containing signal to be restricted within
 %       the range.
@@ -29,7 +28,7 @@ elseif endVal < startVal
 end
 
 %compute indices from provided percentages
-if range(1) == 0
+if startVal == 0
     startInd = 1;
 else
     startInd = ceil(startVal*.01*length(signal));
