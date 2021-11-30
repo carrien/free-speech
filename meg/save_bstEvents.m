@@ -11,7 +11,7 @@ function [eventFiles] = save_bstEvents(dataFiles,outPath)
 %           EVENTFILES
 
 %Check to see if provided output location exists, make it if it does not.
-if ~exist(outPath)
+if ~exist(outPath,'dir')
     mkdir(outPath)
 end
 
@@ -24,7 +24,7 @@ for i=1:length(dataFiles)
     data = load(dataFiles{i});
     
     %Extract events from dataFile structure
-    events = data.F.events; %#ok<NASGU>
+    events = data.F.events;
     eventfilename = sprintf('events_%s.mat',filename(11:end));
     
     %Store event information in eventFiles array
