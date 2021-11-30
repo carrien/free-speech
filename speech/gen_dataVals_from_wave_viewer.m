@@ -91,7 +91,7 @@ if bMultiSegment
     mode = 3;
 else % if single segment, distinguish between mode 1 and 2 
     vowels_brutPort = {'EYStart' 'AHStart' 'UWStart' 'IYStart' 'EHStart' 'AEStart' 'UHStart'};
-    vowels_vsaSentence = {'IY' 'IH' 'EH' 'AE' 'AA' 'AH' 'OW' 'UW' 'EY' 'UH'};
+    vowels_default = {'IY' 'IH' 'EY' 'EH' 'AE' 'AA' 'AH' 'AO' 'OW' 'UH' 'UW' 'ER' 'OY' 'AY' 'AW'};
     
     % if you supply a vowel list, assume mode 2
     if ~isempty(vowel_list) 
@@ -107,9 +107,13 @@ else % if single segment, distinguish between mode 1 and 2
             contains(expt.name, {'brut', 'port' 'brutGerman' 'portGerman'}, 'IgnoreCase', true)
         mode = 2;
         vowel_list = vowels_brutPort;
-    elseif any(contains(uev_trial1, vowels_vsaSentence))
+        fprintf(['Segments will be selected based on events with vowel names '...
+            'pre-specified for brut and port experiments.\n']);
+    elseif any(contains(uev_trial1, vowels_default))
         mode = 2;
-        vowel_list = vowels_vsaSentence;
+        vowel_list = vowels_default;
+        fprintf(['A user event with a vowel name was found in trial 1. '...
+            'Segments will be selected based on events with vowel names.\n']);
     else
         mode = 1;
     end
