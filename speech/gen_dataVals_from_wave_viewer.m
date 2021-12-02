@@ -108,7 +108,6 @@ for i = 1:length(sortedTrialnums)
         
         % convert certain dataVals fields from cell to single instance array
         if ~bMultiSegment && iscell(dataVals(i).f0)
-            % TODO F/U how 'dur' will be handled.
             for field = {'f0' 'f1' 'f2' 'int' 'pitch_taxis' 'ftrack_taxis' 'ampl_taxis' 'dur'}
                 dataVals(i).(field{:}) = dataVals(i).(field{:}){:};
             end
@@ -124,13 +123,6 @@ for i = 1:length(sortedTrialnums)
             tooManyEvents = [tooManyEvents dataVals(i).token];
             warning('Trial %d has %d user events when 2 or fewer were expected', dataVals(i).token, numUserEvents);
         end
-        
-        %     else
-        %         %TODO after looking at carrie's code, make sure this works OK and
-        %         %everything gets set
-        %         dataVals(i) = get_dataValsTrial_fromEvents(sigmat, [], []);
-        %     %CN: to replicate past behavior I believe these fields are left
-        %          empty, so no need for the "else"
     end
     
     % add fields used in all modes
@@ -239,6 +231,7 @@ event_names{2} = offset_name;
 
 end %EOF
 
+%%
 function [onset_time,onsetIndAmp,onset_type] = get_onset_from_ampl(sigmat,trialparams,sigproc_params)
 
 % choose threshold
@@ -262,6 +255,7 @@ onset_time = sigmat.ampl_taxis(onsetIndAmp);
 
 end %EOF
 
+%%
 function [offset_time,offsetIndAmp,offset_type] = get_offset_from_ampl(sigmat,trialparams,sigproc_params,onsetIndAmp)
 
 % choose threshold
