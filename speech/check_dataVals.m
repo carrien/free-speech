@@ -280,6 +280,7 @@ function UserData = generate_menus(UserData)
         groupTypes(strcmp(groupTypes,'cond')) = [];
         groupTypes(strcmp(groupTypes,'token')) = [];
         groupTypes(strcmp(groupTypes,'bExcl')) = [];
+        groupTypes(strcmp(groupTypes,'segment')) = [];
         
         % Additions for timeAdapt dataVal structure (RK 4/14)
         groupTypes(strcmp(groupTypes,'totalDur')) = [];

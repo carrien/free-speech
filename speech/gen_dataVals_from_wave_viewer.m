@@ -77,7 +77,6 @@ if ~bMultiSegment
 end
 
 %% loop over each trial and populate dataVals
-dataVals = struct([]);
 shortTracks = [];
 tooManyEvents = [];
 
@@ -104,36 +103,39 @@ for i = 1:length(sortedTrialnums)
         end
         
         % populate formant and signal data based on events
-        dataVals(i) = get_dataValsTrial_fromEvents(sigmat, event_times, event_names);
+        dataValsTrial = get_dataValsTrial_fromEvents(sigmat, event_times, event_names);
         
         % convert certain dataVals fields from cell to single instance array
-        if ~bMultiSegment && iscell(dataVals(i).f0)
-            for field = {'f0' 'f1' 'f2' 'int' 'pitch_taxis' 'ftrack_taxis' 'ampl_taxis' 'dur'}
-                dataVals(i).(field{:}) = dataVals(i).(field{:}){:};
+        if ~bMultiSegment && iscell(dataValsTrial.f0)
+            for field = {'f0' 'f1' 'f2' 'int' 'pitch_taxis' 'ftrack_taxis' 'ampl_taxis' 'dur' 'segment'}
+                dataValsTrial.(field{:}) = dataValsTrial.(field{:}){:};
             end
         end
         
         % tally short tracks
-        if ~bMultiSegment && (sum(~isnan(dataVals(i).f0)) < 20 || sum(~isnan(dataVals(i).f1)) < 20)
+        if ~bMultiSegment && (sum(~isnan(dataValsTrial.f0)) < 20 || sum(~isnan(dataValsTrial.f1)) < 20)
             shortTracks = [shortTracks trialnum]; %#ok<*AGROW>
         end
         
         %warn about >= 2 user events if only expecting one
-        if numUserEvents > 2 && eventMode == 1
-            tooManyEvents = [tooManyEvents dataVals(i).token];
-            warning('Trial %d has %d user events when 2 or fewer were expected', dataVals(i).token, numUserEvents);
+        if numUserEvents > 2 && ~bMultiSegment && eventMode == 1
+            tooManyEvents = [tooManyEvents trialnum];
+            warning('Trial %d has %d user events when 2 or fewer were expected', trialnum, numUserEvents);
         end
     end
     
     % add fields used in all modes
-    dataVals(i).word = expt.allWords(trialnum);
-    dataVals(i).vowel = expt.allVowels(trialnum);
+    dataValsTrial.word = expt.allWords(trialnum);
+    dataValsTrial.vowel = expt.allVowels(trialnum);
     if isfield(expt,'allColors')
-        dataVals(i).color = expt.allColors(trialnum);
+        dataValsTrial.color = expt.allColors(trialnum);
     end
-    dataVals(i).cond = expt.allConds(trialnum);
-    dataVals(i).token = trialnum;
-    dataVals(i).bExcl = ~bGoodTrial; %TODO: test if making bExcl a logical (rather than numeric) breaks anything
+    dataValsTrial.cond = expt.allConds(trialnum);
+    dataValsTrial.token = trialnum;
+    dataValsTrial.bExcl = ~bGoodTrial; %TODO: test if making bExcl a logical (rather than numeric) breaks anything
+
+    %now that dataValsTrial has all fields, can set as a row in dataVals
+    dataVals(i) = dataValsTrial;
     
 end
 
@@ -200,7 +202,7 @@ switch eventMode
         
     case 2
         %% mode 2:
-        if ~isempty(uev_times)
+        if isempty(uev_times)
             error('No events found in trial.')
         end
         
