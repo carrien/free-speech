@@ -1,18 +1,26 @@
-function [] = gen_dataVals_from_wave_viewer(dataPath,trialdir,bSaveCheck, bSingleVowel)
+function [] = gen_dataVals_from_wave_viewer(dataPath,trialdir,bSaveCheck,bMultiSegment,vowel_list)
 %GEN_DATAVALS  Scrape subject trial files for data and save.
 %   GEN_DATAVALS(DATAPATH,TRIALDIR) scrapes the files from a subject's
 %   DATAPATH/TRIALDIR directory and collects formant data into the single
 %   file DATAVALS.mat.
+%
+%   BMULTISEGMENT (optional). If set to 0 (default), a single track is
+%     extracted for each trial, controlled more specifically by EVENTMODE.
+%     If set to 1, multiple tracks are extracted, one per "segment" (the
+%     interval between each pair of consecutive user events), and saved as
+%     a cell array, where each cell is the data from one segment.
+%   VOWEL_LIST (optional). A cell array of strings. In a trial, the first
+%     user event whose name is on vowel_list will be the segment onset.
 %
 %CN 3/2010
 
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
 if nargin < 2 || isempty(trialdir), trialdir = 'trials'; end
 if nargin < 3 || isempty(bSaveCheck), bSaveCheck = 1; end
-if nargin < 4 || isempty(bSingleVowel), bSingleVowel = 0; end
-mfa_vowels = {'IY' 'IH' 'EH' 'AE' 'AA' 'AH' 'OW' 'UW' 'EY' 'UH'};
+if nargin < 4 || isempty(bMultiSegment), bMultiSegment = 0; end
+if nargin < 5, vowel_list = []; end
 
-
+% check for existing dataVals file
 savefile = fullfile(dataPath,sprintf('dataVals%s.mat',trialdir(7:end)));
 if bSaveCheck
     bSave = savecheck(savefile);
@@ -21,222 +29,254 @@ else
 end
 if ~bSave, return; end
 
+% load processing parameters
 load(fullfile(dataPath,'expt.mat'), 'expt');
 if exist(fullfile(dataPath,'wave_viewer_params.mat'),'file')
-    load(fullfile(dataPath,'wave_viewer_params.mat'));
+    load(fullfile(dataPath,'wave_viewer_params.mat'), 'sigproc_params');
 else
     sigproc_params = get_sigproc_defaults;
 end
 
+% get trial numbers
 trialPath = fullfile(dataPath,trialdir); % e.g. trials; trials_default
-W = what(trialPath);
-matFiles = [W.mat];
+[sortedTrialnums,sortedFilenames] = get_sortedTrials(trialPath);
 
-% Strip off '.mat' and sort
-filenums = zeros(1,length(matFiles));
-for i = 1:length(matFiles)
-    [~, name] = fileparts(matFiles{i});
-    filenums(i) = str2double(name);
-end
-sortedfiles = sort(filenums);
-shortTracks = [];
-
-% Append '.mat' and load
-dataVals = struct([]);
-for i = 1:length(sortedfiles)
-    trialnum = sortedfiles(i);
-    filename = sprintf('%d.mat',trialnum);
-    load(fullfile(trialPath,filename));
+%% determine mode (whether to use event names to define tracks):
+%  * eventMode 1 is the traditional use case and ignores event names.
+%  * eventMode 2 uses event names that match a list to select relevant segments.
+if ~bMultiSegment
+    vowel_list_default = {'IY' 'IH' 'EY' 'EH' 'AE' 'AA' 'AH' 'AO' 'OW' 'UH' 'UW' 'ER' 'OY' 'AY' 'AW' 'EYStart' 'AHStart' 'UWStart' 'IYStart' 'EHStart' 'AEStart' 'UHStart' 'spnStart'};
     
-    % skip bad trials, except for adding metadata
-    if exist('trialparams','var') && isfield(trialparams,'event_params') && ~isempty(trialparams.event_params) && isfield(trialparams.event_params, 'is_good_trial') && ~trialparams.event_params.is_good_trial
-        dataVals(i).word = expt.allWords(trialnum);
-        dataVals(i).vowel = expt.allVowels(trialnum);
-        if isfield(expt,'allColors')
-            dataVals(i).color = expt.allColors(trialnum);
+    % get user event names in first good trial to determine eventMode
+    firstGoodTrial = 1;
+    while ~exist('uev_trial1','var')
+        load(fullfile(trialPath,sortedFilenames{firstGoodTrial}), 'trialparams');
+        if trialparams.event_params.is_good_trial
+            uev_trial1 = trialparams.event_params.user_event_names;
+        else
+            firstGoodTrial = firstGoodTrial + 1;
         end
-        dataVals(i).cond = expt.allConds(trialnum);
-        dataVals(i).token = trialnum;
-        dataVals(i).bExcl = 1;
+        if firstGoodTrial > length(sortedFilenames), break; end % escape if no good trials
+    end
+    
+    % if you supply a vowel list, assume eventMode 2
+    if ~isempty(vowel_list)
+        eventMode = 2;
+        if ~any(contains(uev_trial1, vowel_list))
+            warning('You supplied a vowel list, but trial %d did not contain any user events with a name on the list. The function will continue and look for events matching the supplied list.',firstGoodTrial);
+        end
+    % if any user event name matches the default vowel list, assume eventMode 2
+    elseif any(contains(uev_trial1, vowel_list_default))
+        eventMode = 2;
+        vowel_list = vowel_list_default;
+        fprintf('A user event in trial %d matched a vowel name. Segments will be selected based on event names.\n',firstGoodTrial);
+    % if no events match vowel names, default to eventMode 1
     else
-        % find onset
-        if exist('trialparams','var') & isfield(trialparams,'event_params') & ~isempty(trialparams.event_params) & ~isempty(trialparams.event_params.user_event_times) %#ok<AND2>
-            % disregard if earliest is sil or sp
-            %             if (strcmpi(uevnames{1},'silStart'))% || (strcmpi(uevnames{1},'spStart'))
-            %                 trialparams.event_params.user_event_times(1) = [];
-            %                 trialparams.event_params.user_event_names = trialparams.event_params.user_event_names{2:end};
-            %             end
-            if bSingleVowel && any(ismember(trialparams.event_params.user_event_names, mfa_vowels))
-                onset_ix = find(ismember(trialparams.event_params.user_event_names, mfa_vowels)); %the first uev with a "vowel" name
-                onset_time = trialparams.event_params.user_event_times(onset_ix);
-            elseif (isfield(expt,'name') && (strcmpi(expt.name,'brut') || strcmpi(expt.name,'port')|| strcmpi(expt.name,'brutGerman')|| strcmpi(expt.name,'portGerman')))
-                % if (strcmpi(expt.name, 'brut') || strcmpi(expt.name,'port'))
-                uevnames = trialparams.event_params.user_event_names;
-                vow = expt.listVowels{trialnum};
-                if strcmpi(vow,'oe')
-                    vow = 'ah';
-                end
-                
-                %                if ~exist('uevind','var') || isempty(uevind)
-                if (strcmpi(expt.listWords{trialnum}, 'hais') || strcmpi(expt.listWords{trialnum},'fait'))
-                    vow = 'ey';
-                elseif strcmpi(expt.listWords{trialnum},'oeuf')
-                    vow = 'ah';
-                elseif strcmpi(expt.listWords{trialnum},'neuf')
-                    vow = 'uw';
-                end
-                onset_name = [upper(vow) 'Start'];
-                uevind = find(contains(uevnames,onset_name));
-                if size(uevind,2) > 1 % added for German; if something goes wrong check here.
-                    uevind = uevind(1)
-                end
-                if isempty(uevind)
-                    if (strcmpi(expt.listWords{trialnum},'oeuf') || strcmpi(expt.listWords{trialnum},'neuf'))
-                        onset_name='spnStart'; % Sarah needs to figure out why this is happening and fix it
-                        uevind = find(contains(uevnames,onset_name));
-                    end
-                end
-                
-                %                end
-                if exist('uevind','var')
-                    onset_time = trialparams.event_params.user_event_times(uevind);
-                end
-                sprintf('trialnumber %d, word %s',trialnum, expt.listWords{trialnum})
-                % end
-            else
-                % find time of user-created onset event
-                user_event_times = sort(trialparams.event_params.user_event_times);
-                onset_time = user_event_times(1);
-            end
-            %             if size(onset_time,2) > 1 % added for german; check with Sarah if there are problems.
-            %                 onset_time = onset_time(1);
-            %             end
-            timediff = sigmat.ampl_taxis - onset_time;
-            [~, onsetIndAmp] = min(abs(timediff));
-        else
-            % use amplitude threshold to find onset index
-            if exist('trialparams','var') && ~isempty(trialparams.sigproc_params)
-                % use trial-specific amplitude threshold
-                onsetIndAmp = find(sigmat.ampl > trialparams.sigproc_params.ampl_thresh4voicing);
-            else % use wave_viewer_params default amplitude threshold
-                onsetIndAmp = find(sigmat.ampl > sigproc_params.ampl_thresh4voicing);
-            end
-            if onsetIndAmp, onsetIndAmp = onsetIndAmp(1) + 1;
-            else onsetIndAmp = 1; % set trial BAD here? reason: no onset found?
-            end
-            onset_time = sigmat.ampl_taxis(onsetIndAmp);
-        end
-        
-        % find offset
-        if bSingleVowel && any(ismember(trialparams.event_params.user_event_names, mfa_vowels))
-            % TODO CWN finish this
-            if onset_ix < length(trialparams.event_params.user_event_times)
-                offset_time = trialparams.event_params.user_event_times(onset_ix + 1);
-            else
-                offset_time = onset_time + 0.0001;
-            end            
-            timediff = sigmat.ampl_taxis - offset_time;
-            [~, offsetIndAmp] = min(abs(timediff));
-        elseif exist('user_event_times','var') && length(user_event_times) > 1 && user_event_times(1) ~= user_event_times(end)
-            % find time of user-created offset event
-            offset_time = user_event_times(end);
-            timediff = sigmat.ampl_taxis - offset_time;
-            [~, offsetIndAmp] = min(abs(timediff));
-        elseif exist('uevind','var')
-            offind = uevind+1;
-            offset_time = trialparams.event_params.user_event_times(offind);
-            timediff = sigmat.ampl_taxis - offset_time;
-            [~, offsetIndAmp] = min(abs(timediff));
-            
-        else
-            % find first sub-threshold amplitude value after onset
-            if exist('trialparams','var') && ~isempty(trialparams.sigproc_params)
-                % use trial-specific amplitude threshold
-                offsetIndAmp = find(sigmat.ampl(onsetIndAmp:end) < trialparams.sigproc_params.ampl_thresh4voicing);
-            else % use wave_viewer_params default amplitude threshold
-                offsetIndAmp = find(sigmat.ampl(onsetIndAmp:end) < sigproc_params.ampl_thresh4voicing);
-            end
-            if offsetIndAmp
-                offsetIndAmp = offsetIndAmp(1) + onsetIndAmp-1; % correct indexing
-            else
-                offsetIndAmp = length(sigmat.ampl); % use last index if no offset found
-            end
-            offset_time = sigmat.ampl_taxis(offsetIndAmp); % or -1?
-        end
-        
-        if exist('user_event_times','var')
-            clear user_event_times
-        end
-        
-        if exist('uevind','var')
-            clear uevind
-        end
-        
-        
-        % find onset/offset indices for each track
-        onsetIndf0 = get_index_at_time(sigmat.pitch_taxis,onset_time);
-        offsetIndf0 = get_index_at_time(sigmat.pitch_taxis,offset_time);
-        onsetIndfx = get_index_at_time(sigmat.ftrack_taxis,onset_time);
-        offsetIndfx = get_index_at_time(sigmat.ftrack_taxis,offset_time);
-        
-        % convert to dataVals struct
-        dataVals(i).f0 = sigmat.pitch(onsetIndf0:offsetIndf0)';                     % f0 track from onset to offset
-        for f=1:size(sigmat.ftrack,1)
-            fname=sprintf('f%d',f);
-            dataVals(i).(fname) = sigmat.ftrack(f,onsetIndfx:offsetIndfx)';
-        end
-        dataVals(i).int = sigmat.ampl(onsetIndAmp:offsetIndAmp)';                   % intensity (rms amplitude) track from onset to offset
-        dataVals(i).pitch_taxis = sigmat.pitch_taxis(onsetIndf0:offsetIndf0)';      % pitch time axis
-        dataVals(i).ftrack_taxis = sigmat.ftrack_taxis(onsetIndfx:offsetIndfx)';    % formant time axis
-        dataVals(i).ampl_taxis = sigmat.ampl_taxis(onsetIndAmp:offsetIndAmp)';      % amplitude time axis
-        dataVals(i).dur = offset_time - onset_time;                                 % duration
-        dataVals(i).word = expt.allWords(trialnum);                                 % numerical index to word list (e.g. 2)
-        dataVals(i).vowel = expt.allVowels(trialnum);                               % numerical index to vowel list (e.g. 1)
-        if isfield(expt,'allColors')
-            dataVals(i).color = expt.allColors(trialnum);                           % numerical index to color list (e.g. 1)
-        end
-        dataVals(i).cond = expt.allConds(trialnum);                                 % numerical index to condition list (e.g. 1)
-        dataVals(i).token = trialnum;                                               % trial number (e.g. 22)
-        dataVals(i).bExcl = 0;                                                      % binary variable: 1 = exclude trial, 0 = don't exclude trial
-        
-        % warn about short tracks
-        if ~dataVals(i).bExcl && sum(~isnan(dataVals(i).f0)) < 20
-            shortTracks = [shortTracks dataVals(i).token];
-            warning('Short pitch track: trial %d',dataVals(i).token);
-        end
-        if ~dataVals(i).bExcl && sum(~isnan(dataVals(i).f1)) < 20
-            shortTracks = [shortTracks dataVals(i).token];
-            warning('Short formant track: trial %d',dataVals(i).token);
-        end
+        eventMode = 1;
     end
 end
 
+%% loop over each trial and populate dataVals
+shortTracks = [];
+tooManyEvents = [];
+
+for i = 1:length(sortedTrialnums)
+    trialnum = sortedTrialnums(i);
+    filename = sortedFilenames{i};
+    load(fullfile(trialPath,filename), 'sigmat', 'trialparams');
+    
+    numUserEvents = length(trialparams.event_params.user_event_times);
+    
+    try
+        bGoodTrial = trialparams.event_params.is_good_trial;
+    catch
+        bGoodTrial = 1; % if field doesn't exist, assume it's good
+    end
+    
+    if bGoodTrial
+        % get timing of events, either from user events or otherwise
+        if bMultiSegment
+            event_times = trialparams.event_params.user_event_times;
+            event_names = trialparams.event_params.user_event_names;
+        else
+            [event_times, event_names] = get_events(sigmat, trialparams, sigproc_params, eventMode, vowel_list);
+        end
+        
+        % populate formant and signal data based on events
+        dataValsTrial = get_dataValsTrial_fromEvents(sigmat, event_times, event_names);
+        
+        % convert certain dataVals fields from cell to single instance array
+        if ~bMultiSegment && iscell(dataValsTrial.f0)
+            for field = {'f0' 'f1' 'f2' 'int' 'pitch_taxis' 'ftrack_taxis' 'ampl_taxis' 'dur' 'segment'}
+                dataValsTrial.(field{:}) = dataValsTrial.(field{:}){:};
+            end
+        end
+        
+        % tally short tracks
+        if ~bMultiSegment && (sum(~isnan(dataValsTrial.f0)) < 20 || sum(~isnan(dataValsTrial.f1)) < 20)
+            shortTracks = [shortTracks trialnum]; %#ok<*AGROW>
+        end
+        
+        %warn about >= 2 user events if only expecting one
+        if numUserEvents > 2 && ~bMultiSegment && eventMode == 1
+            tooManyEvents = [tooManyEvents trialnum];
+            warning('Trial %d has %d user events when 2 or fewer were expected', trialnum, numUserEvents);
+        end
+    end
+    
+    % add fields used in all modes
+    dataValsTrial.word = expt.allWords(trialnum);
+    dataValsTrial.vowel = expt.allVowels(trialnum);
+    if isfield(expt,'allColors')
+        dataValsTrial.color = expt.allColors(trialnum);
+    end
+    dataValsTrial.cond = expt.allConds(trialnum);
+    dataValsTrial.token = trialnum;
+    dataValsTrial.bExcl = double(~bGoodTrial); %consider changing bExcl to a logical (rather than numeric) at some point
+
+    %now that dataValsTrial has all fields, can set as a row in dataVals
+    dataVals(i) = dataValsTrial;
+    
+end
+
+%% show warnings
 if ~isempty(shortTracks)
     shortTracks = unique(shortTracks);
     warning('Short track list: %s',num2str(shortTracks));
 end
 
+if ~isempty(tooManyEvents)
+    tooManyEvents = unique(tooManyEvents);
+    warning('Trials with more than 2 user events: %s', num2str(tooManyEvents));
+end
+
+%% save it
 save(savefile,'dataVals');
-fprintf('%d trials saved in %s.\n',length(sortedfiles),savefile)
+fprintf('%d trials saved in %s.\n',length(sortedTrialnums),savefile)
 
+end %EOF
+
+
+function [event_times, event_names] = get_events(sigmat, trialparams, sigproc_params, eventMode, vowel_list)
+% depending on mode, use some method of determining segment onset/offset
+%
+% eventMode 1 (default) is the traditional use case. From each trial,
+%   we extract one track whose start and end times are determined by:
+%   * [If 2+ user events] the first and last user events
+%   * [If 1 user event] the user event and the next subthreshold amplitude
+%   * [If 0 user events] the first suprathreshold amplitude and the next subthreshold amplitude (i.e., the first contiguous formant track)
+%
+% eventMode 2 extracts one track determined by matching event names to a list.
+%   The start time is the first user event whose name is in vowel_list.
+%   The end time is the next user event (if there isn't one, the above
+%   rules for eventMode 1 are used for determining the offset).
+
+try
+    uev_times = trialparams.event_params.user_event_times;
+    uev_names = trialparams.event_params.user_event_names;
+    numUserEvents = length(trialparams.event_params.user_event_times);
+catch % if fields don't exist
+    uev_times = [];
+    uev_names = [];
+    numUserEvents = 0;
 end
 
-function [ind] = get_index_at_time(taxis,t)
-% Simple binary search to find the corresponding t-axis value
-
-low = 1; high = length(taxis);
-
-while (high - low > 1)
-    cand_ind = round((high+low)/2);
-    if t < taxis(cand_ind)
-        high = cand_ind;
-    else
-        low = cand_ind;
-    end
+switch eventMode
+    case 1
+        %% mode 1:
+        % find onset: the first user event
+        if numUserEvents >= 1
+            onset_time = uev_times(1);
+            onset_name = uev_names(1);
+        else % if no user events, use ampl threshold
+            [onset_time,onsetIndAmp,onset_name] = get_onset_from_ampl(sigmat,trialparams,sigproc_params);
+        end
+        
+        % find offset: the last user event
+        if numUserEvents >= 2
+            offset_time = uev_times(end);
+            offset_name = uev_names(end);
+        else % if fewer than 2 user events, use ampl threshold
+            [offset_time,~,offset_name] = get_offset_from_ampl(sigmat,trialparams,sigproc_params,onsetIndAmp);
+        end
+        
+    case 2
+        %% mode 2:
+        if isempty(uev_times)
+            error('No events found in trial.')
+        end
+        
+        % find onset: the first user event whose name is in vowel_list
+        onset_ix = find(ismember(uev_names, vowel_list), 1);
+        if isempty(onset_ix)
+            error('No matching events found in trial.')
+        end
+        onset_time = uev_times(onset_ix);
+        onset_name = uev_names(onset_ix);
+        
+        % find offset: the next user event
+        if onset_ix < numUserEvents
+            offset_time = uev_times(onset_ix + 1);
+            offset_name = uev_names(onset_ix + 1);
+        else % or the next subthreshold time, if there is no next event
+            [~, onsetIndAmp] = min(abs(sigmat.ampl_taxis - onset_time));
+            [offset_time,~,offset_name] = get_offset_from_ampl(sigmat,trialparams,sigproc_params,onsetIndAmp);
+        end
+        
 end
 
-if abs(high-t) > abs(low-t), ind = low;
-else ind = high;
+%% return
+event_times(1) = onset_time;
+event_names{1} = onset_name;
+event_times(2) = offset_time;
+event_names{2} = offset_name;
+
+end %EOF
+
+%%
+function [onset_time,onsetIndAmp,onset_type] = get_onset_from_ampl(sigmat,trialparams,sigproc_params)
+
+% choose threshold
+if ~isempty(trialparams.sigproc_params) % use trial-specific amplitude threshold
+    ampl_thresh4voicing = trialparams.sigproc_params.ampl_thresh4voicing;
+    onset_type = 'trial amplitude onset';
+else                                    % use wave_viewer_params default amplitude threshold
+    ampl_thresh4voicing = sigproc_params.ampl_thresh4voicing;
+    onset_type = 'default amplitude onset';
 end
 
+% find onset
+onsetIndAmp = find(sigmat.ampl > ampl_thresh4voicing);
+if onsetIndAmp
+    onsetIndAmp = onsetIndAmp(1) + 1;
+else
+    onsetIndAmp = 1;
+    onset_type = 'no amplitude onset found';
 end
+onset_time = sigmat.ampl_taxis(onsetIndAmp);
+
+end %EOF
+
+%%
+function [offset_time,offsetIndAmp,offset_type] = get_offset_from_ampl(sigmat,trialparams,sigproc_params,onsetIndAmp)
+
+% choose threshold
+if ~isempty(trialparams.sigproc_params) % use trial-specific amplitude threshold
+    ampl_thresh4voicing = trialparams.sigproc_params.ampl_thresh4voicing;
+    offset_type = 'trial amplitude offset';
+else                                    % use wave_viewer_params default amplitude threshold
+    ampl_thresh4voicing = sigproc_params.ampl_thresh4voicing;
+    offset_type = 'default amplitude onset';
+end
+
+% find offset
+offsetIndAmp = find(sigmat.ampl(onsetIndAmp:end) < ampl_thresh4voicing);
+if offsetIndAmp
+    offsetIndAmp = offsetIndAmp(1) + onsetIndAmp-1; % correct indexing
+else % use last index if no offset found
+    offsetIndAmp = length(sigmat.ampl);
+    offset_type = 'end of trial';
+end
+offset_time = sigmat.ampl_taxis(offsetIndAmp);
+
+end %EOF

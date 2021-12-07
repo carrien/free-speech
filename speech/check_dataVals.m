@@ -231,7 +231,7 @@ function [dataVals,expt] = load_dataVals(UserData,dataPath,bCalc)
         end
     end
     if bCalc
-        gen_dataVals_from_wave_viewer(dataPath,trialdir);
+        gen_dataVals_from_wave_viewer(dataPath,trialdir, []);
     end
     load(fullfile(dataPath,dataValsID))
     load(fullfile(dataPath,'expt'), 'expt')
@@ -301,6 +301,7 @@ function UserData = generate_menus(UserData)
         groupTypes(strcmp(groupTypes,'cond')) = [];
         groupTypes(strcmp(groupTypes,'token')) = [];
         groupTypes(strcmp(groupTypes,'bExcl')) = [];
+        groupTypes(strcmp(groupTypes,'segment')) = [];
         
         % Additions for timeAdapt dataVal structure (RK 4/14)
         groupTypes(strcmp(groupTypes,'totalDur')) = [];
