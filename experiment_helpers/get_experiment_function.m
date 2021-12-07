@@ -38,6 +38,12 @@ switch expName
         expFun = @run_simonSingleWord_audapter;
     case 'taimComp'
         expFun = @run_taimComp_audapter;        
+    case 'coAdapt'
+        expFun = @run_coAdapt_audapter;
+    case 'attentionAdapt'
+        expFun = @run_attentionAdapt_audapter;
+    case 'simonMultisyllable'
+        expFun = @run_simonMultisyllable_audapter;
     otherwise
         fprintf('Function for experiment ''%s'' not found.',expName)
         expFun = [];

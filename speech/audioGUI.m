@@ -1,4 +1,4 @@
-function [] = audioGUI(dataPath,trialnums,buffertype,figpos,bSaveCheck)
+function [] = audioGUI(dataPath,trialnums,buffertype,figpos,bSaveCheck,folderSuffix)
 %AUDIOGUI  Wrapper for wave_viewer.
 %   AUDIOGUI(DATAPATH,TRIALNUMS,BUFFERTYPE,FIGPOS,PITCHLIMITS,BSAVECHECK)
 %   sends audio data found in DATAPATH to the wave_viewer analysis program.
@@ -15,7 +15,8 @@ if nargin < 1 || isempty(dataPath), dataPath = cd; end
 if nargin < 2, trialnums = []; end
 if nargin < 3 || isempty(buffertype), buffertype = 'signalIn'; end
 if nargin < 4, figpos = []; end
-if nargin < 5, bSaveCheck = 1; end
+if nargin < 5 || isempty(bSaveCheck), bSaveCheck = 1; end
+if nargin < 6, folderSuffix = []; end
 
 % load data
 fprintf('Loading data...')
@@ -33,9 +34,20 @@ else
 end
 
 % set trial folder
-if strcmp(buffertype,'signalIn'), trialfolder = 'trials';
-else, trialfolder = sprintf('trials_%s',buffertype);
+if isempty(folderSuffix)
+    if strcmp(buffertype,'signalIn')
+        trialfolder = 'trials';
+    else
+        trialfolder = sprintf('trials_%s',buffertype);
+    end
+else
+    if strcmp(buffertype,'signalIn')
+        trialfolder = sprintf('trials_%s', folderSuffix);
+    else
+        trialfolder = sprintf('trials_%s_%s',folderSuffix,buffertype);
+    end
 end
+
 if ~exist(fullfile(dataPath,trialfolder),'dir')
     fprintf('Creating trial directory: %s\n',fullfile(dataPath,trialfolder));
     mkdir(fullfile(dataPath,trialfolder))

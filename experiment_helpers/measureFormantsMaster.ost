@@ -4,7 +4,7 @@ rmsSlopeWin = 0.050000
 # Main section: Heuristic rules for tracking
 n = 3
 0 INTENSITY_RISE_HOLD_POS_SLOPE 0.01 0.05 {} # Detect the onset the vowel
-2 NEG_INTENSITY_SLOPE_STRETCH_SPAN 5 -1 {} # Detect the offset of the vowel
+2 NEG_INTENSITY_SLOPE_STRETCH_SPAN 5 -9 {} # Detect the offset of the vowel
 4 OST_END NaN NaN {} 
 
 n = 0

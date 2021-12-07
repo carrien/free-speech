@@ -1,7 +1,7 @@
 function [p,h_fig] = calc_pertField(shiftDir,fmtMeans,bMel,bPlot)
 %calculate Audapter perturbation field matrix
 %inputs:
-%    shirtDir: direction of shift ('in' or 'out')
+%    shirtDir: direction of shift ('in' or 'out' or 'control')
 %    fmtMeans: struct array with vowels as fields, each with F1 (1) and F2 (2) in Hz
 %    bMel: binary variable coding the use of Mels (1) or Hz (0)
 %    bPlot: binary variable: create plot (1) or don't (0)
@@ -130,12 +130,19 @@ for iF1 = 1:fieldDim
                 pertAmp(iF2,iF1) = sqrt(dF2.^2+dF1.^2).*pertScaleFact;
                 pertPhi(iF2,iF1) = pi+atan(dF2/abs(dF1));
                 if dF1<0
-                        pertPhi(iF2,iF1) = pi - pertPhi(iF2,iF1);
+                        pertPhi(iF2,iF1) = pi - pertPhi(iF2,iF1);            
                 end
 %                 pertPhi(test<0) = pertPhi(test<0)+2*pi;
 %                 pertAmp(abs(pertAmp)<1) = 0;
+            case 'control'
+                pertAmp(iF2,iF1) = 0;
+                pertPhi(iF2,iF1) = pi+atan(dF2/abs(dF1));
+                if dF1<0
+                        pertPhi(iF2,iF1) = pi - pertPhi(iF2,iF1);            
+                end
+
             otherwise
-                error("shiftDir must be 'in or 'out'")
+                error("shiftDir must be 'in or 'out' or 'control'")
         end
         
     end

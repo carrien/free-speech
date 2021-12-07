@@ -38,7 +38,7 @@ lastCondCol = countCol-1;
 rng('shuffle')
 if nargin < 4 || isempty(permIx)
     permInds = find([cbPermutation{:,countCol}] == min([cbPermutation{:,countCol}])); % Find rows with min use
-    permIx = randi([permInds(1) permInds(length(permInds))]); %choose random permutation set from rows with min use (added LH 3/11/21)
+    permIx = permInds(randperm(length(permInds), 1));   %get random index among rows with min use
     conditions = cbPermutation(permIx, 1:lastCondCol); 
 else 
     conditions = cbPermutation(permIx, 1:lastCondCol); 

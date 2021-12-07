@@ -136,7 +136,7 @@ for iblock = 1:expt.nblocks
     nonpertLeftover = nonpertTrials(length(pertTrials)+1:expt.ntrials_per_block - length(pertTrials));
     
     % randomly-ordered vector of 0's for pertPair and 1's for nonpertLeftover
-    ix = [zeros(1, length(pertPair)), ones(1, length(nonpertLeftover))];
+    ix = [zeros(1, size(pertPair,2)), ones(1, length(nonpertLeftover))];
     ix = ix(randperm(length(ix)));
     
     pertIx = 1;

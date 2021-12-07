@@ -1,14 +1,16 @@
-function [] = gen_dataVals_from_audapterdata(dataPath,bSaveCheck)
+function [] = gen_dataVals_from_audapterdata(dataPath,trialdir,OSTtarget, bSaveCheck)
 %GEN_DATAVALS_FROM_AUDAPTERDATA create dataVals from audapter
 %   GEN_DATAVALS_FROM_AUDAPTERDATA(DATAPATH,TRIALDIR,BSAVECHECK) use
 %   data.mat audpater fmts and sfmts to create dataVals
 
 
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
-if nargin < 2 || isempty(bSaveCheck), bSaveCheck = 1; end
+if nargin < 2 || isempty(trialdir), trialdir = 'trials'; end
+if nargin < 3, OSTtarget = []; end
+if nargin < 4 || isempty(bSaveCheck), bSaveCheck = 1; end
 
 
-savefile = fullfile(dataPath,sprintf('dataVals.mat'));
+savefile = fullfile(dataPath,sprintf('dataVals%s_audapter.mat',trialdir(7:end)));
 if bSaveCheck
     bSave = savecheck(savefile);
 else
@@ -28,17 +30,21 @@ offsetThresh = .04;
 
 
 for trialnum = 1:length(data)
-    
-    % find onset using threshold for rms
-    rms = data(trialnum).rms(:,1);
-    onsetInd = min(find(rms > onsetThresh));  % finds onsetInd: firt index in rms that is above onsetThresh
-    offsetInd = min(find(rms(onsetInd+1:end) < offsetThresh)) + onsetInd;  % finds offsetInd: first index after onsetInd+1 that is below offsetThresh
-    
+    if isempty(OSTtarget)
+        % find onset using threshold for rms
+        rms = data(trialnum).rms(:,1);
+        onsetInd = min(find(rms > onsetThresh));  % finds onsetInd: firt index in rms that is above onsetThresh
+        offsetInd = min(find(rms(onsetInd+1:end) < offsetThresh)) + onsetInd;  % finds offsetInd: first index after onsetInd+1 that is below offsetThresh 
+    else
+        ost = data(trialnum).ost_stat;
+        OSTinterval = find(ost == OSTtarget);
+        onsetInd = OSTinterval(1);
+        offsetInd = OSTinterval(end);
+    end
     % find onset and offset times
     t_intervals = (data(trialnum).intervals)/1000;  % puts time intervals in indices that are relative to data
     onset_time = t_intervals(onsetInd);
     offset_time = t_intervals(offsetInd);
-    
     
     
     %     dataVals(i).f0 = sigmat.pitch(onsetIndf0:offsetIndf0)';                     % f0 track from onset to offset
