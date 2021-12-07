@@ -132,7 +132,7 @@ for i = 1:length(sortedTrialnums)
     end
     dataValsTrial.cond = expt.allConds(trialnum);
     dataValsTrial.token = trialnum;
-    dataValsTrial.bExcl = ~bGoodTrial; %TODO: test if making bExcl a logical (rather than numeric) breaks anything
+    dataValsTrial.bExcl = double(~bGoodTrial); %consider changing bExcl to a logical (rather than numeric) at some point
 
     %now that dataValsTrial has all fields, can set as a row in dataVals
     dataVals(i) = dataValsTrial;
