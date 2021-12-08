@@ -51,7 +51,7 @@ if ~bMultiSegment
     firstGoodTrial = 1;
     while ~exist('uev_trial1','var')
         load(fullfile(trialPath,sortedFilenames{firstGoodTrial}), 'trialparams');
-        if trialparams.event_params.is_good_trial
+        if trialparams.event_params.is_good_trial && isfield(trialparams.event_params, 'user_event_names') && ~isempty(trialparams.event_params.user_event_names)
             uev_trial1 = trialparams.event_params.user_event_names;
         else
             firstGoodTrial = firstGoodTrial + 1;
@@ -85,7 +85,11 @@ for i = 1:length(sortedTrialnums)
     filename = sortedFilenames{i};
     load(fullfile(trialPath,filename), 'sigmat', 'trialparams');
     
-    numUserEvents = length(trialparams.event_params.user_event_times);
+    try
+        numUserEvents = length(trialparams.event_params.user_event_times);
+    catch
+        numUserEvents = 0;
+    end
     
     try
         bGoodTrial = trialparams.event_params.is_good_trial;
@@ -186,16 +190,18 @@ switch eventMode
         %% mode 1:
         % find onset: the first user event
         if numUserEvents >= 1
-            onset_time = uev_times(1);
-            onset_name = uev_names(1);
+            [~, onset_ix] = min(uev_times);
+            onset_time = uev_times(onset_ix);
+            onset_name = uev_names(onset_ix);
         else % if no user events, use ampl threshold
             [onset_time,onsetIndAmp,onset_name] = get_onset_from_ampl(sigmat,trialparams,sigproc_params);
         end
         
         % find offset: the last user event
         if numUserEvents >= 2
-            offset_time = uev_times(end);
-            offset_name = uev_names(end);
+            [~, offset_ix] = max(uev_times);
+            offset_time = uev_times(offset_ix);
+            offset_name = uev_names(offset_ix);
         else % if fewer than 2 user events, use ampl threshold
             [offset_time,~,offset_name] = get_offset_from_ampl(sigmat,trialparams,sigproc_params,onsetIndAmp);
         end
