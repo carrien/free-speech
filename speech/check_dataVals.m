@@ -56,7 +56,7 @@ UserData.warnText = uicontrol(UserData.warnPanel,'style','text',...
             'FontUnits','Normalized','FontSize',.3);
         
 %% load data if needed
-if nargin < 4
+if nargin < 4 || isempty(dataVals)
     [dataVals,expt] = load_dataVals(UserData,dataPath,bCalc);
 else
     load(fullfile(dataPath,'expt'), 'expt'); 
