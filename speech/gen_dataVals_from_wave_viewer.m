@@ -194,7 +194,7 @@ switch eventMode
             onset_time = uev_times(onset_ix);
             onset_name = uev_names(onset_ix);
         else % if no user events, use ampl threshold
-            [onset_time,onsetIndAmp,onset_name] = get_onset_from_ampl(sigmat,trialparams,sigproc_params);
+            [onset_time,~,onset_name] = get_onset_from_ampl(sigmat,trialparams,sigproc_params);
         end
         
         % find offset: the last user event
@@ -203,6 +203,7 @@ switch eventMode
             offset_time = uev_times(offset_ix);
             offset_name = uev_names(offset_ix);
         else % if fewer than 2 user events, use ampl threshold
+            [~, onsetIndAmp] = min(abs(sigmat.ampl_taxis - onset_time));
             [offset_time,~,offset_name] = get_offset_from_ampl(sigmat,trialparams,sigproc_params,onsetIndAmp);
         end
         
