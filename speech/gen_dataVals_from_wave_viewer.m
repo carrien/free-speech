@@ -194,7 +194,7 @@ switch eventMode
             onset_time = uev_times(onset_ix);
             onset_name = uev_names(onset_ix);
         else % if no user events, use ampl threshold
-            [onset_time,~,onset_name] = get_onset_from_ampl(sigmat,trialparams,sigproc_params);
+            [onset_time,onset_name] = get_onset_from_ampl(sigmat,trialparams,sigproc_params);
         end
         
         % find offset: the last user event
@@ -204,7 +204,7 @@ switch eventMode
             offset_name = uev_names(offset_ix);
         else % if fewer than 2 user events, use ampl threshold
             [~, onsetIndAmp] = min(abs(sigmat.ampl_taxis - onset_time));
-            [offset_time,~,offset_name] = get_offset_from_ampl(sigmat,trialparams,sigproc_params,onsetIndAmp);
+            [offset_time,offset_name] = get_offset_from_ampl(sigmat,trialparams,sigproc_params,onsetIndAmp);
         end
         
     case 2
@@ -227,7 +227,7 @@ switch eventMode
             offset_name = uev_names(onset_ix + 1);
         else % or the next subthreshold time, if there is no next event
             [~, onsetIndAmp] = min(abs(sigmat.ampl_taxis - onset_time));
-            [offset_time,~,offset_name] = get_offset_from_ampl(sigmat,trialparams,sigproc_params,onsetIndAmp);
+            [offset_time,offset_name] = get_offset_from_ampl(sigmat,trialparams,sigproc_params,onsetIndAmp);
         end
         
 end
@@ -241,7 +241,7 @@ event_names{2} = offset_name;
 end %EOF
 
 %%
-function [onset_time,onsetIndAmp,onset_type] = get_onset_from_ampl(sigmat,trialparams,sigproc_params)
+function [onset_time,onset_type] = get_onset_from_ampl(sigmat,trialparams,sigproc_params)
 
 % choose threshold
 if ~isempty(trialparams.sigproc_params) % use trial-specific amplitude threshold
@@ -265,7 +265,7 @@ onset_time = sigmat.ampl_taxis(onsetIndAmp);
 end %EOF
 
 %%
-function [offset_time,offsetIndAmp,offset_type] = get_offset_from_ampl(sigmat,trialparams,sigproc_params,onsetIndAmp)
+function [offset_time,offset_type] = get_offset_from_ampl(sigmat,trialparams,sigproc_params,onsetIndAmp)
 
 % choose threshold
 if ~isempty(trialparams.sigproc_params) % use trial-specific amplitude threshold
