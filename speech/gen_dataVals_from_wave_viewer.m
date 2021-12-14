@@ -103,7 +103,7 @@ for i = 1:length(sortedTrialnums)
             event_times = trialparams.event_params.user_event_times;
             event_names = trialparams.event_params.user_event_names;
         else
-            [event_times, event_names] = get_events(sigmat, trialparams, sigproc_params, eventMode, vowel_list);
+            [event_times, event_names] = get_events(sigmat, trialparams, sigproc_params, eventMode, vowel_list, trialnum);
         end
         
         % populate formant and signal data based on events
@@ -161,7 +161,7 @@ fprintf('%d trials saved in %s.\n',length(sortedTrialnums),savefile)
 end %EOF
 
 
-function [event_times, event_names] = get_events(sigmat, trialparams, sigproc_params, eventMode, vowel_list)
+function [event_times, event_names] = get_events(sigmat, trialparams, sigproc_params, eventMode, vowel_list, trialnum)
 % depending on mode, use some method of determining segment onset/offset
 %
 % eventMode 1 (default) is the traditional use case. From each trial,
@@ -210,13 +210,13 @@ switch eventMode
     case 2
         %% mode 2:
         if isempty(uev_times)
-            error('No events found in trial.')
+            error('No events found in trial %d.', trialnum)
         end
         
         % find onset: the first user event whose name is in vowel_list
         onset_ix = find(ismember(uev_names, vowel_list), 1);
         if isempty(onset_ix)
-            error('No matching events found in trial.')
+            error('No matching events found in trial %d.', trialnum)
         end
         onset_time = uev_times(onset_ix);
         onset_name = uev_names(onset_ix);
