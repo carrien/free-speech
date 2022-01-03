@@ -51,12 +51,27 @@ if ~bMultiSegment
     firstGoodTrial = 1;
     while ~exist('uev_trial1','var')
         load(fullfile(trialPath,sortedFilenames{firstGoodTrial}), 'trialparams');
-        if trialparams.event_params.is_good_trial && isfield(trialparams.event_params, 'user_event_names') && ~isempty(trialparams.event_params.user_event_names)
+        try
+            bHasUevs = ~isempty(trialparams.event_params.user_event_names);
+        catch
+            bHasUevs = false;
+        end
+        try
+            bGoodTrial = trialparams.event_params.is_good_trial;
+        catch
+            bGoodTrial = 1;
+        end
+        
+        if bGoodTrial && bHasUevs
             uev_trial1 = trialparams.event_params.user_event_names;
         else
             firstGoodTrial = firstGoodTrial + 1;
         end
-        if firstGoodTrial > length(sortedFilenames), break; end % escape if no good trials
+        
+        if firstGoodTrial > length(sortedFilenames)
+            uev_trial1 = '';
+            break; % escape if no good trials
+        end 
     end
     
     % if you supply a vowel list, assume eventMode 2
@@ -279,7 +294,7 @@ end
 % find offset
 offsetIndAmp = find(sigmat.ampl(onsetIndAmp:end) < ampl_thresh4voicing);
 if offsetIndAmp
-    offsetIndAmp = offsetIndAmp(1) + onsetIndAmp-1; % correct indexing
+    offsetIndAmp = offsetIndAmp(1) + onsetIndAmp-2; % correct indexing
 else % use last index if no offset found
     offsetIndAmp = length(sigmat.ampl);
     offset_type = 'end of trial';
