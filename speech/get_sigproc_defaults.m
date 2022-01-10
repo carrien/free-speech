@@ -1,4 +1,4 @@
-function sigproc_params = get_sigproc_defaults(sigproc_params)
+function sigproc_params = get_sigproc_defaults(sigproc_params, bPrint)
 %GET_SIGPROC_DEFAULTS Set missing values in the provided sigproc_params structure
 %   GET_SIGPROC_DEFAULTS(SIGPROC_PARAMS)
 %       Provided a sigproc_params structure, this function sets any of the
@@ -8,6 +8,7 @@ function sigproc_params = get_sigproc_defaults(sigproc_params)
 %       returned.
 
 if nargin < 1 || isempty(sigproc_params), sigproc_params = struct; end
+if nargin < 2 || isempty(bPrint), bPrint = 1; end
 
 
 sigproc_params_default = struct( ...
@@ -33,7 +34,7 @@ sigproc_params_default = struct( ...
 fields = fieldnames(sigproc_params_default);
 for f = 1:length(fields)
     fieldname = fields{f};
-    sigproc_params = set_missingField(sigproc_params,fieldname,sigproc_params_default.(fieldname));
+    sigproc_params = set_missingField(sigproc_params,fieldname,sigproc_params_default.(fieldname), bPrint);
 end
 
 gui_params = struct('yes_create_hplayer', 1, ...
