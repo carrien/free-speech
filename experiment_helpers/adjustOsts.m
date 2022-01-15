@@ -143,7 +143,7 @@ compiledData = [];
 for t = 1:length(trials2compile)
     trialNo = trials2compile(t); 
     load(fullfile(tempdir, [num2str(trialNo) '.mat']), 'data'); 
-    data.trialNo = trialNo; 
+    data.trial = trialNo; 
     compiledData = [compiledData; data]; 
 end
     
