@@ -4,7 +4,7 @@ function [events] = merge_events(eventFiles)
 %   EVENTFILES and returns a single structure with data from all files.
 
 % reorder filepaths to account for zero-indexing
-eventFiles = sort_files(eventFiles);
+%eventFiles = sort_files(eventFiles);
 
 % load initial events file
 load(eventFiles{1},'events');

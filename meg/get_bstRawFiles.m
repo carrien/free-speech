@@ -5,7 +5,7 @@ function [bstRawFiles] = get_bstRawFiles(exptName,sid)
 bstSubjDir = get_bstSubjDir(exptName,sid);
 
 d = dir(fullfile(bstSubjDir,'@raw*'));
-z = d(end); d(end) = []; d = [z; d]; % reorder to put unsuffixed file first
+%z = d(end); d(end) = []; d = [z; d]; % reorder to put unsuffixed file first
 bstRawFolders = fullfile(bstSubjDir,{d.name});
 
 bstRawFiles = cell(1,length(bstRawFolders));
