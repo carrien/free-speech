@@ -42,7 +42,7 @@ for trialnum = 1:length(data)
         offsetInd = OSTinterval(end);
     end
     % find onset and offset times
-    t_intervals = (data(trialnum).intervals)/1000;  % puts time intervals in indices that are relative to data
+    t_intervals = (data(trialnum).intervals)./data(trialnum).params.sr;  % convert intervals from samples to seconds
     onset_time = t_intervals(onsetInd);
     offset_time = t_intervals(offsetInd);
     
