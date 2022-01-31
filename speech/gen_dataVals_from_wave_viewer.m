@@ -155,6 +155,7 @@ for i = 1:length(sortedTrialnums)
 
     %now that dataValsTrial has all fields, can set as a row in dataVals
     dataVals(i) = dataValsTrial;
+    clear dataValsTrial;
     
 end
 
