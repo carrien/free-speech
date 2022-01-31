@@ -1,10 +1,16 @@
-function [] = pause_trial(h_fig)
+function [] = pause_trial(h_fig,params)
 
 get_figinds_audapter;
 
 % text params
-pausetxt = 'Paused. Press the space bar to continue.';
-conttxt = 'We will now continue.';
+% Addition for simonToneLex RK 2022-01-31
+if nargin < 2 || isempty(params)
+    pausetxt = 'Paused. Press the space bar to continue.';
+    conttxt = 'We will now continue.';
+else
+    pausetxt = params.pausetxt; 
+    conttxt = params.conttxt; 
+end
 txtparams.Color = 'white';
 txtparams.FontSize = 60;
 txtparams.HorizontalAlignment = 'center';
@@ -27,9 +33,10 @@ catch
 end
 
 delete(h_text)
+pause(1); 
 h_text = text(.5,.5,conttxt,txtparams); % display continue text
-try CloneFig(h_fig(stim),h_fig(dup)); catch; end
-pause(1)
+try CloneFig(h_fig(stim),h_fig(dup)); catch; fprintf('I''m in the catch for cloning'); end
+pause(2)
 delete(h_text)                          % clear continue text
 try CloneFig(h_fig(stim),h_fig(dup)); catch; end
 pause(1)
