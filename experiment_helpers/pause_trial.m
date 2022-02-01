@@ -5,12 +5,13 @@ get_figinds_audapter;
 % text params
 % Addition for simonToneLex RK 2022-01-31
 if nargin < 2 || isempty(params)
-    pausetxt = 'Paused. Press the space bar to continue.';
-    conttxt = 'We will now continue.';
-else
-    pausetxt = params.pausetxt; 
-    conttxt = params.conttxt; 
+    params = struct; 
 end
+params = set_missingField(params, 'pausetxt', 'Paused. Press the space bar to continue.', 1); 
+params = set_missingField(params, 'conttxt', 'We will now continue.', 1); 
+pausetxt = params.pausetxt; 
+conttxt = params.conttxt; 
+
 txtparams.Color = 'white';
 txtparams.FontSize = 60;
 txtparams.HorizontalAlignment = 'center';
