@@ -141,6 +141,11 @@ for i = 1:length(sortedTrialnums)
             tooManyEvents = [tooManyEvents trialnum];
             warning('Trial %d has %d user events when 2 or fewer were expected', trialnum, numUserEvents);
         end
+    else
+        % if not a good trial, populate dataValsTrial fields with empty arr
+        for field = {'f0' 'f1' 'f2' 'int' 'pitch_taxis' 'ftrack_taxis' 'ampl_taxis' 'dur' 'segment'}
+            dataValsTrial.(field{:}) = [];
+        end
     end
     
     % add fields used in all modes
