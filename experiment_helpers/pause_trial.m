@@ -33,10 +33,9 @@ catch
 end
 
 delete(h_text)
-pause(1); 
 h_text = text(.5,.5,conttxt,txtparams); % display continue text
-try CloneFig(h_fig(stim),h_fig(dup)); catch; fprintf('I''m in the catch for cloning'); end
-pause(2)
+try CloneFig(h_fig(stim),h_fig(dup)); catch; end
+pause(1)
 delete(h_text)                          % clear continue text
 try CloneFig(h_fig(stim),h_fig(dup)); catch; end
 pause(1)
