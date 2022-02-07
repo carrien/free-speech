@@ -44,6 +44,10 @@ switch expName
         expFun = @run_attentionAdapt_audapter;
     case 'simonMultisyllable'
         expFun = @run_simonMultisyllable_audapter;
+    case 'simonToneLex'
+        expFun = @run_simonToneLex_audapter;
+    case 'simonSyllableTransfer'
+        expFun = @run_simonSyllableTransfer_audapter;
     otherwise
         fprintf('Function for experiment ''%s'' not found.',expName)
         expFun = [];
