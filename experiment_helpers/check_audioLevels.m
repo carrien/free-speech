@@ -55,10 +55,15 @@ switch what2check
         %% test headphone level
         Audapter('reset'); 
         Audapter('start'); 
-        h_ready = draw_exptText(h_fig,-0.3,.5,sprintf('Level testing has started.\n\nBe sure headphones are plugged into output 1 of headphone amplifier.\n\nMake sure audiometer settings are:\n\t\tNo max or min\n\t\tA mode\n\t\tSlow\n\t\tLevel 50-100 db\n\nPlace SPL meter in headphones without foam cover.\nHave the participant sustain the word "head" at a comfortable voume.\nNoise level should be ~80db.\nAdjust the microphone gain (black knob) if this is too low or too high.\n\nPress any key to stop once levels are confirmed.'),'Color','white','FontSize',35);
+        get_figinds_audapter;
+        figure(h_fig(dup));
+        h_ready_dup = text(-0.3, 0.5, sprintf('Level testing has started.\n\nBe sure headphones are plugged into output 1 of headphone amplifier.\n\nMake sure audiometer settings are:\n\t\tNo max or min\n\t\tA mode\n\t\tSlow\n\t\tLevel 50-100 db\n\nPlace SPL meter in headphones without foam cover.\nHave the participant sustain the word "head" at a comfortable voume.\nNoise level should be ~80db.\nAdjust the microphone gain (black knob) if this is too low or too high.\n\nPress any key to stop once levels are confirmed.'),'Color','white','FontSize',35);
+        figure(h_fig(stim));
+        h_ready_stim = text(0, 0.5, sprintf('Please say "head" with the vowel stretched out \n                until the noise goes away.'), 'Color','white','FontSize',35);
         pause
         Audapter('stop');
-        delete_exptText(h_fig,h_ready)
+        delete_exptText(h_fig,h_ready_dup)
+        delete_exptText(h_fig,h_ready_stim)
 end
        
         %% clean up
