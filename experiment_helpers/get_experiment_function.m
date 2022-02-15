@@ -44,6 +44,8 @@ switch expName
         expFun = @run_attentionAdapt_audapter;
     case 'simonMultisyllable'
         expFun = @run_simonMultisyllable_audapter;
+    case 'simonMultisyllable_v2'
+        expFun = @run_simonMultisyllable_v2_audapter;
     case 'simonToneLex'
         expFun = @run_simonToneLex_audapter;
     case 'simonSyllableTransfer'
