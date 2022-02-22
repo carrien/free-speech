@@ -21,7 +21,7 @@ function refreshWorkingCopy(audFileLoc,audFileName,files2refresh)
 %       Use 'ost', 'pcf', or 'both'. 
 %       Default: 'both'
 %
-% Last updated RK 2020/09/11
+% Last updated CWN 2022/02/22
 
 if nargin < 1 || isempty(audFileLoc), audFileLoc = 'experiment_helpers'; end
 if nargin < 2 || isempty(audFileName), audFileName = 'measureFormants'; end
@@ -45,15 +45,27 @@ try  %current-studies repo
     if strcmp(files2refresh,'pcf') || strcmp(files2refresh,'both')
         copyfile(fullfile(audFilePath, [audFileName 'Master.pcf']), fullfile(audFilePath,[audFileName 'Working.pcf']));
     end
-catch %try free-speech repo
-    audFilePath = fullfile(get_gitPath, 'free-speech', audFileLoc);
-    
-    if strcmp(files2refresh,'ost') || strcmp(files2refresh,'both')
-       copyfile(fullfile(audFilePath, [audFileName 'Master.ost']), fullfile(audFilePath, [audFileName 'Working.ost']));
-    end
+catch 
+    try %try free-speech repo
+        audFilePath = fullfile(get_gitPath, 'free-speech', audFileLoc);
 
-    if strcmp(files2refresh,'pcf') || strcmp(files2refresh,'both')
-        copyfile(fullfile(audFilePath, [audFileName 'Master.pcf']), fullfile(audFilePath,[audFileName 'Working.pcf']));
+        if strcmp(files2refresh,'ost') || strcmp(files2refresh,'both')
+            copyfile(fullfile(audFilePath, [audFileName 'Master.ost']), fullfile(audFilePath, [audFileName 'Working.ost']));
+        end
+
+        if strcmp(files2refresh,'pcf') || strcmp(files2refresh,'both')
+            copyfile(fullfile(audFilePath, [audFileName 'Master.pcf']), fullfile(audFilePath,[audFileName 'Working.pcf']));
+        end
+    catch % error handling if copy failed (likely due to Master file not existing)
+        if strcmp(files2refresh, 'ost')
+            extension = 'ost';
+        elseif strcmp(files2refresh, 'pcf')
+            extension = 'pcf';
+        else
+            extension = sprintf('ost or %sMaster.pcf', audFileName);
+        end
+        error(sprintf('Could not find a file called %sMaster.%s in either %s or %s. Make sure such a file exists.', ...
+            audFileName, extension, fullfile(get_gitPath, 'current-studies', audFileLoc), fullfile(get_gitPath, 'free-speech', audFileLoc))) %#ok<SPERR> 
     end
 end
 
