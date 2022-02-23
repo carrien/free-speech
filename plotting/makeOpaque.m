@@ -6,7 +6,7 @@ function [] = makeOpaque(handle)
 if nargin < 1, handle = gcf; end
 
 for h=1:length(handle)
-    if ~isempty(get(handle(h),'children'))
+    if any(strcmp(properties(handle),'children')) && ~isempty(get(handle(h),'children'))
         children = get(handle(h),'children');
         for ch=1:length(children)
             if isprop(children(ch),'FaceAlpha') % patch
