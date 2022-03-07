@@ -1,7 +1,7 @@
 function check_audioLevels(what2check)
 if nargin < 1
         what2check = questdlg({'do you want to check'; ...
-        '(a): that the mic and heaphones are working, then check background noise levels (before participant arrives)';...
+        '(a): that the mic and headphones are working, then check background noise levels (before participant arrives)';...
         '(b): the microphone level with the participant'},'What do you want to check?','(a)','(b)','(a)');
 end
 
@@ -38,7 +38,7 @@ switch what2check
         % give instructions and wait for keypress
         Audapter('reset'); 
         Audapter('start'); 
-        h_ready = draw_exptText(h_fig,-.3,.5,{'Testing mic and heaphones.';'Make sure you can hear your voice played back';'Press space to end test'},'Color','white','FontSize',35);
+        h_ready = draw_exptText(h_fig,-.3,.5,{'Testing mic and headphones.';'Make sure you can hear your voice played back';'Press space to end test'},'Color','white','FontSize',35);
         pause
         Audapter('stop');
         delete_exptText(h_fig,h_ready)
