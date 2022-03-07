@@ -2,7 +2,7 @@ function [ ] = run_audapterDemo()
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
-expt.gender = get_gender;
+expt.gender = get_height;
 
 audioInterfaceName = 'Focusrite USB'; %SMNG default for Windows 10
 Audapter('deviceName', audioInterfaceName);
@@ -15,6 +15,7 @@ p = getAudapterDefaultParams(expt.gender); % get default params
 p.bShift = 1;
 p.bRatioShift = 0;
 p.bMelShift = 1;
+p.rmsThresh = 0.05;  %default 0.0114
 
 % set noise
 w = get_noiseSource(p);
@@ -39,6 +40,7 @@ Audapter('setParam','pertPhi',p.pertPhi)
 fprintf('Press any key to begin shifting F1 down.\n')
 pause;
 
+p.pertAmp = 125*ones(1, 257);
 p.pertPhi = pi * ones(1, 257);
 Audapter('setParam','pertAmp',p.pertAmp)
 Audapter('setParam','pertPhi',p.pertPhi)
@@ -54,6 +56,7 @@ fprintf('Press any key to end the demo.\n')
 pause;
 
 Audapter('stop');
+
 
 end
 
