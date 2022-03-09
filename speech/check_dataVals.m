@@ -156,6 +156,7 @@ function errors = get_dataVals_errors(UserData,dataVals)
     lateTrials = [];
     goodTrials = [];
 
+    %% put trials into error categories
     for i = 1:length(dataVals)
         if dataVals(i).bExcl
             badTrials = [badTrials dataVals(i).token]; %#ok<*AGROW>
