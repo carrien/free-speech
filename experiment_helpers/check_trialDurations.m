@@ -3,7 +3,7 @@ function [] = check_trialDurations(dataPath,bPlot)
 %the course of an experiment.
 %   CHECK_TRIALDURATIONS(DATAPATH,BPLOT)
 %       This function plots the signalIn durations over the course of an
-%       experiment run given the DATAPATH containing it's data.mat file
+%       experiment run given the DATAPATH containing its data.mat file
 %
 %   ARGUMENTS
 %       DATAPATH - Path to data.mat to load signalIn fields from.
@@ -51,7 +51,7 @@ fprintf('Throughout this experiment there were: \n %s long trials (2 std above m
 fprintf('The mean signalIn duration is %s seconds \n and the standard deviation is %s seconds \n\n', num2str(meanDur), num2str(stdDur));
 
 if stdDur > .1 %standard deviation greater than 100 ms
-    warning('The standard deviation of this data is very high (greater than 100 ms), its possible something is causing your trials grow in length');
+    warning('The standard deviation of this data is very high (greater than 100 ms). It''s possible something is causing your trials grow in length');
 end
 
 fprintf('These trials were: \n Long trials: %s \n Short trials: %s \n', num2str(longTrials), num2str(shortTrials)); 
