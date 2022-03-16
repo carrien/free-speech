@@ -22,7 +22,7 @@ if iscell(choices)
     end
 else
     answer = input([question ' (' sprintf('%d/', choices(1:end-1)) num2str(choices(end)) '): ']); 
-    while ~any(answer == choices)
+    while isempty(answer) || ~any(answer == choices)
         answer = input(['Invalid answer. Please enter ' sprintf('%d/', choices(1:end-1)) num2str(choices(end)) ': ']);
     end
 end
