@@ -17,12 +17,16 @@ for a = 1:length(arpacell)
             ipa{a} = char(230);
         case 'ah'
             ipa{a} = char(652);
+        case 'ao'
+            ipa{a} = char(596);
+        case 'aw'
+            ipa{a} = sprintf('a%s',char(650));
         case 'ax'
             ipa{a} = char(601);
         case 'ay'
-            ipa{a} = sprintf('e^%s',char(618));
+            ipa{a} = sprintf('a%s',char(618));
         case 'ey'
-            ipa{a} = sprintf('e^%s',char(618));
+            ipa{a} = sprintf('e%s',char(618));
         case 'eh'
             ipa{a} = char(603);
         case 'ih'
@@ -30,7 +34,7 @@ for a = 1:length(arpacell)
         case 'iy'
             ipa{a} = 'i';
         case 'ow'
-            ipa{a} = sprintf('o^%s',char(650));
+            ipa{a} = sprintf('o%s',char(650));
         case 'uw'
             ipa{a} = 'u';
         case 'er'
