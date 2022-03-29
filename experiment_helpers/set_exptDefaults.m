@@ -91,6 +91,10 @@ expt = set_missingField(expt,'listColors',expt.colors(expt.allColors));
 expt = set_missingField(expt,'shiftMags',zeros(1,expt.ntrials));
 expt = set_missingField(expt,'shiftAngles',zeros(1,expt.ntrials));
 
+expt = set_missingField(expt,'shiftNames', {'noShift'});
+expt = set_missingField(expt,'allShiftNames',randi(length(expt.shiftNames),[1,expt.ntrials]));
+expt = set_missingField(expt,'listShiftNames',expt.shiftNames(expt.allShiftNames));
+
 % actual stimulus string shown to participant
 expt = set_missingField(expt,'stimulusText',expt.words);
 expt = set_missingField(expt,'allStimulusText',expt.allWords);
@@ -139,7 +143,8 @@ expt = set_missingField(expt,'isRestart',0);
 expt = set_missingField(expt,'crashTrials',[]);
 
 %% trial indices
-expt.inds = get_exptInds(expt,{'conds', 'words', 'vowels', 'colors'});
+
+expt.inds = get_exptInds(expt,{'conds', 'words', 'vowels', 'colors', 'shiftNames'});
 
 fprintf('Done setting defaults.\n');
 
