@@ -140,7 +140,7 @@ expt = set_missingField(expt,'crashTrials',[]);
 
 %% trial indices
 
-expt.inds = get_exptInds(expt,{'conds', 'words', 'vowels', 'colors', 'shiftNames'});
+expt.inds = get_exptInds(expt);
 
 fprintf('Done setting defaults.\n');
 
