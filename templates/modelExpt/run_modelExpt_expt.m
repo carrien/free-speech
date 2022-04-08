@@ -201,7 +201,6 @@ for blockIx = 1:length(expt.conds)
         expt.allWords(itrial) = wordIx(1 + itrial-firstInBlock);
     end
 end
-expt.stimulusText = expt.words;
 
 %% Set other expt values
 %There are a lot of other parameters you can set that control how the
