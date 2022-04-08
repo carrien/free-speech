@@ -94,15 +94,14 @@ expt = set_missingField(expt,'shiftAngles',zeros(1,expt.ntrials));
 % actual stimulus string shown to participant
 expt = set_missingField(expt,'stimulusText',expt.words);
 expt = set_missingField(expt,'allStimulusText',expt.allWords);
-try
-    if all(strcmp(expt.words, expt.stimulusText))
-        expt = set_missingField(expt,'listStimulusText',expt.listWords);
-    else  %, make list from stimulusText instead of words
-        expt = set_missingField(expt,'listStimulusText',expt.stimulusText(expt.allStimulusText));
-    end
-catch
-    error(['Possible mismatch between length of expt.words of expt.stimulusText. ' ...
+if length(expt.words) ~= length(expt.stimulusText)
+    error(['Mismatch between length of expt.words of expt.stimulusText. ' ...
         'Those fields should have the same number of string elements.'])
+end
+if all(strcmp(expt.words, expt.stimulusText))
+    expt = set_missingField(expt,'listStimulusText',expt.listWords);
+else  %, make list from stimulusText instead of words
+    expt = set_missingField(expt,'listStimulusText',expt.stimulusText(expt.allStimulusText));
 end
 
 %% stimulus timing parameters, in seconds
