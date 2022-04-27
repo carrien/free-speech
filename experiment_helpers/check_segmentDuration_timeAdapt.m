@@ -69,7 +69,7 @@ ostFactor = fs/frameLength;
 
 %% Set up OST recognition 
 % Get the buffer amount for the ostStatBegin (so hand correction is more intuitive) 
-ostWorking = fullfile(get_gitPath, 'current-studies', expt.trackingFileLoc, [expt.trackingFileName 'Working.ost']); 
+ostWorking = fullfile(get_gitPath('current-studies'), expt.trackingFileLoc, [expt.trackingFileName 'Working.ost']); 
 ostStatBeginPrev = startStatus - 2; % this is currently true for all cases
 ostStatEndPrev = endStatus - 2; 
 

@@ -51,7 +51,7 @@ fprintf('\nAudapter mex file accessed successfully. \n\n');
 
 
 % These test cases use a pre-recorded audio sample
-filename = fullfile(get_gitPath, 'free-speech', 'experiment_helpers', 'audapter_testcases_audio.mat');
+filename = fullfile(get_gitPath('free-speech'), 'experiment_helpers', 'audapter_testcases_audio.mat');
 load(filename, 'signalIn'); % this file's native sampling rate is 48000
 
 % convert audio file to "frame"-length chunks for use in Audapter

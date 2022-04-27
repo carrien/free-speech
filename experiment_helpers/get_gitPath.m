@@ -1,29 +1,32 @@
-function [gitpath] = get_gitPath
-% INSTRUCTIONS: If you need to change this, copy this file outside of a git
-% repo, save locally, and add the copy to the top of your MATLAB path. You
-% can then remove all of the code, except for one line which hard-codes to
-% the proper filepath.
+function [repoPath] = get_gitPath(reponame)
+% Returns the filepath to the head folder of the input arg's repository.
 
-% gitpath = 'C:\Users\Public\Documents\software'; OLD METHOD
-fileloc = which('get_gitPath.m', '-all');
+if nargin < 1, reponame = 'free-speech'; end
+
+switch reponame
+    case 'free-speech'
+        mfilename = 'get_gitPath.m';
+    case 'current-studies'
+        mfilename = 'forcedAlignment.m';
+    otherwise
+        error('Unknown git repo "%s". Expected "free-speech" or "current-studies".',reponame)
+end
+
+fileloc = which(mfilename, '-all');
 
 if isempty(fileloc)
-    error(['Couldn''t find a file named get_gitPath when searching the MATLAB path. ' ...
-        'Ensure free-speech\experiment_helpers\get_gitPath is on your MATLAB path.']);
+    error('Couldn''t find a file named %s. Ensure the %s repo is on your MATLAB path.',mfilename,reponame);
 end
 
 if length(fileloc) > 1
-    warning(['You have more than one file called get_gitPath in your MATLAB path. ' ...
-        'Using top-listed filepath. Ensure this is the correct one to use.'])
-    which get_gitPath.m -all
+    warning(['You have more than one file called %s in your MATLAB path. ' ...
+        'Using top-listed filepath. Ensure this is the correct one to use.'],mfilename)
+    which(mfilename, '-all')
 end
 
-% Go 3 levels up from get_gitPath to reach the folder containing free-speech
 path_parts = strsplit(fileloc{1}, filesep);
-repo_ix = find(strcmp(path_parts, 'free-speech'));
+repo_ix = find(strcmp(path_parts, reponame));
 
-gitpath = strjoin(path_parts(1:repo_ix - 1), filesep);
-
-
+repoPath = strjoin(path_parts(1:repo_ix), filesep);
 
 end

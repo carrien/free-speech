@@ -31,10 +31,10 @@ if isfolder(audFileLoc)
     if contains(audFileLoc,'/') || contains(audFileLoc,'\')
         audFilePath = audFileLoc;
     else
-        audFilePath = fullfile(get_gitPath, 'current-studies', audFileLoc);
+        audFilePath = fullfile(get_gitPath('current-studies'), audFileLoc);
     end
 else
-    audFilePath = fullfile(get_gitPath, 'current-studies', audFileLoc);
+    audFilePath = fullfile(get_gitPath('current-studies'), audFileLoc);
 end
     
 try  %current-studies repo
@@ -47,7 +47,7 @@ try  %current-studies repo
     end
 catch 
     try %try free-speech repo
-        audFilePath = fullfile(get_gitPath, 'free-speech', audFileLoc);
+        audFilePath = fullfile(get_gitPath('free-speech'), audFileLoc);
 
         if strcmp(files2refresh,'ost') || strcmp(files2refresh,'both')
             copyfile(fullfile(audFilePath, [audFileName 'Master.ost']), fullfile(audFilePath, [audFileName 'Working.ost']));
@@ -65,7 +65,7 @@ catch
             extension = sprintf('ost or %sMaster.pcf', audFileName);
         end
         error(sprintf('Could not find a file called %sMaster.%s in either %s or %s. Make sure such a file exists.', ...
-            audFileName, extension, fullfile(get_gitPath, 'current-studies', audFileLoc), fullfile(get_gitPath, 'free-speech', audFileLoc))) %#ok<SPERR> 
+            audFileName, extension, fullfile(get_gitPath('current-studies'), audFileLoc), fullfile(get_gitPath('free-speech'), audFileLoc))) %#ok<SPERR> 
     end
 end
 

@@ -39,8 +39,8 @@ Audapter('deviceName', audioInterfaceName);
 %set files for vowel tracking
 if isfield(expt,'trackingFileName')
     if strcmp(expt.trackingFileLoc, 'experiment_helpers')
-        ostFN = fullfile(get_gitPath, 'free-speech', expt.trackingFileLoc, [expt.trackingFileName 'Working.ost']); 
-        pcfFN = fullfile(get_gitPath, 'free-speech', expt.trackingFileLoc, [expt.trackingFileName 'Working.pcf']); 
+        ostFN = fullfile(get_gitPath('free-speech'), expt.trackingFileLoc, [expt.trackingFileName 'Working.ost']); 
+        pcfFN = fullfile(get_gitPath('free-speech'), expt.trackingFileLoc, [expt.trackingFileName 'Working.pcf']); 
     else %it's in current-studies repo
         ostFN = fullfile(get_exptRunpath(expt.trackingFileLoc, [expt.trackingFileName 'Working.ost'])); 
         pcfFN = fullfile(get_exptRunpath(expt.trackingFileLoc, [expt.trackingFileName 'Working.pcf'])); 
