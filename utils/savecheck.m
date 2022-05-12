@@ -9,6 +9,10 @@ if exist(savefile, ftype)
     dlgOpts.Interpreter = 'tex';
     [path, name, extension] = fileparts(savefile);
     path = strrep(path, '\', '/');
+    path = addTexEscapeChars(path);
+    name = addTexEscapeChars(name);
+    extension = addTexEscapeChars(extension);
+
     colored_nameExt = sprintf('%s%s%s%s', '\color{blue}', name, extension, '\color{black}');
 
     % uses TeX formatting to change color and font size. See questdlg
@@ -28,6 +32,15 @@ if exist(savefile, ftype)
 
 else % file doesn't exist; nothing to overwrite; safe to save
     bSave = 1;
+
+end
+
+
+function text = addTexEscapeChars(text)
+specialChars = {'#' '$' '%' '&' '_' '{' '}'};
+for char = specialChars
+    text = strrep(text, char{1}, sprintf('%s%s', '\', char{1}));
+end
 
 end
 
