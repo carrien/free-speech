@@ -9,6 +9,8 @@ if exist(savefile, ftype)
     dlgOpts.Interpreter = 'tex';
     [path, name, extension] = fileparts(savefile);
     path = strrep(path, '\', '/');
+
+    % escape tex special characters
     path = addTexEscapeChars(path);
     name = addTexEscapeChars(name);
     extension = addTexEscapeChars(extension);
@@ -36,13 +38,13 @@ else % file doesn't exist; nothing to overwrite; safe to save
 end
 
 
-function text = addTexEscapeChars(text)
-specialChars = {'#' '$' '%' '&' '_' '{' '}'};
-for char = specialChars
-    text = strrep(text, char{1}, sprintf('%s%s', '\', char{1}));
-end
+    function text = addTexEscapeChars(text) % escape characters that would otherwise be considered tex commands
+    specialChars = {'#' '$' '%' '&' '_' '{' '}'};
+    for char = specialChars
+        text = strrep(text, char{1}, sprintf('%s%s', '\', char{1}));
+    end
 
-end
+    end
 
 
 end %EOF
