@@ -60,27 +60,41 @@ if (exist(wvpfile,'file') == 2)
 end
 
 % loop through trials
-for itrial = trials2track
-    
+endstate.name = '';
+itrial = 1;
+while ~strcmp(endstate.name, 'end')
+    if strcmp(endstate.name,'jump')
+        if endstate.jumpto_trial < 1 
+            endstate.jumpto_trial = 1;
+        elseif endstate.jumpto_trial > length(data)
+            endstate.jumpto_trial = lenght(data);
+        end
+        trials2track = endstate.jumpto_trial:length(data); % after Jump, if press Cont, just go in order after that
+        itrial = 1;
+    end
+
+    trialNum = trials2track(itrial); % trialNum used during this loop
+    itrial = itrial + 1; % increment itrial for next loop
+
     %% prepare inputs
-    y = data(itrial).(buffertype);
+    y = data(trialNum).(buffertype);
     
     %Skip trials where signalIn is empty
     if isempty(y)
-        fprintf('Trial %d has an empty signalIn field. Skipping for now.\n', itrial)
+        fprintf('Trial %d has an empty signalIn field. Skipping for now.\n', trialNum)
         continue;
     end
     
     if isfield([data.params],'fs')
-        fs = data(itrial).params.fs;
+        fs = data(trialNum).params.fs;
     else
-        fs = data(itrial).params.sr;
+        fs = data(trialNum).params.sr;
     end
     
     % if trial data exists, load event params and overwrite default params
-    savefile = fullfile(dataPath,trialfolder,sprintf('%d.mat',itrial));
+    savefile = fullfile(dataPath,trialfolder,sprintf('%d.mat',trialNum));
     if exist(savefile,'file')
-        load(savefile);
+        load(savefile); %#ok<LOAD> 
         if ~exist('sigmat','var'), sigmat = []; end % needed in case trial has been marked as bad but not analyzed yet
         if isfield(trialparams,'sigproc_params'), sigproc_params = trialparams.sigproc_params; else, sigproc_params = [];end
         if isfield(trialparams,'plot_params'), plot_params = trialparams.plot_params; else, plot_params = []; end
@@ -93,7 +107,7 @@ for itrial = trials2track
     end
     
     % if TextGrid exists (and isn't in event list), add TextGrid events
-    tgFilename = sprintf('AudioData_%d.TextGrid',itrial);
+    tgFilename = sprintf('AudioData_%d.TextGrid',trialNum);
     tgPath = fullfile(dataPath,'PostAlignment',tgFilename);
     if exist(tgPath,'file')
         if ~isfield(event_params,'user_event_names')
@@ -145,7 +159,7 @@ for itrial = trials2track
     end
     
     %% call wave viewer
-    endstate = wave_viewer(y,'fs',fs,'name',sprintf('trial(%d)',itrial), ...
+    endstate = wave_viewer(y,'fs',fs,'name',sprintf('trial(%d)',trialNum), ...
         'nformants',2,'sigproc_params',sigproc_params, ...
         'plot_params',plot_params,'event_params',event_params,...
         'sigmat',sigmat);
@@ -165,7 +179,9 @@ for itrial = trials2track
     if bSaveCheck, bSave = savecheck(savefile); else, bSave = 1; end
     if bSave, save(savefile,'sigmat','trialparams'); end
     
-    if strcmp(endstate.name,'end'), break; end
+    if strcmp(endstate.name,'cont') && trialNum == trials2track(end) % finish if continued on final trial
+        endstate.name = 'end';
+    end
 end
 
 % save param file
