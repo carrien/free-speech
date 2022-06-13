@@ -31,11 +31,15 @@ if nargin < 2 || isempty(elements)
                 % make sure the contents of that field could become field names
                 % in expt.inds. For example, fields whose contents are
                 % numeric such as [0] cannot be a field name.
-                try
-                    if isvarname(expt.(fields{element_ix}) {1})     % eg, expt.(words){1} = 'bed' --> OK
-                        elements(length(elements)+1) = fields(element_ix);
+                bGoodFieldnames = 1;
+                for ie = 1:length(expt.(fields{element_ix}))
+                    if ~isvarname(expt.(fields{element_ix}) {ie}) % eg, expt.(words){1} = 'bed' --> OK
+                        bGoodFieldnames = 0;
+                        break;
                     end
-                catch
+                end
+                if bGoodFieldnames
+                    elements(length(elements)+1) = fields(element_ix);
                 end
             end
         end
