@@ -34,6 +34,7 @@ conttxt = 'We will now continue with the experiment.';
 txtparams.Color = 'white';
 txtparams.FontSize = 60;
 txtparams.HorizontalAlignment = 'center';
+txtparams.Units = 'normalized';
 
 % display pause text and wait for keypress
 figure(h_fig(stim))

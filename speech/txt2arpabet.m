@@ -8,11 +8,11 @@ end
 
 vowels = {'aa' 'ae' 'ah' 'ay' 'eh' 'ey' 'ih' 'iy' 'ow' 'uw' 'er' 'oe' 'ou' 'uh' 'xx', 'os', 'uu'};
 
-aa = ismember(txtcell,{'aa' 'ah' 'a' 'bod' 'sop' 'sock' 'sod' 'shop' 'shock' 'shot' 'shawl' 'saw' 'car' 'gar' 'czar' 'cod' 'god' 'odd' 'copper' 'shopper' 'carbonate' 'llama'}); % added 'a' because this was the original vowel name for this category. Possibly will need to change it if we ever use the indefinite article.
-ae = ismember(txtcell,{'ae' 'add' 'ad' 'bad' 'bat' 'dad' 'pat' 'rad' 'sad' 'sat' 'yallow' 'capper' 'gapper' 'sapper' 'tapper' 'zapper'});
+aa = ismember(txtcell,{'aa' 'ah' 'a' 'ba' 'bod' 'sop' 'sock' 'sod' 'shop' 'shock' 'shot' 'shawl' 'saw' 'car' 'gar' 'czar' 'cod' 'god' 'odd' 'copper' 'shopper' 'carbonate' 'llama'}); % added 'a' because this was the original vowel name for this category. Possibly will need to change it if we ever use the indefinite article.
+ae = ismember(txtcell,{'ae' 'add' 'ad' 'bad' 'bat' 'batA' 'batB' 'cat' 'dad' 'pat' 'rad' 'sad' 'sat' 'yallow' 'capper' 'gapper' 'sapper' 'tapper' 'zapper'});
 ah = ismember(txtcell,{'ah' 'above' 'bud'});
 ay = ismember(txtcell,{'ay' 'bide' 'idea' 'side' 'sigh' 'shy' });
-eh = ismember(txtcell,{'eh' 'E' 'Ed' 'bed' 'bet' 'blend' 'dead' 'des' 'desk' 'debt' 'fed' 'head' 'ted' 'red' 'glen'  'hais' 'eff' 'fait' 'adept' 'meta' 'pet' 'sekt' 'set' 'said' 'shed' 'Ted' 'yellow' 'bedhead','pedestal','pedicure','pedigree', 'deficit', 'definite', 'seven' 'sever' 'level' 'headH' 'headL' 'headM' 'scent' 'sent' 'cent' 'pen' 'ten' 'hen' 'penitentiary'});
+eh = ismember(txtcell,{'eh' 'E' 'Ed' 'bed' 'bet' 'blend' 'dead' 'des' 'desk' 'debt' 'fed' 'head' 'ted' 'red' 'glen'  'hais' 'eff' 'fait' 'adept' 'meta' 'pet' 'sekt' 'set' 'said' 'shed' 'Ted' 'yellow' 'bedhead','pedestal','pedicure','pedigree', 'deficit', 'definite', 'seven' 'sever' 'level' 'headH' 'headL' 'headM' 'scent' 'sent' 'cent' 'pen' 'ten' 'hen' 'penitentiary' 'pen a ten'});
 ey = ismember(txtcell,{'ey' 'eI' 'grain' 'beta' 'abate' 'bayed' 'shaper' 'caper' 'fei1' 'fei2' 'fei3' 'fei4' 'fei5' 'Mary'});
 ih = ismember(txtcell,{'ih' 'I' 'bit' 'bid' 'bink' 'rid' 'grin' 'yillow' 'pink' 'pit' 'sip' 'sin' 'sit' 'shin' 'ship' 'tipper' 'sipper' 'zipper' 'lion'});
 iy = ismember(txtcell,{'iy' 'i' 'bead' 'ee' 'eat' 'reed' 'green' 'bleed' 'creed' 'kreen' 'Yves' 'Eve' 'see' 'seep' 'seat' 'sea' 'sheep' 'sheet' 'she' 'Sie' 'vee' 'vie' 'Wie' 'wie' 'Z' 'C' 'zee' 'ease' 'scene' 'seat'});
