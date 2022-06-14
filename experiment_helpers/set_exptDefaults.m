@@ -1,10 +1,9 @@
-function [expt] = set_exptDefaults(expt, indsElements)
+function [expt] = set_exptDefaults(expt)
 %SET_EXPTDEFAULTS  Set missing experiment parameters to defaults.
 %   SET_EXPTDEFAULTS(EXPT) replaces missing fields in EXPT with default
 %   values for those fields.
 
 if nargin < 1 || isempty(expt), expt = struct; end
-if nargin < 2, indsElements = []; end
 
 fprintf('Setting defaults...\n\n');
 expt = set_missingField(expt,'name','default');
@@ -145,7 +144,7 @@ expt = set_missingField(expt,'crashTrials',[]);
 
 %% trial indices
 
-expt.inds = get_exptInds(expt, indsElements);
+expt.inds = get_exptInds(expt);
 
 fprintf('Done setting defaults.\n');
 
