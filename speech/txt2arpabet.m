@@ -8,7 +8,7 @@ end
 
 vowels = {'aa' 'ae' 'ah' 'ay' 'eh' 'ey' 'ih' 'iy' 'ow' 'uw' 'er' 'oe' 'ou' 'uh' 'xx', 'os', 'uu'};
 
-aa = ismember(txtcell,{'aa' 'ah' 'a' 'ba' 'bod' 'sop' 'sock' 'sod' 'shop' 'shock' 'shot' 'shawl' 'saw' 'car' 'gar' 'czar' 'cod' 'god' 'odd' 'copper' 'shopper' 'carbonate' 'llama'}); % added 'a' because this was the original vowel name for this category. Possibly will need to change it if we ever use the indefinite article.
+aa = ismember(txtcell,{'aa' 'ah' 'a' 'ba' 'bod' 'sop' 'sock' 'sod' 'shop' 'shock' 'shot' 'shawl' 'saw' 'car' 'gar' 'czar' 'cod' 'god' 'odd' 'copper' 'shopper' 'carbonate' 'llama' 'boss'}); % added 'a' because this was the original vowel name for this category. Possibly will need to change it if we ever use the indefinite article.
 ae = ismember(txtcell,{'ae' 'add' 'ad' 'bad' 'bat' 'cat' 'dad' 'pat' 'rad' 'sad' 'sat' 'yallow' 'capper' 'gapper' 'sapper' 'tapper' 'zapper'});
 ah = ismember(txtcell,{'ah' 'above' 'bud' 'bus'});
 ay = ismember(txtcell,{'ay' 'bide' 'idea' 'side' 'sigh' 'shy' });
