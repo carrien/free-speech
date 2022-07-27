@@ -25,7 +25,9 @@ if nargin < 3 || isempty(bInterpret), bInterpret = 1; end
 if nargin < 4 || isempty(fieldName), fieldName = 'vowels'; end
 
 load(fullfile(dataPath,'expt.mat'),'expt')
+fprintf('Loading data... ')
 load(fullfile(dataPath,'data.mat'),'data')
+fprintf('done.\n');
 
 nConds = length(expt.conds);
 nElements = length(expt.(fieldName));
