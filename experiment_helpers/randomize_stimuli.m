@@ -351,7 +351,7 @@ else
         
         % When you have a good block, add it to the experiment list 
         experimentWordConds = [experimentWordConds blockWordConds]; 
-        fprintf('Block %d: %d attempts\n', b, attempts); 
+%         fprintf('Block %d: %d attempts\n', b, attempts); 
     end
     
     % Translate unique word/conds back into the words and the conds 
