@@ -11,6 +11,7 @@ end
 
 vowels = {'aa' 'ae' 'ah' 'ay' 'eh' 'ey' 'ih' 'iy' 'ow' 'uw' 'er' 'oe' 'ou' 'uh' 'xx', 'os', 'uu'};
 
+
 aa = ismember(txtcell,{'aa', ...
     'ah' 'a' 'ba' 'bah' 'bod' 'bot' 'boss' 'car' 'carbonate' 'cod' 'copper' 'czar' 'dock' 'gar' 'god' 'llama', ...
     'odd' 'pa' 'pot' 'saw' 'shawl' 'shock' 'shop' 'shopper' 'shot' 'sock' 'sod' 'sop' 'top'}); % added 'a' because this was the original vowel name for this category. Possibly will need to change it if we ever use the indefinite article.
@@ -32,7 +33,7 @@ iy = ismember(txtcell,{'iy', ...
 ow = ismember(txtcell,{'ow' 'o' 'oh' 'blow' 'bode' 'show' 'shore' 'so' 'sore'});
 uw = ismember(txtcell,{'uw' 'blue' 'booed' 'groom' 'oo' 'plume' 'plue' 'rude' 'sue' 'suit' 'soon' 'shoe' 'shoot' 'shoes' 'u'});
 er = ismember(txtcell,{'er' 'bird' 'blur'});
-oe = ismember(txtcell,{'oe' 'boese' 'böse' 'neuf' 'oeuf' 'oede' 'öde'});
+oe = ismember(txtcell,{'oe' 'boese' 'bÃ¶se' 'neuf' 'oeuf' 'oede' 'Ã¶de'});
 ou = ismember(txtcell,{'ceux'});
 uh = ismember(txtcell,{'uh' 'good' 'hood'});
 xx = ismember(txtcell,{'xx' '*' '**' '***'});
