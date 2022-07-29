@@ -10,20 +10,19 @@ function [answer] = askNChoiceQuestion(question,choices,bVisibleOptions)
 %       choices                 an array of the possible choices, e.g. {'y' 'n'} [1 2 3]. Defaults to {'y' 'n'}  
 % 
 %       bVisibleOptions         a binary flag for if you want to show the possible answers in parentheses after. Defaults to 
-%                               1 (yes), which is the original behavior. 
+%                               1 (yes)                              
 % 
-%                               Do you want to continue? (y/n) 
+%                               bVisibleOptions = 1: Do you want to continue? (y/n) 
 %                               vs. 
-%                               Do you want to continue?
+%                               bVisibleOptions = 0: Do you want to continue?
 % 
 %                               This is simply for cleaner display of questions if they are formatted as something like "Do
 %                               you want to redo or move on?" where the choices are in the question itself, or "Press 1 to
 %                               redo, 0 to move on: " 
 % 
 % 
-%
 % Initiated 2020-02-28 RPK 
-% Added bVisibleOptions flag RPK June 2022
+% Added bVisibleOptions flag RPK June 2022. Backwards compatible
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
