@@ -14,18 +14,21 @@ function [] = adjustOsts(expt, h_fig, word, trackingFileName)
 %           Use this when you are in an experiment that has multiple OST files, such as taimComp. If you have multiple words
 %           that use one OST file (e.g., both "size" and "sigh" use some OST file called "sigh"), you can put in a cell array
 %           {'size' 'sigh'} and the indices from expt.inds.words.size and expt.inds.words.sigh will be concatenated
-%       ostFN:       
+%       trackingFileName:       
 %           the name of the OST file, same use patterns as other trackingFileName arguments (i.e., 'size' would look for
 %           sizeWorking in expt.trackingFileLoc). If this is empty, and word is also empty, just uses expt.trackingFileName.
 %           If it is empty and word is NOT empty, uses the first word in word. 
+%           *** NOTE: this is a separate argument because expt.trackingFileName may include multiple tracking file names for
+%           experiments with multiple tracking files, such as taimComp. 
+%           
 %           
 % 
 % Process: 
 % 1. Takes in expt and h_fig (so that you can run a split version of pause_trial) 
 % 2. Compiles data from last 18 temp trials into one data file so it can be read by audapter_viewer all at once (if you don't
 % have 18, it will just take the last however many you have) 
-% --- If you are in an experiment that has multiple OST files (e.g. taimComp), the argument "trialSubset" will tell the
-% script which trials are acceptable
+% --- If you are in an experiment that has multiple OST files (e.g. taimComp), "word" will be used to figure out which subset
+% of trials can be used
 % 3. Opens audapter_viewer with that data file and the expt 
 % 4. Use audapter_viewer as normal 
 % 5. Marks last temporary trial 1 for bChangedOsts
@@ -45,7 +48,7 @@ function [] = adjustOsts(expt, h_fig, word, trackingFileName)
 dbstop if error 
 %% Default arguments
 
-if nargin < 3 || isempty(word), word = ''; end
+if nargin < 3 || isempty(word), word = {}; end
 if nargin < 4 || isempty(trackingFileName)
     if nargin < 3 || isempty(word)
         if ~isfield(expt, 'trackingFileName')
@@ -129,8 +132,15 @@ trialnums = get_sortedTrials(tempdir);
 
 % Get trials in the allowed subset (e.g., just ones in expt.inds.words.sigh)
 allowedTrials = []; 
-for w = 1:length(word)
-    allowedTrials = [allowedTrials exptOst.inds.words.(word{w})]; 
+if isempty(word)
+    % If you haven't specified word, then you can use all of the trials 
+    allowedTrials = 1:expt.ntrials; 
+else    
+    % If you have specified word(s), then you can only use the trials that used that word(s) 
+    % Note that this means you can take trials from, say, both sigh and size trials, but they should share an OST file
+    for w = 1:length(word)
+        allowedTrials = [allowedTrials exptOst.inds.words.(word{w})]; 
+    end
 end
 trialnums = intersect(allowedTrials, trialnums); % Get the intersection of the subset of trials and the completed trials in temp
 
