@@ -25,8 +25,9 @@ if nargin < 1 || isempty(dataPath), dataPath = pwd; end
 if nargin < 2 || isempty(badThresh), badThresh = 0.1; end %default 100 ms
 if nargin < 3 || isempty(bInterpret), bInterpret = 1; end
 
-
+fprintf('Loading data... ');
 load(fullfile(dataPath, 'data.mat'), 'data');
+fprintf('done.\n');
 
 % get length of an Audapter frame, in seconds
 frameDur = data(1).params.frameLen / data(1).params.sRate; 

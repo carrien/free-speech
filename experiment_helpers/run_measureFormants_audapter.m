@@ -107,7 +107,7 @@ for itrial = 1:length(trials2run)  % for each trial
         h_trialn = text(h_sub(1),0,0.5,ctrltxt,'Color','black', 'FontSize',30, 'HorizontalAlignment','center');
 
         % set text
-        txt2display = expt.listWords{trial_index};
+        txt2display = expt.listStimulusText{trial_index};
         color2display = expt.colorvals{expt.allColors(trial_index)};
 
         % run trial in Audapter
