@@ -1,7 +1,7 @@
 function [expt] = randomize_stimuli(expt, nTrialsPerPert, nTrialsPerNonpert, nBaseline, nWashout, bAlternatePnp)
 % Pseudorandomize words and conditions for experiments. Specifically meant for experiments that have more than one
-% perturbation AND more than one word. For experiments where you are only randomizing one of the variables, see
-% randomize_wordOrder. 
+% perturbation AND more than one word. For experiments where you are only randomizing one of the variables (for example, most
+% adaptation experiments only randomize expt.words), see randomize_wordOrder. 
 %
 % Input arguments:
 %   EXPT. The expt file is assumed to have the following fields:
@@ -30,11 +30,14 @@ function [expt] = randomize_stimuli(expt, nTrialsPerPert, nTrialsPerNonpert, nBa
 %       specify that number of trials here. If this isn't a multiple of
 %       expt.ntrials_per_block, you may have an uneven # of pert trials.
 % 
-%   bAlternatePnp       Default = 1 (to assume the original behavior of this script). binary "alternate perturbed and
-%                       non-perturbed"
-%                       This is a binary flag to indicate if you are doing an experiment where no perturbed trial can be next
-%                       to another perturbed trial (bAlternatePnp = 1) or if you are doing an experiment where you just don't
-%                       want two of the same word OR same perturbation to be next to each other (bAlternatePnp = 0). 
+%   bAlternatePnp       Default = 1. Binary flag "alternate perturbed and non-perturbed"
+%                       If 1, indicates that a perturbation trial should never be adjacent to another perturbation trial.
+%                       "Perturbation trials" are trials where the expt.conds index is greater than 1 (see note above on
+%                       arrangement of expt.conds). Adjacent trials can use the same word. 
+% 
+%                       If 0, indicates that a trial should never be adjacent to another trial with the exact same expt.words
+%                       OR expt.conds value. That is, two perturbation trials can be adjacent, as long as they have DIFFERENT
+%                       perturbations (and different words).  
 % 
 %                       E.g. with bAlternatePnp = 0, a sequence of sigh/accel side/decel would be acceptable. 
 %                       With bAlternatePnp = 1, the sequence would have to be (e.g.) sigh/accel side/noPert side/decel
@@ -226,32 +229,22 @@ else
 
     % Generate unique word/perturbation combination information 
     nWords = length(expt.words); 
-%     nPerts = length(expt.conds)-1;  
     nConds = length(expt.conds); 
-%     allWordsInBlock = []; 
-    uniqueWordsInBlock = []; 
-    % Loop through each word. This builds vectors like this: (nTrialsPerPert = 2, nTrialsPerNonpert = 2)
-    % word:     1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2
-    % cond:     2 3 4 2 3 4 1 1 2 3 4 2 3 4 1 1
-    % Actually the thing that I ended up needing is 
+    
+    % Loop through each word. This builds vectors like this: 
     % uniquewords:      1 1 1 1 1 1 1 1 1 1
     % uniqueconds:      2 3 4 5 1 2 3 4 5 1             
     % Where any of the unique word/cond combos may be repeated in the actual block, but they are just repetitions (not
-    % unique and thus do not get a unique number identifier) (though I guess that is a way to do this as well, where instead
-    % of weighting I just had more entries in the draw table? Not as easy to eliminate one column/one row then though) 
+    % unique and thus do not get a unique number identifier) 
+    uniqueWordsInBlock = []; 
     for w = 1:nWords
-        % Build the list of instances that will occur in each block
-%         newWordNums = repmat(w, 1, nTrialsPerPert*nPerts + nTrialsPerNonpert);      % Make a vector of the instances of perturbed word + instances of unperturbed word
-%         allWordsInBlock = [allWordsInBlock newWordNums];                      % Chain that to the whole block 
-        uniqueWordConds = repmat(w, 1, nConds);                                 % I don't think I actually use this
+        % Build the list of unique trial types that will occur in each block
+        uniqueWordConds = repmat(w, 1, nConds);                                 
         uniqueWordsInBlock = [uniqueWordsInBlock uniqueWordConds]; 
     end
     
     % Do a similar thing for the perturbation conditions that will occur in each block
-%     newCondNums = [repmat(2:nConds, 1, nTrialsPerPert) ones(1, nTrialsPerNonpert)];   % Note that nPerts is PERTURBED (length(expt.conds)-1) so you need length(expt.conds)
-%     allCondsInBlock = repmat(newCondNums, 1, nWords);                            % Repmat this for each word. Apparently this is not useful ... 
-    uniqueCondsInBlock = [repmat([2:nConds 1], 1, nWords)];                      % this has a single entry for each unique word/cond combo 
-                                                                                 % (allCondsInBlock has repeats for any condition that has more than one rep)
+    uniqueCondsInBlock = repmat([2:nConds 1], 1, nWords);                      % this has a single entry for each unique word/cond combo 
     
     % Make a vector that has a single number assigned to each unique word/pert combination
     allWordConds = 1:(nWords*nConds); 
@@ -351,7 +344,7 @@ else
         
         % When you have a good block, add it to the experiment list 
         experimentWordConds = [experimentWordConds blockWordConds]; 
-%         fprintf('Block %d: %d attempts\n', b, attempts); 
+%         fprintf('Block %d: %d attempts\n', b, attempts);  % For debugging if you are having issues 
     end
     
     % Translate unique word/conds back into the words and the conds 
