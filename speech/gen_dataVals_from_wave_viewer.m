@@ -1,4 +1,4 @@
-function [] = gen_dataVals_from_wave_viewer(dataPath,trialdir,bSaveCheck,bMultiSegment,vowel_list)
+function dataVals = gen_dataVals_from_wave_viewer(dataPath,trialdir,bSaveCheck,bMultiSegment,vowel_list)
 %GEN_DATAVALS  Scrape subject trial files for data and save.
 %   GEN_DATAVALS(DATAPATH,TRIALDIR) scrapes the files from a subject's
 %   DATAPATH/TRIALDIR directory and collects formant data into the single
