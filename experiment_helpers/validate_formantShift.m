@@ -1,4 +1,4 @@
-function [h, e, err] = validate_formantShift(dataPath, p, bInterpret)
+function [h, e, err] = validate_formantShift(dataPath, p, bInterpret, fieldName)
 % Calculates the average formant for a trial. Plots the average formant
 %   from signalIn and compares it against the average formant from
 %   signalOut. Shows different plots for different conditions in expt.conds.
@@ -22,12 +22,15 @@ function [h, e, err] = validate_formantShift(dataPath, p, bInterpret)
 
 if nargin < 1, dataPath = cd; end
 if nargin < 3 || isempty(bInterpret), bInterpret = 1; end
+if nargin < 4 || isempty(fieldName), fieldName = 'vowels'; end
 
 load(fullfile(dataPath,'expt.mat'),'expt')
+fprintf('Loading data... ')
 load(fullfile(dataPath,'data.mat'),'data')
+fprintf('done.\n');
 
 nConds = length(expt.conds);
-nVows = length(expt.vowels);
+nElements = length(expt.(fieldName));
 
 %% set default params
 defaultParams.plotColors = [0 .8 0;...
@@ -41,7 +44,7 @@ defaultParams.plotColorsShifted = .7*[0 .8 0;...
 defaultParams.LineWidth = 1.5;
 defaultParams.MarkerSize = 15;
 defaultParams.MarkerSizeShifted = 20;
-defaultParams.vowInds = 1:nVows;
+defaultParams.elemInds = 1:nElements;
 defaultParams.figpos = get(0,'ScreenSize') + [75 150 -150 -300];
 if nargin < 2 || isempty(p)
     p = defaultParams;
@@ -57,16 +60,16 @@ err(errIx).badTrial = [];       % trial number of bad trial
 %%
 for iCond = 1:nConds
     cond = expt.conds{iCond};
-    for iVow = p.vowInds
-        vow = expt.vowels{iVow};
-        trials2analyze = intersect(expt.inds.conds.(cond),expt.inds.vowels.(vow));
+    for iElement = p.elemInds
+        elem = expt.(fieldName){iElement};
+        trials2analyze = intersect(expt.inds.conds.(cond),expt.inds.(fieldName).(elem));
         
         nTrials = length(trials2analyze);
         
-        F1in.(cond).(vow) = NaN(1,nTrials);
-        F2in.(cond).(vow) = NaN(1,nTrials);
-        F1out.(cond).(vow) = NaN(1,nTrials);
-        F2out.(cond).(vow) = NaN(1,nTrials);
+        F1in.(cond).(elem) = NaN(1,nTrials);
+        F2in.(cond).(elem) = NaN(1,nTrials);
+        F1out.(cond).(elem) = NaN(1,nTrials);
+        F2out.(cond).(elem) = NaN(1,nTrials);
         for iTrial = 1:length(trials2analyze)
             trialnum = trials2analyze(iTrial); 
             
@@ -78,8 +81,8 @@ for iCond = 1:nConds
                 % average fmt value from 25%-65% after onset
             fWindow(1) = samps2plot(floor(.25*nSamps));
             fWindow(2) = samps2plot(floor(.65*nSamps));
-            F1in.(cond).(vow)(iTrial) = hz2mels(nanmean(data(trialnum).fmts(fWindow(1):fWindow(2),1)));
-            F2in.(cond).(vow)(iTrial) = hz2mels(nanmean(data(trialnum).fmts(fWindow(1):fWindow(2),2)));
+            F1in.(cond).(elem)(iTrial) = hz2mels(mean(data(trialnum).fmts(fWindow(1):fWindow(2),1), 'omitnan'));
+            F2in.(cond).(elem)(iTrial) = hz2mels(mean(data(trialnum).fmts(fWindow(1):fWindow(2),2), 'omitnan'));
             
             
             samps2plot_out = find(data(trialnum).sfmts(:,1)>10);
@@ -113,8 +116,8 @@ for iCond = 1:nConds
                 %fWindow(1) = samps2plot_out(floor(.25*nSamps_out));
                 %fWindow(2) = samps2plot_out(floor(.65*nSamps_out));
             % use same sampling window for sfmts as fmts
-            F1out.(cond).(vow)(iTrial) = hz2mels(nanmean(data(trialnum).sfmts(fWindow(1):fWindow(2),1)));
-            F2out.(cond).(vow)(iTrial) = hz2mels(nanmean(data(trialnum).sfmts(fWindow(1):fWindow(2),2)));
+            F1out.(cond).(elem)(iTrial) = hz2mels(mean(data(trialnum).sfmts(fWindow(1):fWindow(2),1), 'omitnan'));
+            F2out.(cond).(elem)(iTrial) = hz2mels(mean(data(trialnum).sfmts(fWindow(1):fWindow(2),2), 'omitnan'));
         end
     end
     
@@ -123,30 +126,30 @@ for iCond = 1:nConds
     outMarkers = {'x','*','+','.'};
     labels = expt.conds;
     subplot(1,nConds,iCond)
-    h_leg_obj = zeros(p.vowInds(end), 1);
-    leg_txt = cell(p.vowInds(end), 1);
+    h_leg_obj = zeros(p.elemInds(end), 1);
+    leg_txt = cell(p.elemInds(end), 1);
     hold on
-    for iVow = p.vowInds
-        vow = expt.vowels{iVow};
+    for iElement = p.elemInds
+        elem = expt.(fieldName){iElement};
         % plot signal in points
-        scatter(F1in.(cond).(vow),F2in.(cond).(vow),p.MarkerSize,inMarkers{iVow},'MarkerEdgeColor',p.plotColors(iVow,:))
-        [e.(cond).(vow).in] = FitEllipse(F1in.(cond).(vow),F2in.(cond).(vow));
-        plot(e.(cond).(vow).in(:,1),e.(cond).(vow).in(:,2),'Color',p.plotColors(iVow,:),'LineWidth',p.LineWidth)
+        scatter(F1in.(cond).(elem),F2in.(cond).(elem),p.MarkerSize,inMarkers{iElement},'MarkerEdgeColor',p.plotColors(iElement,:))
+        [e.(cond).(elem).in] = FitEllipse(F1in.(cond).(elem),F2in.(cond).(elem));
+        plot(e.(cond).(elem).in(:,1),e.(cond).(elem).in(:,2),'Color',p.plotColors(iElement,:),'LineWidth',p.LineWidth)
         
         % plot signal out points
-        scatter(F1out.(cond).(vow),F2out.(cond).(vow),p.MarkerSizeShifted,outMarkers{iVow},'MarkerEdgeColor',p.plotColorsShifted(iVow,:))
-        if ~all(isnan(F1out.(cond).(vow)))
-            [e.(cond).(vow).out] = FitEllipse(F1out.(cond).(vow),F2out.(cond).(vow));
-            plot(e.(cond).(vow).out(:,1),e.(cond).(vow).out(:,2),'Color',p.plotColorsShifted(iVow,:),'LineWidth',p.LineWidth)
+        scatter(F1out.(cond).(elem),F2out.(cond).(elem),p.MarkerSizeShifted,outMarkers{iElement},'MarkerEdgeColor',p.plotColorsShifted(iElement,:))
+        if ~all(isnan(F1out.(cond).(elem)))
+            [e.(cond).(elem).out] = FitEllipse(F1out.(cond).(elem),F2out.(cond).(elem));
+            plot(e.(cond).(elem).out(:,1),e.(cond).(elem).out(:,2),'Color',p.plotColorsShifted(iElement,:),'LineWidth',p.LineWidth)
         end
         
         %plot lines connection points
-        lines = plot([F1out.(cond).(vow)' F1in.(cond).(vow)']',[F2out.(cond).(vow)' F2in.(cond).(vow)']','-','Color',[.8 .8 .8]);
+        lines = plot([F1out.(cond).(elem)' F1in.(cond).(elem)']',[F2out.(cond).(elem)' F2in.(cond).(elem)']','-','Color',[.8 .8 .8]);
         uistack(lines, 'bottom');
         
         %prepare objects for legend
-        h_leg_obj(iVow) = plot(nan, nan, inMarkers{iVow}, 'color', p.plotColors(iVow, :), 'MarkerSize', 12);
-        leg_txt(iVow) = {vow};
+        h_leg_obj(iElement) = plot(nan, nan, inMarkers{iElement}, 'color', p.plotColors(iElement, :), 'MarkerSize', 12);
+        leg_txt(iElement) = {elem};
     end
     lgd = legend(h_leg_obj, leg_txt, 'Location', 'southwest', 'FontSize', 10);
     title(lgd, 'signalIn properties');
