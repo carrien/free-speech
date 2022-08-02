@@ -12,7 +12,16 @@ else
     n = size(x,1);
 end
 
-[sd,m] = std(x);
+%check if 'std' returns mean
+v = version('-date');
+year = str2double(v(end-4:end));
+if year >= 2022
+    [sd,m] = std(x);
+else
+    sd = std(x);
+    sz = size(sd);
+    m = nan(sz(1),sz(2));
+end
 se = sd/sqrt(n);
 
 end
