@@ -19,8 +19,7 @@ if year >= 2022
     [sd,m] = std(x);
 else
     sd = std(x);
-    sz = size(sd);
-    m = nan(sz(1),sz(2));
+    m = nan(size(sd));
 end
 se = sd/sqrt(n);
 
