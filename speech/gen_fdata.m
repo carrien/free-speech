@@ -14,7 +14,7 @@ if nargin < 4 || isempty(bSaveCheck), bSaveCheck = 1;end
 load(fullfile(dataPath,'expt.mat'),'expt');
 load(fullfile(dataPath,dataValsStr),'dataVals');
 
-[fmtdata,f0data,ampldata,durdata,trialinds] = calc_fdata(expt,dataVals,condtype);
+[fmtdata,f0data,ampldata,durdata,RTdata,trialinds] = calc_fdata(expt,dataVals,condtype);
 
 savefile = fullfile(dataPath,sprintf('fdata_%s%s.mat',condtype,dataValsStr(9:end)));
 if bSaveCheck
@@ -23,6 +23,6 @@ else
     bSave = 1;
 end
 if bSave
-    save(savefile,'fmtdata','f0data','ampldata','durdata','trialinds');
+    save(savefile,'fmtdata','f0data','ampldata','durdata','RTdata','trialinds');
     fprintf('fdata saved to %s.\n',savefile)
 end
