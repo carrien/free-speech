@@ -65,6 +65,10 @@ dbstop if error
 %% Default arguments
 
 if nargin < 3 || isempty(word), word = {}; end
+% Change string inputs in word to cell 
+if ischar(word)
+    word = {word}; 
+end
 if nargin < 4 || isempty(trackingFileName)
     if nargin < 3 || isempty(word)
         if ~isfield(expt, 'trackingFileName')
@@ -74,15 +78,10 @@ if nargin < 4 || isempty(trackingFileName)
         end
     elseif iscell(word)
         trackingFileName = word{1}; 
-    else
-        trackingFileName = word; 
     end
 end
 
-% Change string inputs in word to cell 
-if ischar(word)
-    word = {word}; 
-end
+
 
 % Set exptOst so that you don't lose original expt 
 exptOst = expt; 
