@@ -20,6 +20,22 @@ function [] = adjustOsts(expt, h_fig, word, trackingFileName)
 %           If it is empty and word is NOT empty, uses the first word in word. 
 %           *** NOTE: this is a separate argument because expt.trackingFileName may include multiple tracking file names for
 %           experiments with multiple tracking files, such as taimComp. 
+% 
+% Note for usage in experiments proper: because the pause function for adjustOst is only checked at the beginning of a trial,
+% one way to call adjustOsts on 'a' press is to use the word from the last trial, i.e. 
+% 
+%       adjustOsts(expt, h_fig, expt.listWords(trial_index - 1), expt.trackingFileName(expt.allWords(trial_index - 1))
+% 
+% For this usage, the experimenter would press 'a' during a trial that has the questionable word, and then right before the
+% next trial started, adjustOsts would fire up. 
+% 
+% An alternative way to call this would be to use something like askNChoiceQuestion to determine what words to feed in, e.g. 
+% 
+%       word2adjust = askNChoicQuestion('What word would you like to adjust the OSTs for?', {'sigh' 'size' 'buyYogurt'}; 
+%       adjustOsts(expt, h_fig, word2adjust, []); 
+% 
+% Where the empty argument for trackingFileName would look for an OST file named with word2adjust. Depending on your
+% particular experiment structure you can tailor exactly how you want to call adjustOsts in your experiment engine. 
 %           
 %           
 % 
@@ -194,7 +210,7 @@ fprintf('New OST values fed into Audapter.\n')
 
 % Resave expt
 save(fullfile(expt.dataPath, 'expt.mat'), 'expt'); % Because in some cases you may have changed expt to have a different trackingFileName 
-fprintf('Original expt structure saved'); 
+fprintf('Original expt structure saved.\n'); 
 
 % Refresh text
 delete_exptText(h_fig, h_text)
