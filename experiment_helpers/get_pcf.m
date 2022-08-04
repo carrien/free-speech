@@ -82,15 +82,15 @@ end
 %% File and editing information
 
 if strcmp(audFileName, 'measureFormants') || strcmp(audFileDir, 'experiment_helpers') % So theoretically you could be doing some OTHER PCF file that is in experiment_helpers
-    exptDir = fullfile(get_gitPath, 'free-speech', audFileDir); % could potentially hard-code this to experiment_helpers but... 
+    exptDir = fullfile(get_gitPath('free-speech'), audFileDir); % could potentially hard-code this to experiment_helpers but... 
 elseif isfolder(audFileDir)
     if contains(audFileDir,'/') || contains(audFileDir,'\')
         exptDir = audFileDir;
     else
-        exptDir = fullfile(get_gitPath, 'current-studies', audFileDir);
+        exptDir = fullfile(get_gitPath('current-studies'), audFileDir);
     end
 else
-    exptDir = fullfile(get_gitPath, 'current-studies', audFileDir); % ['C:\Users\Public\Documents\software\current-studies\' audFileLoc]; 
+    exptDir = fullfile(get_gitPath('current-studies'), audFileDir); % ['C:\Users\Public\Documents\software\current-studies\' audFileLoc]; 
 end
 
 pcfName = [audFileName 'Working.pcf']; 
