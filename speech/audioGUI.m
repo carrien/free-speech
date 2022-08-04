@@ -67,7 +67,7 @@ while ~strcmp(endstate.name, 'end')
         if endstate.jumpto_trial < 1 
             endstate.jumpto_trial = 1;
         elseif endstate.jumpto_trial > length(data)
-            endstate.jumpto_trial = lenght(data);
+            endstate.jumpto_trial = length(data);
         end
         trials2track = endstate.jumpto_trial:length(data); % after Jump, if press Cont, just go in order after that
         itrial = 1;
