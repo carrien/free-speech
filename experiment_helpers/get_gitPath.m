@@ -3,11 +3,12 @@ function [repoPath] = get_gitPath(reponame)
 
 if nargin < 1, reponame = 'free-speech'; end
 
+% find path to repo via one of its functions
 switch reponame
     case 'free-speech'
-        mfilename = 'get_gitPath.m';
+        mfilename = 'get_gitPath.m'; % representative function from free-speech
     case 'current-studies'
-        mfilename = 'forcedAlignment.m';
+        mfilename = 'forcedAlignment.m'; % representative function from current-studies
     otherwise
         error('Unknown git repo "%s". Expected "free-speech" or "current-studies".',reponame)
 end
