@@ -291,13 +291,21 @@ else
             % Get a word/cond combo from your list of possible wordconds 
             try
                 trialWC = randsample(length(drawFrom), 1, true, drawWeights);                 
-                % Provision for not having adjacent trials across block boundaries either 
+                % Provision for not having adjacent trials across block boundaries either (because the draw weights are
+                % totally reset after a block is finished). 
                 if b > 1 && t == 1
-                    [wordIx, condIx] = find(wordCondTable == drawFrom(trialWC)); 
+                    previousTrial = experimentWordConds(end);                           % Get the unique word/cond from the last trial
+                    [wordIx, condIx] = find(wordCondTable == previousTrial);            % Find the other identifiers that share word/cond
                     matchedWC = [wordCondTable(wordIx,:) wordCondTable(:,condIx)']; 
                     
-                    while any(matchedWC == drawFrom(trialWC))
+                    ba = 1; 
+                    while any(matchedWC == drawFrom(trialWC))                           % Redraw the trialWC if it shares anything with the previous trial
                         trialWC = randsample(length(drawFrom), 1, true, drawWeights); 
+                        ba = ba+1; 
+                        if ba > 1000
+                            fprintf('Block %d starts with the same word or condition as Block %d. Could not resolve.', b, b-1); 
+                            break; % Safety release valve 
+                        end
                     end
                 end
             catch
