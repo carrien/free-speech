@@ -63,18 +63,7 @@ end
 endstate.name = '';
 itrial = 1;
 while ~strcmp(endstate.name, 'end')
-    if strcmp(endstate.name,'jump')
-        if endstate.jumpto_trial < 1 
-            endstate.jumpto_trial = 1;
-        elseif endstate.jumpto_trial > length(data)
-            endstate.jumpto_trial = length(data);
-        end
-        trials2track = endstate.jumpto_trial:length(data); % after Jump, if press Cont, just go in order after that
-        itrial = 1;
-    end
-
     trialNum = trials2track(itrial); % trialNum used during this loop
-    itrial = itrial + 1; % increment itrial for next loop
 
     %% prepare inputs
     y = data(trialNum).(buffertype);
@@ -181,6 +170,16 @@ while ~strcmp(endstate.name, 'end')
     
     if strcmp(endstate.name,'cont') && trialNum == trials2track(end) % finish if continued on final trial
         endstate.name = 'end';
+    end
+    
+    if strcmp(endstate.name, 'previous')
+        if itrial > 1
+            itrial = itrial - 1;
+        else
+            % if on 1st trial and press 'previous', just stay on 1st trial
+        end
+    else
+        itrial = itrial + 1;
     end
 end
 
