@@ -6,4 +6,6 @@ basePath = get_exptLoadPath;
 
 if strncmp(dataPath,basePath,length(basePath))
     shortDataPath = dataPath(length(basePath)+1:end);
+else
+    shortDataPath = dataPath;
 end
