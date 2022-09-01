@@ -97,68 +97,73 @@ tooManyEvents = [];
 
 for i = 1:length(sortedTrialnums)
     trialnum = sortedTrialnums(i);
-    filename = sortedFilenames{i};
-    load(fullfile(trialPath,filename), 'sigmat', 'trialparams');
-    
     try
-        numUserEvents = length(trialparams.event_params.user_event_times);
-    catch
-        numUserEvents = 0;
-    end
-    
-    try
-        bGoodTrial = trialparams.event_params.is_good_trial;
-    catch
-        bGoodTrial = 1; % if field doesn't exist, assume it's good
-    end
-    
-    if bGoodTrial
-        % get timing of events, either from user events or otherwise
-        if bMultiSegment
-            event_times = trialparams.event_params.user_event_times;
-            event_names = trialparams.event_params.user_event_names;
-        else
-            [event_times, event_names] = get_events(sigmat, trialparams, sigproc_params, eventMode, vowel_list, trialnum);
+        filename = sortedFilenames{i};
+        load(fullfile(trialPath,filename), 'sigmat', 'trialparams');
+
+        try
+            numUserEvents = length(trialparams.event_params.user_event_times);
+        catch
+            numUserEvents = 0;
         end
-        
-        % populate formant and signal data based on events
-        dataValsTrial = get_dataValsTrial_fromEvents(sigmat, event_times, event_names);
-        
-        % convert certain dataVals fields from cell to single instance array
-        if ~bMultiSegment && iscell(dataValsTrial.f0)
+
+        try
+            bGoodTrial = trialparams.event_params.is_good_trial;
+        catch
+            bGoodTrial = 1; % if field doesn't exist, assume it's good
+        end
+
+        if bGoodTrial
+            % get timing of events, either from user events or otherwise
+            if bMultiSegment
+                event_times = trialparams.event_params.user_event_times;
+                event_names = trialparams.event_params.user_event_names;
+            else
+                [event_times, event_names] = get_events(sigmat, trialparams, sigproc_params, eventMode, vowel_list, trialnum);
+            end
+
+            % populate formant and signal data based on events
+            dataValsTrial = get_dataValsTrial_fromEvents(sigmat, event_times, event_names);
+
+            % convert certain dataVals fields from cell to single instance array
+            if ~bMultiSegment && iscell(dataValsTrial.f0)
+                for field = {'f0' 'f1' 'f2' 'int' 'pitch_taxis' 'ftrack_taxis' 'ampl_taxis' 'dur' 'segment'}
+                    dataValsTrial.(field{:}) = dataValsTrial.(field{:}){:};
+                end
+            end
+
+            % tally short tracks
+            if ~bMultiSegment && (sum(~isnan(dataValsTrial.f0)) < 20 || sum(~isnan(dataValsTrial.f1)) < 20)
+                shortTracks = [shortTracks trialnum]; %#ok<*AGROW>
+            end
+
+            %warn about >= 2 user events if only expecting one
+            if numUserEvents > 2 && ~bMultiSegment && eventMode == 1
+                tooManyEvents = [tooManyEvents trialnum];
+                warning('Trial %d has %d user events when 2 or fewer were expected', trialnum, numUserEvents);
+            end
+        else
+            % if not a good trial, populate dataValsTrial fields with empty arr
             for field = {'f0' 'f1' 'f2' 'int' 'pitch_taxis' 'ftrack_taxis' 'ampl_taxis' 'dur' 'segment'}
-                dataValsTrial.(field{:}) = dataValsTrial.(field{:}){:};
+                dataValsTrial.(field{:}) = [];
             end
         end
-        
-        % tally short tracks
-        if ~bMultiSegment && (sum(~isnan(dataValsTrial.f0)) < 20 || sum(~isnan(dataValsTrial.f1)) < 20)
-            shortTracks = [shortTracks trialnum]; %#ok<*AGROW>
-        end
-        
-        %warn about >= 2 user events if only expecting one
-        if numUserEvents > 2 && ~bMultiSegment && eventMode == 1
-            tooManyEvents = [tooManyEvents trialnum];
-            warning('Trial %d has %d user events when 2 or fewer were expected', trialnum, numUserEvents);
-        end
-    else
-        % if not a good trial, populate dataValsTrial fields with empty arr
-        for field = {'f0' 'f1' 'f2' 'int' 'pitch_taxis' 'ftrack_taxis' 'ampl_taxis' 'dur' 'segment'}
-            dataValsTrial.(field{:}) = [];
-        end
-    end
-    
-    % add fields used in all modes
-    dataValsTrial.word = expt.allWords(trialnum);
-    if isfield(expt, 'allVowels'), dataValsTrial.vowel = expt.allVowels(trialnum); end
-    if isfield(expt, 'allColors'), dataValsTrial.color = expt.allColors(trialnum); end
-    if isfield(expt,'allConds'),   dataValsTrial.color = expt.allConds(trialnum);  end
-    dataValsTrial.token = trialnum;
-    dataValsTrial.bExcl = double(~bGoodTrial); %consider changing bExcl to a logical (rather than numeric) at some point
 
-    %now that dataValsTrial has all fields, can set as a row in dataVals
-    dataVals(i) = dataValsTrial;
-    clear dataValsTrial;
+        % add fields used in all modes
+        dataValsTrial.word = expt.allWords(trialnum);
+        if isfield(expt, 'allVowels'), dataValsTrial.vowel = expt.allVowels(trialnum); end
+        if isfield(expt, 'allColors'), dataValsTrial.color = expt.allColors(trialnum); end
+        if isfield(expt,'allConds'),   dataValsTrial.color = expt.allConds(trialnum);  end
+        dataValsTrial.token = trialnum;
+        dataValsTrial.bExcl = double(~bGoodTrial); %consider changing bExcl to a logical (rather than numeric) at some point
+
+        %now that dataValsTrial has all fields, can set as a row in dataVals
+        dataVals(i) = dataValsTrial;
+        clear dataValsTrial;
+    catch e
+        fprintf('\nError occurred during execution of trial %d\n\n', trialnum);
+        rethrow(e)
+    end
     
 end
 
