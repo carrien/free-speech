@@ -36,11 +36,13 @@ nElements = length(expt.(fieldName));
 defaultParams.plotColors = [0 .8 0;...
                     0 .2 1; ...
                     0 .8 .8; ...
-                    .8 0 0];
+                    .8 0 0; ...
+                    0 0 0];
 defaultParams.plotColorsShifted = .7*[0 .8 0;...
                     0 .2 1; ...
                     0 .8 .8; ...
-                    .8 0 0];                
+                    .8 0 0;
+                    0 0 0];                
 defaultParams.LineWidth = 1.5;
 defaultParams.MarkerSize = 15;
 defaultParams.MarkerSizeShifted = 20;
@@ -122,8 +124,8 @@ for iCond = 1:nConds
     end
     
 
-    inMarkers = {'s','o','d','^'};
-    outMarkers = {'x','*','+','.'};
+    inMarkers = {'s','o','d','^', 'd'};
+    outMarkers = {'x','*','+','.', '*'};
     labels = expt.conds;
     subplot(1,nConds,iCond)
     h_leg_obj = zeros(p.elemInds(end), 1);
