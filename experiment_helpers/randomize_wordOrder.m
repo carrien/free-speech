@@ -12,7 +12,14 @@ function allWords = randomize_wordOrder(nWords, nBlocks)
 % Due to the above rules, no word/number will ever appear on two trials in a row.
 %
 % The output of this function is made to be directly plugged into expt.allWords.
-
+% 
+% Input args: 
+% 
+%   1   nWords                  Number of unique words 
+% 
+%   2   nBlocks                 Total number of blocks that you want. One
+%                               block has each unique word once. 
+%
 % 2021 Lana Hantzsch init
 % 2021-09 Chris Naber documentation and generalization
 % 2022-03 Chris Naber generalize via changing input arguments
