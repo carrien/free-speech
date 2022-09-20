@@ -9,6 +9,8 @@ switch reponame
         mfilename = 'get_gitPath.m'; % representative function from free-speech
     case 'current-studies'
         mfilename = 'forcedAlignment.m'; % representative function from current-studies
+    case 'cerebellar-battery'
+        mfilename = 'run_cerebTimeAdapt_expt.m'; % Representative function from cerebellar-battery 
     otherwise
         error('Unknown git repo "%s". Expected "free-speech" or "current-studies".',reponame)
 end
