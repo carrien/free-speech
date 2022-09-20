@@ -1,4 +1,4 @@
-function errors = check_dataVals(dataPath,bCalc,buffertype,dataVals, folderSuffix)
+function errors = check_dataVals(dataPath,bCalc,buffertype,dataVals, folderSuffix, errorParams)
 %check formant data for errors and return trial numbers where errors are
 %detected. Types of errors:
 %             * jumpTrials in F1/F2 trajectory
@@ -19,6 +19,8 @@ function errors = check_dataVals(dataPath,bCalc,buffertype,dataVals, folderSuffi
 %                   folderSuffix: if not 'trials' folder, which folder to
 %                       pull trial files from in audioGUI. eg, 'transfer'
 %                       will use 'trials_transfer' folder.
+%                   errorParams: a struct of parameters used when
+%                       determining if a trial has any errors to be flagged.
 %
 % rewritten to include GUI JAN 2019
 
@@ -26,6 +28,14 @@ if nargin < 1 || isempty(dataPath), dataPath = pwd; end
 if nargin < 2 || isempty(bCalc), bCalc = 1; end
 if nargin < 3 || isempty(buffertype), buffertype = 'signalIn'; end
 if nargin < 5, folderSuffix = []; end
+if nargin < 6, errorParams = []; end
+
+% config errorParams
+defaultParams.shortThresh = 0.1; %less than 100 ms
+defaultParams.longThresh = 1; %longer than 1 second
+defaultParams.jumpThresh = 200; %in Hz, upper limit for sample-to-sample change to detect jumpTrials in F1 trajectory
+defaultParams.fishyFThresh = [200 1100]; %acceptable range of possible F1 values
+errorParams = set_missingFields(errorParams, defaultParams, 0);
 
 %% create GUI
 f = figure('Visible','on','Units','Normalized','Position',[.1 .1 .8 .8]);
@@ -35,6 +45,7 @@ UserData.dataPath = dataPath;
 UserData.f = f;
 UserData.buffertype = buffertype;
 UserData.folderSuffix = folderSuffix;
+UserData.errorParams = errorParams;
 
 %% create warning field in GUI
 UserData.xPosMax = 0.975;
@@ -138,12 +149,6 @@ function errors = get_dataVals_errors(UserData,dataVals)
     outstring = textwrap(UserData.warnText,{'Checking for errors'});
     set(UserData.warnPanel,'HighlightColor','yellow')
     set(UserData.warnText,'String',outstring)
-    
-    %set thresholds for errors
-    shortThresh = .1; %(<200 ms)
-    longThresh = 1; %(> 1 s)
-    jumpThresh = 200; %in Hz, upper limit for sample-to-sample change to detect jumpTrials in F1 trajectory
-    fishyFThresh = [200 1100]; %acceptable range of possible F1 values
 
     badTrials = [];
     shortTrials = [];
@@ -160,19 +165,18 @@ function errors = get_dataVals_errors(UserData,dataVals)
     for i = 1:length(dataVals)
         if dataVals(i).bExcl
             badTrials = [badTrials dataVals(i).token]; %#ok<*AGROW>
-        elseif dataVals(i).dur < shortThresh %check for too short trials
+        elseif dataVals(i).dur < UserData.errorParams.shortThresh %check for too short trials
             shortTrials = [shortTrials dataVals(i).token];
-        elseif dataVals(i).dur > longThresh %check for too long trials
+        elseif dataVals(i).dur > UserData.errorParams.longThresh %check for too long trials
             longTrials = [longTrials dataVals(i).token];
         elseif find(isnan(dataVals(i).f1(2:end))) %check if there are NaN values in formant tracks, excepting 1st sample
             nanFTrials = [nanFTrials dataVals(i).token];
-        elseif max(abs(diff(dataVals(i).f1)))>jumpThresh || max(abs(diff(dataVals(i).f2)))>jumpThresh %check for trials with F1/F2 jumps
-            if max(abs(diff(dataVals(i).f1)))>jumpThresh %check for trials with F1 jumps
-                jumpF1Trials = [jumpF1Trials dataVals(i).token];
-            elseif max(abs(diff(dataVals(i).f2)))>jumpThresh %check for trials with F2 jumps
-                jumpF2Trials = [jumpF2Trials dataVals(i).token];
-            end
-        elseif any(dataVals(i).f1 < fishyFThresh(1)) || any(dataVals(i).f1 > fishyFThresh(2)) %check if wrong formant is being tracked for F1
+        elseif max(abs(diff(dataVals(i).f1)))>UserData.errorParams.jumpThresh %check for trials with F1 jumps
+            jumpF1Trials = [jumpF1Trials dataVals(i).token];
+        elseif max(abs(diff(dataVals(i).f2)))>UserData.errorParams.jumpThresh %check for trials with F2 jumps
+            jumpF2Trials = [jumpF2Trials dataVals(i).token];
+        elseif any(dataVals(i).f1 < UserData.errorParams.fishyFThresh(1)) || ...
+                any(dataVals(i).f1 > UserData.errorParams.fishyFThresh(2)) %check if wrong formant is being tracked for F1
             fishyF1Trials = [fishyF1Trials dataVals(i).token];
         elseif dataVals(i).ampl_taxis(1) < .0001
             earlyTrials = [earlyTrials dataVals(i).token];
