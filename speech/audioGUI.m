@@ -60,27 +60,30 @@ if (exist(wvpfile,'file') == 2)
 end
 
 % loop through trials
-for itrial = trials2track
-    
+endstate.name = '';
+itrial = 1;
+while ~strcmp(endstate.name, 'end')
+    trialNum = trials2track(itrial); % trialNum used during this loop
+
     %% prepare inputs
-    y = data(itrial).(buffertype);
+    y = data(trialNum).(buffertype);
     
     %Skip trials where signalIn is empty
     if isempty(y)
-        fprintf('Trial %d has an empty signalIn field. Skipping for now.\n', itrial)
+        fprintf('Trial %d has an empty signalIn field. Skipping for now.\n', trialNum)
         continue;
     end
     
     if isfield([data.params],'fs')
-        fs = data(itrial).params.fs;
+        fs = data(trialNum).params.fs;
     else
-        fs = data(itrial).params.sr;
+        fs = data(trialNum).params.sr;
     end
     
     % if trial data exists, load event params and overwrite default params
-    savefile = fullfile(dataPath,trialfolder,sprintf('%d.mat',itrial));
+    savefile = fullfile(dataPath,trialfolder,sprintf('%d.mat',trialNum));
     if exist(savefile,'file')
-        load(savefile);
+        load(savefile); %#ok<LOAD> 
         if ~exist('sigmat','var'), sigmat = []; end % needed in case trial has been marked as bad but not analyzed yet
         if isfield(trialparams,'sigproc_params'), sigproc_params = trialparams.sigproc_params; else, sigproc_params = [];end
         if isfield(trialparams,'plot_params'), plot_params = trialparams.plot_params; else, plot_params = []; end
@@ -93,7 +96,7 @@ for itrial = trials2track
     end
     
     % if TextGrid exists (and isn't in event list), add TextGrid events
-    tgFilename = sprintf('AudioData_%d.TextGrid',itrial);
+    tgFilename = sprintf('AudioData_%d.TextGrid',trialNum);
     tgPath = fullfile(dataPath,'PostAlignment',tgFilename);
     if exist(tgPath,'file')
         if ~isfield(event_params,'user_event_names')
@@ -112,7 +115,7 @@ for itrial = trials2track
     if isempty(sigproc_params)
         if exist('wvp','var') % otherwise, use param file if it exists
             sigproc_params = wvp.sigproc_params;
-        elseif exist('endstate','var') % otherwise, use last trial's params
+        elseif exist('endstate','var') && isfield(endstate, 'sigproc_params') % otherwise, use last trial's params
             sigproc_params = endstate.sigproc_params;
         else % otherwise, get defaults
             sigproc_params = get_sigproc_defaults;
@@ -121,7 +124,7 @@ for itrial = trials2track
     if isempty(plot_params) %separate out where to look for plot_params and sigproc_params
         if exist('wvp','var') % otherwise, use param file if it exists
             plot_params = wvp.plot_params;
-        elseif exist('endstate','var') % otherwise, use last trial's params
+        elseif exist('endstate','var') && isfield(endstate, 'plot_params') % otherwise, use last trial's params
             plot_params = endstate.plot_params;
         else % otherwise, get defaults
             plot_params = get_plot_defaults;
@@ -145,7 +148,7 @@ for itrial = trials2track
     end
     
     %% call wave viewer
-    endstate = wave_viewer(y,'fs',fs,'name',sprintf('trial(%d)',itrial), ...
+    endstate = wave_viewer(y,'fs',fs,'name',sprintf('trial(%d)',trialNum), ...
         'nformants',2,'sigproc_params',sigproc_params, ...
         'plot_params',plot_params,'event_params',event_params,...
         'sigmat',sigmat);
@@ -165,7 +168,19 @@ for itrial = trials2track
     if bSaveCheck, bSave = savecheck(savefile); else, bSave = 1; end
     if bSave, save(savefile,'sigmat','trialparams'); end
     
-    if strcmp(endstate.name,'end'), break; end
+    if strcmp(endstate.name,'cont') && trialNum == trials2track(end) % finish if continued on final trial
+        endstate.name = 'end';
+    end
+    
+    if strcmp(endstate.name, 'previous')
+        if itrial > 1
+            itrial = itrial - 1;
+        else
+            % if on 1st trial and press 'previous', just stay on 1st trial
+        end
+    else
+        itrial = itrial + 1;
+    end
 end
 
 % save param file

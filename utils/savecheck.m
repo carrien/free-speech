@@ -4,16 +4,47 @@ function [bSave] = savecheck(savefile,ftype)
 if nargin < 2, ftype = 'file'; end
 
 if exist(savefile, ftype)
-    messg = sprintf('The %s %s exists.  Do you want to overwrite?',ftype,savefile);
-    button = questdlg(messg,'File exists','Overwrite','Cancel','Cancel');
-    
-    switch button
+    % setup for question box
+    dlgOpts.Default = 'Cancel';
+    dlgOpts.Interpreter = 'tex';
+    [path, name, extension] = fileparts(savefile);
+    path = strrep(path, '\', '/');
+
+    % escape tex special characters
+    path = addTexEscapeChars(path);
+    name = addTexEscapeChars(name);
+    extension = addTexEscapeChars(extension);
+
+    colored_nameExt = sprintf('%s%s%s%s', '\color{blue}', name, extension, '\color{black}');
+
+    % uses TeX formatting to change color and font size. See questdlg
+    % documentation for help.
+    messg = sprintf('%sThere is already a %s named %s here:\n\n%s\n\nDo you want to overwrite %s?', ...
+        '\fontsize{10}', ftype, colored_nameExt, path, colored_nameExt);
+
+    % present the question box
+    response = questdlg(messg,'File exists','Overwrite','Cancel', dlgOpts);
+
+    switch response
         case 'Overwrite'
             bSave = 1;
         case 'Cancel'
             bSave = 0;
     end
-    
-else bSave = 1;
-    
+
+else % file doesn't exist; nothing to overwrite; safe to save
+    bSave = 1;
+
 end
+
+
+    function text = addTexEscapeChars(text) % escape characters that would otherwise be considered tex commands
+    specialChars = {'#' '$' '%' '&' '_' '{' '}'};
+    for char = specialChars
+        text = strrep(text, char{1}, sprintf('%s%s', '\', char{1}));
+    end
+
+    end
+
+
+end %EOF
