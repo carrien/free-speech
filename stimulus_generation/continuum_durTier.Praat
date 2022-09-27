@@ -11,13 +11,13 @@ form Choose directory to save files and step information
 	text wordTag buSZ_
 
 	comment How long (in ms) do you want the shortest duration to be? 
-	integer firstStep 100
+	positive firstStep 100
 
 	comment How long (in ms) do you want the longest duration to be?
-	integer lastStep 250
+	positive lastStep 250
 
 	comment How big (in ms) should the step size be between durations? 
-	integer stepSize 20
+	real stepSize 20
 
 endform
 
