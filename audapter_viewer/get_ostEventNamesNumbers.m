@@ -151,7 +151,7 @@ elseif strcmp(trackingFileDir, 'cerebTimeAdapt')
     triggerNo = 2; 
     triggerName = eventNames{triggerNo == eventNos};
     
-elseif strcmp(trackingFileDir, 'taimComp')
+elseif contains(trackingFileDir, 'taimComp')
     if strcmp(trackingFileName, 'buyYogurt')
         eventNames = {'eiStart', 'bStart', 'aiStart', 'gStart' 'erStart'};
         triggerNo = 6;
