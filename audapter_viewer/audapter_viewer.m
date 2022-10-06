@@ -200,7 +200,7 @@ bTheseOstRecalculated = 1;
 
 % For tooltips on the OST status lines 
 p.eventNumbers = str2double(ostList); 
-p.eventNames = get_ostEventNamesNumbers_timeAdapt(trackingFileDir, trackingFileName, p.eventNumbers, 1, 0, 0); 
+p.eventNames = get_ostEventNamesNumbers(trackingFileDir, trackingFileName, p.eventNumbers, 1, 0, 0); 
 p.ostMultiplier = round((6000/(max(p.eventNumbers)+2))/10)*10; % In the future this should be changed so there are many y axes, but this works okay for now
 
 %% PCF-related stuff
