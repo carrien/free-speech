@@ -146,12 +146,12 @@ elseif strcmp(trackingFileDir, 'timeWrap')
         triggerName = eventNames{triggerNo == eventNos};
     end
     
-elseif contains(trackingFileDir, 'cerebTimeAdapt')
+elseif any(strcmp(strsplit(trackingFileDir, filesep), 'cerebTimeAdapt'))
     eventNames = {'vStart' 'sStart' 'tStart' 'tEnd'}; 
     triggerNo = 2; 
     triggerName = eventNames{triggerNo == eventNos};
     
-elseif contains(trackingFileDir, 'taimComp')
+elseif any(strcmp(strsplit(trackingFileDir, filesep), 'taimComp'))
     if strcmp(trackingFileName, 'buyYogurt')
         eventNames = {'eiStart', 'bStart', 'aiStart', 'gStart' 'erStart'};
         triggerNo = 6;
