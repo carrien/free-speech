@@ -153,12 +153,12 @@ elseif any(strcmp(strsplit(trackingFileDir, filesep), 'cerebTimeAdapt'))
     
 elseif any(strcmp(strsplit(trackingFileDir, filesep), 'taimComp'))
     if strcmp(trackingFileName, 'buyYogurt')
-        eventNames = {'eiStart', 'bStart', 'aiStart', 'gStart' 'erStart'};
+        eventNames = {'wiStart', 'bStart', 'aiStart', 'gStart'};
         triggerNo = 6;
         triggerName = eventNames{triggerNo == eventNos};
     else
         % only file names are "sigh" and "side", and they both map the same
-        eventNames = {'uStart', 'sStart', 'aiStart', 'dClosure'};
+        eventNames = {'wiStart', 'bgStart', 'aiStart', 'dClosure'};
         triggerNo = 6;
         triggerName = eventNames{triggerNo == eventNos};
     end
