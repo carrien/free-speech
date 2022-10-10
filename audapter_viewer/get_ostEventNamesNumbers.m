@@ -153,7 +153,7 @@ elseif any(strcmp(strsplit(trackingFileDir, filesep), 'cerebTimeAdapt'))
     
 elseif any(strcmp(strsplit(trackingFileDir, filesep), 'taimComp'))
     if strcmp(trackingFileName, 'buyYogurt')
-        eventNames = {'wiStart', 'bStart', 'aiStart', 'gStart'};
+        eventNames = {'wiStart', 'bStart', 'aiStart', 'gStart'}; %{'wiStart', 'wait', 'bStart', 'aiStart', 'wait', 'dStart'};
         triggerNo = 6;
         triggerName = eventNames{triggerNo == eventNos};
     else
