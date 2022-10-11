@@ -38,7 +38,8 @@ fprintf('Done\n');
 
 params = expt.audapterParams;
 
-% Get the prefix of the ost file (often the stimulus word itself)
+% Get the prefix of the ost file (often the stimulus word itself) 
+% RPK NOTE 10/11/2022: I am not sure why we are using stimWord instead of trackingFileName? 
 switch expt.name
     case 'dipSwitch'
         stimWord = expt.words{expt.round};
@@ -46,8 +47,7 @@ switch expt.name
         stimWord = 'pedXXX';
     case 'simonMultisyllable_v2'
         stimWord = 'sevXXX';
-    case 'taimComp'
-        
+
     otherwise
         stimWord = expt.listWords{1}; % works for timeAdapt and timeAdapt variants
 end
@@ -68,14 +68,17 @@ ostFactor = fs/frameLength;
 % time. See gen_ostUserEvents_multiOst.m for example wrapper function.
 if isfield(expt, 'trackingFileName')
     if iscell(expt.trackingFileName)
-        expt.trackingFileName = expt.trackingFileName{1}; 
+        trackingFileName = expt.trackingFileName{1}; 
+        if length(expt.trackingFileName) > 1
+            fprintf('More than one tracking file is supplied. Using ''%s''.\n', trackingFileName); 
+        end
     else
-        expt.trackingFileName = expt.trackingFileName;
+        trackingFileName = expt.trackingFileName;
     end
 elseif isfield(expt, 'name') && strcmp(expt.name, 'timeAdapt')
-    expt.trackingFileName = expt.listWords{1};
+    trackingFileName = expt.listWords{1};
 else
-    expt.trackingFileName = 'measureFormants';
+    trackingFileName = 'measureFormants';
 end
 
 % Reset OST file to how it was when the experiment ran
@@ -84,83 +87,14 @@ set_subjOstParams_auto(expt, data);
 %% Set up OST recognition 
 % Pre-defined available events for stimulus words. Covers "capper" and "a capper" types. 
 if isfield(expt, 'trackingFileLoc')
-    [ost.eventNames,ost.events] = get_ostEventNamesNumbers(expt.trackingFileLoc,expt.trackingFileName,events,1,1); 
-    triggerName = get_ostEventNamesNumbers(expt.trackingFileLoc,expt.trackingFileName,{'trigger'},1,0); 
+    [ost.eventNames,ost.events] = get_ostEventNamesNumbers(expt.trackingFileLoc,trackingFileName,events,1,1); 
+    triggerName = get_ostEventNamesNumbers(expt.trackingFileLoc,trackingFileName,{'trigger'},1,0); 
 else
     [ost.eventNames,ost.events] = get_ostEventNamesNumbers([],stimWord,events,1,1); 
     triggerName = get_ostEventNamesNumbers([],stimWord,{'trigger'},1,0); 
 end
 
 ost.trigger = triggerName{1}; 
-
-% Deprecated now, work done by calling get_ostEventNamesNumber_timeAdapt
-% 
-% if strcmp(stimWord,'capper')
-%     eventNos = str2double(get_ost(expt.name, stimWord, 'list')); 
-%     possibleEvents = {'v1Start' 'cStart' 'cBurst' 'v2Start' 'pStart' 'erStart' 'erEnd'}; 
-%     eventNames = possibleEvents(end-(length(eventNos) - 1):end); 
-%     triggerNo = get_pcf(expt.name,stimWord,'ostStat_initial'); 
-%     triggerName = eventNames{triggerNo == eventNos}; 
-%     ost.trigger = triggerName;      
-% elseif strcmp(stimWord, 'gapper') 
-%     eventNos = str2double(get_ost(expt.name, stimWord, 'list'));
-%     possibleEvents = {'v1Start' 'cStart' 'cBurst' 'v2Start' 'pStart' 'erStart' 'erEnd'}; 
-%     eventNames = possibleEvents(end-(length(eventNos) - 1):end); 
-%     triggerNo = get_pcf(expt.name,stimWord,'ostStat_initial'); 
-%     triggerName = eventNames{triggerNo == eventNos}; 
-%     ost.trigger = triggerName;       
-% elseif strcmp(stimWord, 'sapper')
-%     eventNos = str2double(get_ost(expt.name, stimWord, 'list'));
-%     possibleEvents = {'v1Start' 'cStart' 'v2Start' 'pStart' 'erStart' 'erEnd'}; 
-%     eventNames = possibleEvents(end-(length(eventNos) - 1):end); 
-%     triggerNo = get_pcf(expt.name,stimWord,'ostStat_initial'); 
-%     triggerName = eventNames{triggerNo == eventNos}; 
-%     ost.trigger = triggerName;           
-% elseif strcmp(stimWord, 'zapper')
-%     eventNos = str2double(get_ost(expt.name, stimWord, 'list'));
-%     possibleEvents = {'v1Start' 'cStart' 'v2Start' 'pStart' 'erStart' 'erEnd'}; 
-%     eventNames = possibleEvents(end-(length(eventNos) - 1):end); 
-%     triggerNo = get_pcf(expt.name,stimWord,'ostStat_initial'); 
-%     triggerName = eventNames{triggerNo == eventNos}; 
-%     ost.trigger = triggerName; 
-% else 
-%     warning('Using default stimulus word events\n')
-%     eventNos = get_ost(expt.name,stimWord,'list'); 
-%     eventNames = cell(1,length(eventNos)); 
-%     for i = 1:length(eventNos)
-%         eventNames{i} = ['ost' num2str(eventNos(i))];
-%     end
-%     triggerNo = get_pcf(expt.name,stimWord,'ostStat_initial'); 
-%     triggerName = eventNames{triggerNo == eventNos}; 
-% end
-% 
-% % Integrate "events" arg 
-% if nargin < 2 || isempty(events), events = eventNos; end
-% % Check that the specified events actually exist in the list
-% if iscell(events) % If you input event names
-%     % Check for "trigger" and convert if exists
-%     if ismember('trigger',events)
-%         events{strcmp('trigger',events)} = triggerName; 
-%     end    
-%     badEvents = events(~ismember(events,eventNames)); 
-%     events = events(ismember(events,eventNames)); 
-%     if ~isempty(badEvents)
-%         warning('Event(s) %s ignored (does not exist for word)\n', [sprintf('%s, ', badEvents{1:end-1}), badEvents{end}])
-%     end
-%     ost.events = eventNos(ismember(eventNames,events)); 
-%     ost.eventNames = eventNames(ismember(eventNames,events)); % This does the job of sorting 
-% else % If you input(ted?) event numbers 
-%     badEvents = events(~ismember(events,eventNos)); 
-%     events = events(ismember(events,eventNos));
-%     if ~isempty(badEvents)
-%         badEvents = num2cell(badEvents); 
-%         warning('Event(s) %s ignored (does not exist for word)\n', [sprintf('%d, ', badEvents{1:end-1}), num2str(badEvents{end})])
-%     end
-%     ost.events = eventNos(ismember(eventNos,events));
-%     ost.eventNames = eventNames(ismember(eventNos,events)); 
-% end
-% *** end deprecation
-
 nEvents = length(ost.events); 
 
 % Define working OST file
@@ -171,17 +105,13 @@ elseif isfield(expt,'trackingFileLoc')
 else
     trackingPath = get_exptRunpath(expt.name); 
 end
-if isfield(expt,'trackingFileName')
-    trackingName = expt.trackingFileName; 
-else
-    trackingName = stimWord; 
-end
-ostFN = fullfile(trackingPath,[trackingName 'Working.ost']);
-pcfFN = fullfile(trackingPath,[trackingName 'Working.pcf']);
+
+ostFN = fullfile(trackingPath,[trackingFileName 'Working.ost']);
+pcfFN = fullfile(trackingPath,[trackingFileName 'Working.pcf']);
 
 % If a working copy doesn't exist, make one
 if exist(ostFN,'file') ~= 2
-    refreshWorkingCopy(trackingPath,trackingName,'ost');
+    refreshWorkingCopy(trackingPath,trackingFileName,'ost');
 end
 
 % Open file and load file line by line into structure finfo
