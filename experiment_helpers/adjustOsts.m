@@ -122,12 +122,6 @@ elseif isfield(exptOst, 'trackingFileLoc')
 end
 
 ostPath = get_trackingFilePath(trackingFileDir, trackingFileName); 
-% if strcmp(trackingFileDir, 'experiment_helpers')
-%     ostPath = 'C:\Users\Public\Documents\software\free-speech\experiment_helpers\'; 
-% else
-%     ostPath = get_exptRunpath(trackingFileDir); 
-% end
-
 ostWorking = fullfile(ostPath, [trackingFileName 'Working.ost']); 
  
 

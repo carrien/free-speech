@@ -54,10 +54,6 @@ if isnumeric(eventNum); eventNum = num2str(eventNum); end
 % want to change them
 if length(varargin) < 1 
    editParam = askNChoiceQuestion('What are you trying to edit?', {'heuristic' 'param1' 'param2' 'param3'}); 
-   %input('What are you trying to edit? (heuristic, param1, param2): ', 's');
-%    while ~any(strcmp(editParam,{'heuristic','param1','param2'}))
-%        editParam = input('Invalid choice. Please enter heuristic/param1/param2: ','s');
-%    end
    params = strsplit(editParam, ','); 
    if any(strcmp(params,'heuristic'))
        newHeurValue = input('What would you like as the new heuristic? ', 's'); 
@@ -104,19 +100,6 @@ try newParam3Value = varargin{4}; catch; end
 % this function.
 % Get the name of the OST, take out any .ost extensions if they exist
 trackingPath = get_trackingFilePath(audFileDir, audFileName); 
-
-% if strcmp(audFileDir, 'experiment_helpers') || strcmp(audFileName, 'measureFormants')
-%     trackingPath = fullfile(get_gitPath('free-speech'), 'experiment_helpers'); 
-% elseif isfolder(audFileDir) %if audFileDir was provided as full path
-%     if contains(audFileDir,'/') || contains(audFileDir,'\')
-%         trackingPath = audFileDir;
-%     else
-%         trackingPath = fullfile(get_gitPath('current-studies'), audFileDir);
-%     end
-% else
-%     trackingPath = fullfile(get_gitPath('current-studies'), audFileDir); 
-% end
-
 ostFile = fullfile(trackingPath,[audFileName 'Working.ost']);
 
 % If a working copy doesn't exist, make one

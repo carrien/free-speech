@@ -53,17 +53,6 @@ end
 
 % Get the name of the OST, take out any .ost extensions if they exist
 trackingPath = get_trackingFilePath(audFileLoc, audFileName); 
-% if strcmp(audFileLoc, 'experiment_helpers') || strcmp(audFileName, 'measureFormants')
-%     trackingPath = fullfile(get_gitPath('free-speech'), 'experiment_helpers'); 
-% elseif isfolder(audFileLoc)
-%     if contains(audFileLoc,'/') || contains(audFileLoc,'\') %ie is a full filepath already
-%         trackingPath = audFileLoc;
-%     else
-%         trackingPath = fullfile(get_gitPath('current-studies'), audFileLoc);
-%     end
-% else
-%     trackingPath = fullfile(get_gitPath('current-studies'), audFileLoc); 
-% end
 
 pcfFN = fullfile(trackingPath,[audFileName 'Working.pcf']); 
 ostFN = fullfile(trackingPath,[audFileName 'Working.ost']);

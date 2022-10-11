@@ -93,19 +93,6 @@ if nargin < 3 || isempty(timeSpace), timeSpace = 'time'; end
 % Call refreshWorkingCopy from the source function if needed before calling
 % this function.
 trackingPath = get_trackingFilePath(audFileDir, audFileName); 
-
-% if strcmp(audFileName, 'measureFormants') || strcmp(audFileDir, 'experiment_helpers') % So theoretically you could be doing some OTHER PCF file that is in experiment_helpers
-%     trackingPath = fullfile(get_gitPath('free-speech'), audFileDir); % could potentially hard-code this to experiment_helpers but... 
-% elseif isfolder(audFileDir)
-%     if contains(audFileDir,'/') || contains(audFileDir,'\')
-%         trackingPath = audFileDir;
-%     else
-%         trackingPath = fullfile(get_gitPath('current-studies'), audFileDir);
-%     end
-% else
-%     trackingPath = fullfile(get_gitPath('current-studies'), audFileDir); % ['C:\Users\Public\Documents\software\current-studies\' audFileLoc]; 
-% end
-
 pcfName = [audFileName 'Working.pcf']; 
 pcfFile = fullfile(trackingPath,pcfName);
 
