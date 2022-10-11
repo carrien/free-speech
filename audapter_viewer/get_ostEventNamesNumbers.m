@@ -157,7 +157,7 @@ elseif any(strcmp(strsplit(trackingFileDir, filesep), 'taimComp'))
         triggerNo = 6;
         triggerName = eventNames{triggerNo == eventNos};
     else
-        % only file names are "sigh" and "side", and they both map the same
+        % the other one is Daid (takes care of both words) 
         eventNames = {'wiStart', 'bStart', 'aiStart', 'dStart'};
         triggerNo = 6;
         triggerName = eventNames{triggerNo == eventNos};

@@ -56,18 +56,18 @@ if nargin < 4 || isempty(masterWorking), masterWorking = 'working'; end
 if isnumeric(eventNum); eventNum = num2str(eventNum); end
 
 %% Grab necessary info from OST file
-
-if strcmp(audFileDir, 'experiment_helpers') || strcmp(audFileName, 'measureFormants')
-    trackingPath = fullfile(get_gitPath('free-speech'), 'experiment_helpers'); 
-elseif isfolder(audFileDir)
-    if contains(audFileDir,'/') || contains(audFileDir,'\')
-        trackingPath = audFileDir;
-    else
-        trackingPath = fullfile(get_gitPath('current-studies'), audFileDir);
-    end
-else
-    trackingPath = fullfile(get_gitPath('current-studies'), audFileDir); 
-end
+trackingPath = get_trackingFilePath(audFileDir, audFileName); 
+% if strcmp(audFileDir, 'experiment_helpers') || strcmp(audFileName, 'measureFormants')
+%     trackingPath = fullfile(get_gitPath('free-speech'), 'experiment_helpers'); 
+% elseif isfolder(audFileDir)
+%     if contains(audFileDir,'/') || contains(audFileDir,'\')
+%         trackingPath = audFileDir;
+%     else
+%         trackingPath = fullfile(get_gitPath('current-studies'), audFileDir);
+%     end
+% else
+%     trackingPath = fullfile(get_gitPath('current-studies'), audFileDir); 
+% end
 
 switch masterWorking
     case 'master' 

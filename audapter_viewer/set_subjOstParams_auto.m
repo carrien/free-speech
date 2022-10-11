@@ -42,12 +42,8 @@ if nargin < 4 || isempty(ostTrial)
         ostTrial = 1;
     end
 end
-    
-
 
 %% Setup to determine how to call set_subjOstParams
-
-
 % file directory
 if isfield(expt, 'trackingFileDir')
     fileDir = expt.trackingFileDir;
@@ -61,7 +57,11 @@ end
 
 % file name
 if isfield(expt, 'trackingFileName')
-    fileName = expt.trackingFileName;
+    if iscell(expt.trackingFileName) && length(expt.trackingFileName) > 1
+        fileName = expt.trackingFileName{1}; 
+    else
+        fileName = expt.trackingFileName;
+    end
 elseif isfield(expt, 'name') && strcmp(expt.name, 'timeAdapt')
     fileName = expt.listWords{1};
 else

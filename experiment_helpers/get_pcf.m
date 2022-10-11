@@ -80,21 +80,21 @@ if nargin < 4 || isempty(ostStatus)
 end
 
 %% File and editing information
-
-if strcmp(audFileName, 'measureFormants') || strcmp(audFileDir, 'experiment_helpers') % So theoretically you could be doing some OTHER PCF file that is in experiment_helpers
-    exptDir = fullfile(get_gitPath('free-speech'), audFileDir); % could potentially hard-code this to experiment_helpers but... 
-elseif isfolder(audFileDir)
-    if contains(audFileDir,'/') || contains(audFileDir,'\')
-        exptDir = audFileDir;
-    else
-        exptDir = fullfile(get_gitPath('current-studies'), audFileDir);
-    end
-else
-    exptDir = fullfile(get_gitPath('current-studies'), audFileDir); % ['C:\Users\Public\Documents\software\current-studies\' audFileLoc]; 
-end
+trackingPath = get_trackingFilePath(audFileDir, audFileName); 
+% if strcmp(audFileName, 'measureFormants') || strcmp(audFileDir, 'experiment_helpers') % So theoretically you could be doing some OTHER PCF file that is in experiment_helpers
+%     trackingPath = fullfile(get_gitPath('free-speech'), audFileDir); % could potentially hard-code this to experiment_helpers but... 
+% elseif isfolder(audFileDir)
+%     if contains(audFileDir,'/') || contains(audFileDir,'\')
+%         trackingPath = audFileDir;
+%     else
+%         trackingPath = fullfile(get_gitPath('current-studies'), audFileDir);
+%     end
+% else
+%     trackingPath = fullfile(get_gitPath('current-studies'), audFileDir); % ['C:\Users\Public\Documents\software\current-studies\' audFileLoc]; 
+% end
 
 pcfName = [audFileName 'Working.pcf']; 
-pcfFile = fullfile(exptDir,pcfName);
+pcfFile = fullfile(trackingPath,pcfName);
 
 % If a working copy doesn't exist, make one
 if exist(pcfFile,'file') ~= 2
