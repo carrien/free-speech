@@ -6,6 +6,8 @@ function run_passageReading()
 % Intended to be used for experiments like cerebAAF and adaptRetest, where
 %   the participant is reading the "rainbow" passage or something similar
 %   and hearing their own speech with unaltered feedback.
+%
+% The speaker's speech is not saved in any way.
 
 % 2022-?? Ben Parrell wrote initial code
 % 2022-10 Chris Naber split out to own function and updated.
@@ -37,9 +39,6 @@ Audapter('pcf', '', 0);
 
 % set audapter params
 p = getAudapterDefaultParams('female'); % get default params. Gender doesn't matter b/c not perturbing
-p.bShift = 1;
-p.bRatioShift = 0;
-p.bMelShift = 1;
 
 % set noise
 w = get_noiseSource(p);
