@@ -83,7 +83,7 @@ dbstop if error
 
 %% Set up argument defaults, basic information
 
-if nargin < 1 || isempty(audFileDir), audFileDir = 'experiment_helpers'; end % this will have to be updated whenever we decide where to put measureFormantsWorking.pcf
+if nargin < 1 || isempty(audFileDir), audFileDir = 'experiment_helpers'; end 
 if nargin < 2 || isempty(audFileName), audFileName = 'measureFormants'; end
 if nargin < 3 || isempty(timeSpace), timeSpace = 'time'; end
 
@@ -92,21 +92,9 @@ if nargin < 3 || isempty(timeSpace), timeSpace = 'time'; end
 % CWN 9/11/19 Note that this function only edits the Working copy of an OST.
 % Call refreshWorkingCopy from the source function if needed before calling
 % this function.
-
-if strcmp(audFileName, 'measureFormants') || strcmp(audFileDir, 'experiment_helpers') % So theoretically you could be doing some OTHER PCF file that is in experiment_helpers
-    exptDir = fullfile(get_gitPath('free-speech'), audFileDir); % could potentially hard-code this to experiment_helpers but... 
-elseif isfolder(audFileDir)
-    if contains(audFileDir,'/') || contains(audFileDir,'\')
-        exptDir = audFileDir;
-    else
-        exptDir = fullfile(get_gitPath('current-studies'), audFileDir);
-    end
-else
-    exptDir = fullfile(get_gitPath('current-studies'), audFileDir); % ['C:\Users\Public\Documents\software\current-studies\' audFileLoc]; 
-end
-
+trackingPath = get_trackingFilePath(audFileDir, audFileName); 
 pcfName = [audFileName 'Working.pcf']; 
-pcfFile = fullfile(exptDir,pcfName);
+pcfFile = fullfile(trackingPath,pcfName);
 
 % If a working copy doesn't exist, make one
 if exist(pcfFile,'file') ~= 2

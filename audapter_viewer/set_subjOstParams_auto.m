@@ -42,12 +42,8 @@ if nargin < 4 || isempty(ostTrial)
         ostTrial = 1;
     end
 end
-    
-
 
 %% Setup to determine how to call set_subjOstParams
-
-
 % file directory
 if isfield(expt, 'trackingFileDir')
     fileDir = expt.trackingFileDir;
@@ -61,21 +57,28 @@ end
 
 % file name
 if isfield(expt, 'trackingFileName')
-    fileName = expt.trackingFileName;
+    if iscell(expt.trackingFileName) 
+        if length(expt.trackingFileName) > 1
+            % If you have more than one tracking file in an expt, then you'll have to figure out which one you're using
+            % Get the word number that was used for ostTrial
+            wordInTrial = expt.allWords(ostTrial); 
+            % Use that number to get the corresponding OST filename
+            fileName = expt.trackingFileName{wordInTrial};             
+            fprintf('Setting OST based on file name ''%s'' and ostTrial = %d\n', fileName, ostTrial); 
+        end
+    else
+        fileName = expt.trackingFileName{1}; % This just translates it to a string 
+    end
 elseif isfield(expt, 'name') && strcmp(expt.name, 'timeAdapt')
+    % timeAdapt is an experiment that did not have trackingFileName but still used different OST files for different
+    % conditions
     fileName = expt.listWords{1};
 else
     fileName = 'measureFormants';
 end
-
-% for experiments with multiple OSTs, pick which OST file name to use
-if iscell(fileName)
-    fileName = expt.listWords{ostTrial};
-    fprintf('Setting OST based on file name ''%s'' and ostTrial = %d\n', fileName, ostTrial);  %#ok<PFCEL>
-end
     
 %% actual calls to set_subjOstParams
-if bData &&     isfield(data, 'calcSubjOstParams') && ~isempty(data(ostTrial).calcSubjOstParams)
+if bData && isfield(data, 'calcSubjOstParams') && ~isempty(data(ostTrial).calcSubjOstParams)
     set_subjOstParams(fileDir, fileName, data(ostTrial), 'calc');
     methodUsed = 'data.calcSubjOstParams';
     
