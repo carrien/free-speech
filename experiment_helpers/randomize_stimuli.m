@@ -310,20 +310,43 @@ else
                 end
             catch
                 % Catch statement is because sometimes you will hit a bad sequence and you won't have any good options left
-                % Reset trial counter, 
-                t = 1; 
-                blockWordConds = zeros(1,expt.ntrials_per_block);                               % Empty out the block vector, 
-                
-                % Reset the weights, 
-                wordCondReps = preserveWordCondReps;                                                  % Reset to original repetitions for each block 
-                weights = reshape(wordCondReps, 1, []);                                          % Flatten for not having to sum everything
-                drawWeights = weights/sum(weights);        
-                
                 % Escape hatch for infinite loops                
                 if attempts > maxAttempts
-                    warning('I''ve tried block %d too many times. I''m going to use the last attempted order but you might have an incomplete block.\n', b) % ***** TODO MAKE THIS BETTER 
+                    % Reset trial counter, 
+                    warning('I''ve tried block %d too many times. I''m going to use the last attempted order, plus a random permutation of the remaining conditions.\n', b) % ***** TODO MAKE THIS BETTER 
+
+                    % find the leftover conditions
+                    wc2use = []; 
+                    leftovers = find(wordCondReps); 
+                    for l = 1:length(leftovers)
+                        % Get as many repetitions of the leftover conditions as you need 
+                        leftover = leftovers(l); 
+                        leftoverCount = wordCondReps(leftover); 
+                        wc2use = [wc2use repmat(wordCondTable(leftover), 1, leftoverCount)]; % Get as many repetitions of that word/cond that are left over 
+                    end
+
+                    % Make a random permutation of the leftover conditions
+                    fprintf('The last %d trials of block %d may fail strict adjacency requirements.\n', length(wc2use), b); 
+                    randomLeftoverIx = randperm(length(wc2use)); 
+                    randomLeftovers = wc2use(randomLeftoverIx); 
+
+                    % Tack those onto the end of the blockWordConds vector
+                    startRandpermIx = length(blockWordConds) - length(wc2use) + 1; 
+                    blockWordConds(startRandpermIx:end) = randomLeftovers; 
+
+                    % Put this block on experimentWordConds
                     experimentWordConds = [experimentWordConds blockWordConds]; 
                     break; % Don't try this block anymore
+                else
+                    % If it isn't working but you haven't hit max reps yet 
+                    t = 1;                                                                          % Reset trial counter 
+                    blockWordConds = zeros(1,expt.ntrials_per_block);                               % Empty out the block vector, 
+                    
+                    % Reset the weights, 
+                    wordCondReps = preserveWordCondReps;                                            % Reset to original repetitions for each block 
+                    weights = reshape(wordCondReps, 1, []);                                         % Flatten for not having to sum everything
+                    drawWeights = weights/sum(weights);                       
+
                 end
                 attempts = attempts+1; % 
                 continue; % Try this block one more time 
