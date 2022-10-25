@@ -65,9 +65,11 @@ if isfield(expt, 'trackingFileName')
             % Use that number to get the corresponding OST filename
             fileName = expt.trackingFileName{wordInTrial};             
             fprintf('Setting OST based on file name ''%s'' and ostTrial = %d\n', fileName, ostTrial); 
+        else
+            fileName = expt.trackingFileName{1}; % This just translates it to a string 
         end
     else
-        fileName = expt.trackingFileName{1}; % This just translates it to a string 
+        fileName = expt.trackingFileName; % This just translates it to a string 
     end
 elseif isfield(expt, 'name') && strcmp(expt.name, 'timeAdapt')
     % timeAdapt is an experiment that did not have trackingFileName but still used different OST files for different
