@@ -56,6 +56,7 @@ function [expt] = randomize_stimuli(expt, nTrialsPerPert, nTrialsPerNonpert, nBa
 %
 % CWN v1 2021-01
 % RPK added bAlternatePnp flag 2022-07-28
+% RPK changed how failures work in non-alternating sequences 2022-10-25 
 
 
 %% Requirements for this pseudorandomization procedure:
@@ -118,10 +119,10 @@ guard against infinite loops where it will only attempt to order a block ntrials
 few different parameters in the reasonable block size range, I don't tend to surpass 10 attempts or 50 at the higher end, so 
 anything beyond 1000*ntrials_per_block is likely to be very difficult/mathematically impossible)
 
-If you do surpass the maximum number of attempts, the block will get put into the experiment-wide vector of unique trial
-types. It will have zeros instead of actual numbers in the trials that could not be solved. (Future option is to check if
-there was a previous block that DID work and use that if so, but as mentioned, surpassing 1000*ntrials attempts is not a
-great sign so there might not be any successful ones at all)
+If you do surpass the maximum number of attempts, the remainder of the block will be filled out with a random permutation of
+the remaining conditions. You will get a warning that the block has been attempted too many times and which trials may have
+an adjacency issue. If this is occurring frequently, something may be wrong with your settings---in testing on taimComp with
+5x3 conds x words per block, the correct permutation was found on the first try 13/20 times. (Change added RK 10/25/2022) 
 
 %}
 
@@ -310,20 +311,43 @@ else
                 end
             catch
                 % Catch statement is because sometimes you will hit a bad sequence and you won't have any good options left
-                % Reset trial counter, 
-                t = 1; 
-                blockWordConds = zeros(1,expt.ntrials_per_block);                               % Empty out the block vector, 
-                
-                % Reset the weights, 
-                wordCondReps = preserveWordCondReps;                                                  % Reset to original repetitions for each block 
-                weights = reshape(wordCondReps, 1, []);                                          % Flatten for not having to sum everything
-                drawWeights = weights/sum(weights);        
-                
                 % Escape hatch for infinite loops                
                 if attempts > maxAttempts
-                    warning('I''ve tried block %d too many times. I''m going to use the last attempted order but you might have an incomplete block.\n', b) % ***** TODO MAKE THIS BETTER 
+                    % Reset trial counter, 
+                    warning('I''ve tried block %d too many times. I''m going to use the last attempted order, plus a random permutation of the remaining conditions.\n', b) % ***** TODO MAKE THIS BETTER 
+
+                    % find the leftover conditions
+                    wc2use = []; 
+                    leftovers = find(wordCondReps); 
+                    for l = 1:length(leftovers)
+                        % Get as many repetitions of the leftover conditions as you need 
+                        leftover = leftovers(l); 
+                        leftoverCount = wordCondReps(leftover); 
+                        wc2use = [wc2use repmat(wordCondTable(leftover), 1, leftoverCount)]; % Get as many repetitions of that word/cond that are left over 
+                    end
+
+                    % Make a random permutation of the leftover conditions
+                    fprintf('The last %d trials of block %d may fail strict adjacency requirements.\n', length(wc2use), b); 
+                    randomLeftoverIx = randperm(length(wc2use)); 
+                    randomLeftovers = wc2use(randomLeftoverIx); 
+
+                    % Tack those onto the end of the blockWordConds vector
+                    startRandpermIx = length(blockWordConds) - length(wc2use) + 1; 
+                    blockWordConds(startRandpermIx:end) = randomLeftovers; 
+
+                    % Put this block on experimentWordConds
                     experimentWordConds = [experimentWordConds blockWordConds]; 
                     break; % Don't try this block anymore
+                else
+                    % If it isn't working but you haven't hit max reps yet 
+                    t = 1;                                                                          % Reset trial counter 
+                    blockWordConds = zeros(1,expt.ntrials_per_block);                               % Empty out the block vector, 
+                    
+                    % Reset the weights, 
+                    wordCondReps = preserveWordCondReps;                                            % Reset to original repetitions for each block 
+                    weights = reshape(wordCondReps, 1, []);                                         % Flatten for not having to sum everything
+                    drawWeights = weights/sum(weights);                       
+
                 end
                 attempts = attempts+1; % 
                 continue; % Try this block one more time 
