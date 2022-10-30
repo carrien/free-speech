@@ -655,7 +655,8 @@ hbutton.resetSingleOSTLine = uicontrol(p.guidata.buttonPanel,'Style','pushbutton
     'Units','Normalized','Position',restoreSingleParamButtonPos,...
     'FontUnits','Normalized','FontSize',buttonFontSize,...
     'Callback',@restore_single_trial);
-    function restore_single_trial(hObject,eventdata)        
+    function restore_single_trial(hObject,eventdata)    
+        [oldHeur,oldThresh,oldDur,oldParam3] = get_ost(trackingFileDir,trackingFileName,ostStatus); 
         % Make data.calcSubjOstParams be the same as whatever the originals were, regardless of whether it is stored in y or
         % expt
         % Then set OST file based on whatever the active OST trial is
