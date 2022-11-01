@@ -35,6 +35,9 @@ defaultParams.shortThresh = 0.1; %less than 100 ms
 defaultParams.longThresh = 1; %longer than 1 second
 defaultParams.jumpThresh = 200; %in Hz, upper limit for sample-to-sample change to detect jumpTrials in F1 trajectory
 defaultParams.fishyFThresh = [200 1100]; %acceptable range of possible F1 values
+    % ratio used to determine "late" or not. Absolute duration only used 
+defaultParams.lateThresh_ratio = 0.96; % acceptable endpoint ratio for speech before trial ends "too late"
+defaultParams.lateThresh_absolute = 1.5; % acceptable endpoint in seconds for speech before trial ends "too late". Only used as fallback if trial duration not available.
 errorParams = set_missingFields(errorParams, defaultParams, 0);
 
 %% create GUI
@@ -180,14 +183,11 @@ function errors = get_dataVals_errors(UserData,dataVals)
             fishyF1Trials = [fishyF1Trials dataVals(i).token];
         elseif dataVals(i).ampl_taxis(1) < .0001
             earlyTrials = [earlyTrials dataVals(i).token];
-        elseif (isfield(UserData.expt, 'timing') && isfield(UserData.expt.timing, 'stimdur') && dataVals(i).ampl_taxis(end) > 0.96*UserData.expt.timing.stimdur) || ...
-                ~(isfield(UserData.expt, 'timing') && isfield(UserData.expt.timing, 'stimdur')) && dataVals(i).ampl_taxis(end) > 1.5
-            % check vowel endpoint relative to stimdur if possible. Otherwise, use arbitrary duration
-            if isfield(UserData.expt, 'timing') && isfield(UserData.expt.timing, 'stimdur') && dataVals(i).ampl_taxis(end) > 0.96*UserData.expt.timing.stimdur
-                lateTrials = [lateTrials dataVals(i).token];
-            elseif ~(isfield(UserData.expt, 'timing') && isfield(UserData.expt.timing, 'stimdur')) && dataVals(i).ampl_taxis(end) > 1.5
-                lateTrials = [lateTrials dataVals(i).token];
-            end
+        elseif (isfield(UserData.expt, 'timing') && isfield(UserData.expt.timing, 'stimdur') && dataVals(i).ampl_taxis(end) > UserData.errorParams.lateThresh_ratio*UserData.expt.timing.stimdur) || ...
+                ~(isfield(UserData.expt, 'timing') && isfield(UserData.expt.timing, 'stimdur')) && dataVals(i).ampl_taxis(end) > UserData.errorParams.lateThresh_absolute
+            % check vowel endpoint relative to stimdur if possible.
+            % Otherwise, use arbitrary duration, to wit UserData.errorParams.lateThresh
+            lateTrials = [lateTrials dataVals(i).token];
         else
             goodTrials = [goodTrials dataVals(i).token];
         end
