@@ -90,9 +90,11 @@ while ischar(tline)
         end
         if strcmp(lineComponents(1), eventNum) 
             lineloc = i - 1; % Save line number before the one that starts with eventNum
-        elseif strcmp(lineComponents(1), '0')
+        end
+        if strcmp(lineComponents(1), '0')
             fullOstStartLine = i + 1; % Get the line where you get the first OST stuff going (not the 0th line) 
-        elseif strcmp(lineComponents(2), 'OST_END')
+        end
+        if any(strcmp(lineComponents, 'OST_END'))
             fullOstEndLine = i; % Get the last informative OST line, which obligatorily has OST_END as the heuristic
         end
     end  
