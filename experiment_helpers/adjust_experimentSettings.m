@@ -4,9 +4,10 @@ function [expt] = adjust_experimentSettings(expt, h_fig, adjustment)
 % Currently only used by taimComp but theoretically could be used by any experiment that wanted to change any of these
 % parameters about an experiment: 
 % 
-% - LPC order
-% - Trial duration (particularly relevant for patient populations) 
-% - Target vowel durations (for duration training in compensation studies) 
+% - LPC order (this is already general to all experiments) 
+% - Trial duration (particularly relevant for patient populations) (this is also general to all experiments) 
+% - Target vowel durations (for duration training in compensation studies) (would have to be customized in the switch/case
+% since taimComp uses multiple min/maxes for different words) 
 % 
 % inputs: 
 % 
@@ -44,7 +45,7 @@ save(fullfile(expt.dataPath, 'expt_orig.mat'), 'expt'); % Because in some cases 
 fprintf('Original expt structure saved as expt_orig.mat. \n'); 
 
 
-%% Display faux pause information (without actually pausing) 
+%% Display surface pause information 
 get_figinds_audapter;
 
 % text params
@@ -119,7 +120,7 @@ set(h_fig(dup),'CurrentCharacter','@')
 % Save new expt as expt
 expt = exptAdjust; 
 save(fullfile(expt.dataPath, 'expt.mat'), 'expt'); 
-fprintf('Original expt structure saved as expt.mat.\n'); 
+fprintf('New expt structure saved as expt.mat.\n'); 
 
 % Refresh text
 delete_exptText(h_fig, h_text)
