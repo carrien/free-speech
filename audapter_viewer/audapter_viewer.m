@@ -553,10 +553,14 @@ normal_bgcolor = get(hbutton.saveParams,'BackgroundColor');
                         otherwise % Assume that you will simply save to dataPath, but check if it should go to server or not
                             % Translate between server path and expt path to get two options
                             dataPathParts = strsplit(x.dataPath, 'experiments'); 
-                            serverPrefix = '\\wcs-cifs.waisman.wisc.edu\wc\smng\'; 
-                            serverPath = fullfile(serverPrefix, 'experiments', dataPathParts{2}); 
-                            isOnServer = exist(serverPath,'dir'); 
-                            savePath = choosePathDialog({serverPath, x.dataPath, pwd}, isOnServer); 
+                            if length(dataPathParts) > 1 % assumes you're using default SMNG filepath structures and might access SMNG server
+                                serverPrefix = '\\wcs-cifs.waisman.wisc.edu\wc\smng\'; 
+                                serverPath = fullfile(serverPrefix, 'experiments', dataPathParts{2}); 
+                                isOnServer = exist(serverPath,'dir'); 
+                                savePath = choosePathDialog({serverPath, x.dataPath, pwd}, isOnServer); 
+                            else % not using default SMNG filepath structure; don't offer SMNG server
+                                savePath = choosePathDialog({x.dataPath, pwd}, 0);
+                            end
                             
                             % If you've hit cancel when choosing, then take away dialogs and don't save or anything
                             if ~savePath
