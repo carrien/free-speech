@@ -128,6 +128,7 @@ switch adjustment
         exptAdjust.calibParam.pitchBoundPct = newPerc; 
         exptAdjust.calibParam.pitchLowerBoundHz = lowerBoundHz; 
         exptAdjust.calibParam.pitchUpperBoundHz = upperBoundHz;     
+        p = expt.audapterParams; 
 
         p.pitchLowerBoundHz = lowerBoundHz; 
         p.pitchUpperBoundHz = upperBoundHz; 
