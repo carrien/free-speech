@@ -27,6 +27,10 @@ function [expt] = adjust_experimentSettings(expt, h_fig, adjustment)
 %   'targetdur'             The target duration of whatever word you are duration training on. Will give you the option to
 %                           change minimum or maximum. This will apply for ALL WORDS (not just one), with appropriate
 %                           adjustments made for aijWord
+%
+%   'voweldur'              The properties used to determine vowel duration, stored in expt.durcalc. Namely:
+%                           min_dur (minimum duration in s); max_dur;
+%                           ons_thresh (minimum RMS to trigger onset); offs_thresh.
 % 
 % In all cases, the current value will be displayed to you, and then you will be asked to provide the new value. 
 %   
@@ -134,6 +138,28 @@ switch adjustment
         p.pitchUpperBoundHz = upperBoundHz; 
         
         AudapterIO('init', p);         
+
+    case {'voweldur'}
+        current_min_dur = expt.durcalc.min_dur;
+        current_max_dur = expt.durcalc.max_dur;
+        current_ons_thresh = expt.durcalc.ons_thresh;
+        current_offs_thresh = expt.durcalc.offs_thresh;
+
+        question = sprintf('Current MINimum vowel duration is %.2f seconds. Set to: ', current_min_dur);
+        newStimdur = input(question);
+        exptAdjust.durcalc.min_dur = newStimdur;
+
+        question = sprintf('Current MAXimum vowel duration is %.2f seconds. Set to: ', current_max_dur);
+        newStimdur = input(question);
+        exptAdjust.durcalc.max_dur = newStimdur;
+
+        question = sprintf('Current MINimum RMS to be considered a vowel onset is %.3f. Set to: ', current_ons_thresh);
+        newStimdur = input(question);
+        exptAdjust.durcalc.ons_thresh = newStimdur;
+
+        question = sprintf('Current RMS threshold to be considered a vowel offset (after peak RMS reached) is %.3f. Set to: ', current_offs_thresh);
+        newStimdur = input(question);
+        exptAdjust.durcalc.offs_thresh = newStimdur;
 
 end
 
