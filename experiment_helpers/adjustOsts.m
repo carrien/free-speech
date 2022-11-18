@@ -63,7 +63,7 @@ function [] = adjustOsts(expt, h_fig, word, trackingFileName)
 
 dbstop if error 
 %% Default arguments
-
+showWarning = 0; 
 if nargin < 3 || isempty(word), word = {}; end
 % Change string inputs in word to cell 
 if ischar(word)
@@ -71,8 +71,15 @@ if ischar(word)
 end
 if nargin < 4 || isempty(trackingFileName)
     if nargin < 3 || isempty(word)
-        if ~isfield(expt, 'trackingFileName')
-            trackingFileName = 'measureFormants'; 
+        if ~isfield(expt, 'trackingFileName') || isempty(expt.trackingFileName) || strcmp(expt.trackingFileName, 'measureFormants')
+            warning('This function to adjust OSTs should only be used in experiments with experiment-specific OST files. Returning to trials.')
+            get_figinds_audapter;
+            % reset keypress
+            set(h_fig(stim),'CurrentCharacter','@')  % reset keypress
+            set(h_fig(ctrl),'CurrentCharacter','@')
+            set(h_fig(dup),'CurrentCharacter','@')
+            pause(0.5); 
+            return; 
         else
             trackingFileName = expt.trackingFileName; 
         end
