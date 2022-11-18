@@ -110,6 +110,30 @@ switch adjustment
         exptAdjust.durcalc.(expt.aijWord).min_dur = newMin / expt.aiPerc; 
         exptAdjust.durcalc.(expt.aijWord).max_dur = newMax / expt.aiPerc; % For buy yogurt, have to set based on the percentage of aijo that is ai
       
+    case {'pitchbound'}
+        currentPercent = expt.calibParam.pitchBoundPct; 
+        newPerc = 0; 
+        while newPerc < 10 || newPerc > 100 || ~isnumeric(newPerc)
+            if newPerc
+                fprintf('Improper input. Please use a value between 10 and 100.\n ')
+            end
+
+            questionPerc = sprintf('The current pitch boundary percentage is %d%%. What would you like to set as the new pitch boundary percentage? ', currentPercent); 
+            newPerc = input(questionPerc); 
+        end
+        
+        lowerBoundHz = exptAdjust.calibParam.initialf0 * (1 - (newPerc / 100)); 
+        upperBoundHz = exptAdjust.calibParam.initialf0 * (1 + (newPerc / 100)); 
+
+        exptAdjust.calibParam.pitchBoundPct = newPerc; 
+        exptAdjust.calibParam.pitchLowerBoundHz = lowerBoundHz; 
+        exptAdjust.calibParam.pitchUpperBoundHz = upperBoundHz;     
+
+        p.pitchLowerBoundHz = lowerBoundHz; 
+        p.pitchUpperBoundHz = upperBoundHz; 
+        
+        AudapterIO('init', p);         
+
 end
 
 %% resume

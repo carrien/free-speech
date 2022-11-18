@@ -32,6 +32,11 @@ if ismember('settings', buttons)
             'Units', 'normalized', 'Position', [0.1, 0.1, 0.25, 0.6],...
             'Callback', @(hObject, eventdata)adjustSettingsCall(hObject, eventdata, h_fig)); 
 end
+if ismember('pitchbound', buttons)
+    settingsBtn = uicontrol(adjustPanel, 'Style', 'pushbutton', 'String', 'Adjust pitch boundaries (B)', ...
+            'Units', 'normalized', 'Position', [0.7, 0.1, 0.25, 0.6],...
+            'Callback', @(hObject, eventdata)adjustPitchboundsCall(hObject, eventdata, h_fig)); 
+end
 
 
 end
@@ -50,4 +55,12 @@ function adjustSettingsCall(hObject,eventdata,h_fig)
     set(h_fig(stim),'CurrentCharacter','e')  % reset keypress
     set(h_fig(ctrl),'CurrentCharacter','e')
     set(h_fig(dup),'CurrentCharacter','e')
+end
+
+function adjustPitchboundsCall(hObject,eventdata,h_fig)    
+    % Pressing the button will end up calling a pause_trial4osts state
+    get_figinds_audapter; 
+    set(h_fig(stim),'CurrentCharacter','b')  % reset keypress
+    set(h_fig(ctrl),'CurrentCharacter','b')
+    set(h_fig(dup),'CurrentCharacter','b')
 end
