@@ -27,6 +27,13 @@ function [expt] = adjust_experimentSettings(expt, h_fig, adjustment)
 %   'targetdur'             The target duration of whatever word you are duration training on. Will give you the option to
 %                           change minimum or maximum. This will apply for ALL WORDS (not just one), with appropriate
 %                           adjustments made for aijWord
+%
+%   'voweldur'              The properties used to determine vowel duration, stored in expt.durcalc. Namely:
+%                           min_dur (minimum duration in s); max_dur;
+%                           ons_thresh (minimum RMS to trigger onset); offs_thresh.
+% 
+%   'rmsRatioThresh'        A threshold for RMS ratio, above which you will no longer track formants. This is to eliminate
+%                           formant tracking in fricatives and such (particularly useful for taimComp) 
 % 
 % In all cases, the current value will be displayed to you, and then you will be asked to provide the new value. 
 %   
@@ -110,6 +117,67 @@ switch adjustment
         exptAdjust.durcalc.(expt.aijWord).min_dur = newMin / expt.aiPerc; 
         exptAdjust.durcalc.(expt.aijWord).max_dur = newMax / expt.aiPerc; % For buy yogurt, have to set based on the percentage of aijo that is ai
       
+    case {'pitchbound'}
+        currentPercent = expt.calibParam.pitchBoundPct; 
+        newPerc = 0; 
+        while newPerc < 10 || newPerc > 100 || ~isnumeric(newPerc)
+            if newPerc
+                fprintf('Improper input. Please use a value between 10 and 100.\n ')
+            end
+
+            questionPerc = sprintf('The current pitch boundary percentage is %d%%. What would you like to set as the new pitch boundary percentage? ', currentPercent); 
+            newPerc = input(questionPerc); 
+        end
+        
+        lowerBoundHz = exptAdjust.calibParam.initialf0 * (1 - (newPerc / 100)); 
+        upperBoundHz = exptAdjust.calibParam.initialf0 * (1 + (newPerc / 100)); 
+
+        exptAdjust.calibParam.pitchBoundPct = newPerc; 
+        exptAdjust.calibParam.pitchLowerBoundHz = lowerBoundHz; 
+        exptAdjust.calibParam.pitchUpperBoundHz = upperBoundHz;     
+        p = expt.audapterParams; 
+
+        p.pitchLowerBoundHz = lowerBoundHz; 
+        p.pitchUpperBoundHz = upperBoundHz; 
+        
+        AudapterIO('init', p);         
+
+    case {'voweldur'}
+        current_min_dur = expt.durcalc.min_dur;
+        current_max_dur = expt.durcalc.max_dur;
+        current_ons_thresh = expt.durcalc.ons_thresh;
+        current_offs_thresh = expt.durcalc.offs_thresh;
+
+        question = sprintf('Current MINimum vowel duration is %.2f seconds. Set to: ', current_min_dur);
+        newStimdur = input(question);
+        exptAdjust.durcalc.min_dur = newStimdur;
+
+        question = sprintf('Current MAXimum vowel duration is %.2f seconds. Set to: ', current_max_dur);
+        newStimdur = input(question);
+        exptAdjust.durcalc.max_dur = newStimdur;
+
+        question = sprintf('Current MINimum RMS to be considered a vowel onset is %.3f. Set to: ', current_ons_thresh);
+        newStimdur = input(question);
+        exptAdjust.durcalc.ons_thresh = newStimdur;
+
+        question = sprintf('Current RMS threshold to be considered a vowel offset (after peak RMS reached) is %.3f. Set to: ', current_offs_thresh);
+        newStimdur = input(question);
+        exptAdjust.durcalc.offs_thresh = newStimdur;
+        
+    case {'rmsRatioThresh'}
+        currentRatioThresh = expt.audapterParams.rmsRatioThresh; 
+        question = sprintf('Current value for RMS ratio threshold is %.2f. What would you like the new value to be? (Higher values more restrictive) : ', currentRatioThresh); 
+        
+        newRatioThresh = input(question); 
+        while ~isnumeric(newRatioThresh) || newRatioThresh < 0
+            newRatioThresh = input('Improper input. Please enter a number between 0 and 5: '); 
+        end
+        
+        % Put new value into expt
+        exptAdjust.audapterParams.rmsRatioThresh = newRatioThresh; 
+        p = exptAdjust.audapterParams; 
+        % Initialize Audapter with new value
+        AudapterIO('init', p); 
 end
 
 %% resume

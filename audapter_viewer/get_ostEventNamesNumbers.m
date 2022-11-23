@@ -155,9 +155,17 @@ elseif any(strcmp(strsplit(trackingFileDir, filesep), 'taimComp'))
     if strcmp(trackingFileName, 'buyYogurt')
         eventNames = {'wiStart', 'bStart', 'aiStart', 'gStart'}; %{'wiStart', 'wait', 'bStart', 'aiStart', 'wait', 'dStart'};
         triggerNo = 6;
+        triggerName = eventNames{triggerNo == eventNos};        
+    elseif strcmp(trackingFileName, 'buyYoshi')
+        eventNames = {'aiStart', 'shStart'}; 
+        triggerNo = 2; 
+        triggerName = eventNames{triggerNo == eventNos};
+    elseif strcmp(trackingFileName, 'DaidSimple')
+        eventNames = {'aiStart', 'dStart'}; 
+        triggerNo = 2; 
         triggerName = eventNames{triggerNo == eventNos};
     else
-        % the other one is Daid (takes care of both words) 
+        % the other one is Daid (full, takes care of both words) 
         eventNames = {'wiStart', 'bStart', 'aiStart', 'dStart'};
         triggerNo = 6;
         triggerName = eventNames{triggerNo == eventNos};
