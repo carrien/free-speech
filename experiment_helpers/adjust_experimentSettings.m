@@ -32,6 +32,9 @@ function [expt] = adjust_experimentSettings(expt, h_fig, adjustment)
 %                           min_dur (minimum duration in s); max_dur;
 %                           ons_thresh (minimum RMS to trigger onset); offs_thresh.
 % 
+%   'rmsRatioThresh'        A threshold for RMS ratio, above which you will no longer track formants. This is to eliminate
+%                           formant tracking in fricatives and such (particularly useful for taimComp) 
+% 
 % In all cases, the current value will be displayed to you, and then you will be asked to provide the new value. 
 %   
 % Initiated RPK 11/7/2022, based on adjustOSTs
@@ -160,7 +163,21 @@ switch adjustment
         question = sprintf('Current RMS threshold to be considered a vowel offset (after peak RMS reached) is %.3f. Set to: ', current_offs_thresh);
         newStimdur = input(question);
         exptAdjust.durcalc.offs_thresh = newStimdur;
-
+        
+    case {'rmsRatioThresh'}
+        currentRatioThresh = expt.audapterParams.rmsRatioThresh; 
+        question = sprintf('Current value for RMS ratio threshold is %.2f. What would you like the new value to be? (Higher values more restrictive) : ', currentRatioThresh); 
+        
+        newRatioThresh = input(question); 
+        while ~isnumeric(newRatioThresh) || newRatioThresh < 0
+            newRatioThresh = input('Improper input. Please enter a number between 0 and 5: '); 
+        end
+        
+        % Put new value into expt
+        exptAdjust.audapterParams.rmsRatioThresh = newRatioThresh; 
+        p = exptAdjust.audapterParams; 
+        % Initialize Audapter with new value
+        AudapterIO('init', p); 
 end
 
 %% resume
