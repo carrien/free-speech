@@ -5,12 +5,12 @@ get_figinds_audapter;
 % text params
 % Addition for simonToneLex RK 2022-01-31
 if nargin < 2 || isempty(params)
-    params = struct; 
+    params = struct;
 end
-params = set_missingField(params, 'pausetxt', 'Paused. Press the space bar to continue.', 1); 
-params = set_missingField(params, 'conttxt', 'We will now continue.', 1); 
-pausetxt = params.pausetxt; 
-conttxt = params.conttxt; 
+params = set_missingField(params, 'pausetxt', 'Paused. Press the space bar to continue.', 1);
+params = set_missingField(params, 'conttxt', 'We will now continue.', 1);
+pausetxt = params.pausetxt;
+conttxt = params.conttxt;
 
 txtparams.Color = 'white';
 txtparams.FontSize = 60;
@@ -22,8 +22,7 @@ figure(h_fig(stim))
 h1_sub = subplot(1,1,1);
 set(h1_sub, 'color', 'black')
 axis off
-h_text = text(.5,.5,pausetxt,txtparams);
-try CloneFig(h_fig(stim),h_fig(dup)); catch; end
+h_text = draw_exptText(h_fig, .5, .5, pausetxt, txtparams); % display pause text
 pause
 
 % resume after keypress
@@ -34,10 +33,11 @@ try
 catch
 end
 
-delete(h_text)
-h_text = text(.5,.5,conttxt,txtparams); % display continue text
-try CloneFig(h_fig(stim),h_fig(dup)); catch; end
+delete_exptText(h_fig,h_text) % clear pause text
+clear h_text
+h_text = draw_exptText(h_fig, .5, .5, conttxt, txtparams); % display continue text
 pause(1)
-delete(h_text)                          % clear continue text
-try CloneFig(h_fig(stim),h_fig(dup)); catch; end
+delete_exptText(h_fig,h_text)             % clear continue text
 pause(1)
+
+end %EOF
