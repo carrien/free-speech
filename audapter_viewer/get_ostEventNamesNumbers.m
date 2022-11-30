@@ -105,6 +105,12 @@ elseif strcmp(trackingFileDir, 'simonSingleWord')
     eventNames = {'v1Start' 'v1End' 'v2Start' 'v2End'};
     triggerNo = get_pcf(trackingFileDir, trackingFileName, 'space', 4, 'stat');
     triggerName = eventNames{triggerNo == eventNos};
+
+% simonSingleWord_v2
+elseif strcmp(trackingFileDir, 'simonSingleWord_v2')
+    eventNames = {'v1Start' 'v1End' 'v2Start' 'v2End'};
+    triggerNo = get_pcf(trackingFileDir, trackingFileName, 'space', 4, 'stat');
+    triggerName = eventNames{triggerNo == eventNos};
     
 % simonMultisyllable
 elseif strcmp(trackingFileDir, 'simonMultisyllable')
