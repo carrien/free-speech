@@ -94,7 +94,7 @@ if strcmp(trackingFileDir, 'experiment_helpers')
 else
     leadingDir = 'current-studies'; 
 end
-ostWorking = fullfile(get_gitPath(leadingDir), trackingFileDir, [trackingFileName 'Working.ost']); 
+ostWorking = fullfile(get_trackingFilePath(trackingFileDir), [trackingFileName 'Working.ost']); 
 if exist(ostWorking,'file') ~= 2
     refreshWorkingCopy(trackingFileDir, trackingFileName, 'ost');
 end
