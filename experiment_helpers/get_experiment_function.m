@@ -59,6 +59,15 @@ switch expName
     case 'simonHomophone'
         expFun = @run_simonHomophone_audapter;
     otherwise
-        fprintf('Function for experiment ''%s'' not found.',expName)
-        expFun = [];
+        % see if there's a function with the format run_'expName'_audapter
+        expFun = sprintf('run_%s_audapter', expName);
+        isFunction = which(expFun);
+        if isFunction
+            fprintf(['No explicit function name found in list in get_experiment_function.m\n' ...
+                'Using default behavior to set function name to %s\n'], expFun)
+            expFun = eval(sprintf('@%s', expFun));
+        else
+            fprintf('Function for experiment ''%s'' not found.',expName)
+            expFun = [];
+        end
 end
