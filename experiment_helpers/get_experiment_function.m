@@ -58,6 +58,8 @@ switch expName
         expFun = @run_simonHomophoneWord_audapter;
     case 'simonHomophone'
         expFun = @run_simonHomophone_audapter;
+    case 'simonSingleWord_v2'
+        expFun = @run_simonSingleWord_v2_audapter;
     otherwise
         fprintf('Function for experiment ''%s'' not found.',expName)
         expFun = [];
