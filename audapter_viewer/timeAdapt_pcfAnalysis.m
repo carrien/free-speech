@@ -1,5 +1,4 @@
 function [trigSummary,trigAnalysis,warpSummary,warpAnalysis,fullAnalysis] = timeAdapt_pcfAnalysis(trackingFileLoc,trackingFileName,ost_stat,varargin)
-% CWN 
 % Checks if OST/PCF settings result in a time delay that occurs at the
 % correct point.
 %
@@ -11,7 +10,6 @@ function [trigSummary,trigAnalysis,warpSummary,warpAnalysis,fullAnalysis] = time
 % 4.) appDesigner: (optional.) Default is 0. If using output in app designer, set to 1. 
 % 5.) frameDur: (optional.) Default is 0.002. How long a "frame" in Audapter lasts.
 %
-% TODO update output arg summary
 % Output arguments:
 % 1.) trigSummary:  A very brief description of if the target OST triggered.
 % 2.) trigAnalysis: Sentence description of what happened with OST trigger.
@@ -33,31 +31,8 @@ else
     frameDur = varargin{2};
 end
 
-% % Open pcf file
-% fid = fopen(trackingFileName);
-% 
-% % Gets the 4th line in PCF, which has timewarp settings
-% i = 0;
-% while i ~= 4
-%     tline = fgetl(fid); % why does this go until hitting 4 instead of just fetching 4? 
-%     i = i+1 ;
-% end
-% 
-% % Close pcf file
-% fclose(fid);
-
-
 % Standard PCF values. Each segment gets a variable
-% pcfArray = strsplit(tline,', ');
-% RPK 02/08/2021 change to be flexible and not have to get exactly the
-% fourth line 
 [ostStat_initial, tBegin, rate1, dur1, durHold, rate2] = get_pcf(trackingFileLoc, trackingFileName, 'time', '1', 'all'); 
-% ostStat_initial = str2double(pcfArray{1}); 
-% tBegin = str2double(pcfArray{2});
-% rate1 = str2double(pcfArray{3});
-% dur1 = str2double(pcfArray{4});
-% durHold = str2double(pcfArray{5});
-% rate2 = str2double(pcfArray{6});
 
 % Finds OST event that triggered perturbation
 ostTrigger = find(ost_stat==ostStat_initial,1) * frameDur - frameDur; % convert to seconds
@@ -89,7 +64,6 @@ else % Things are going well
     fullAnalysis(11) = {' '};
 %     
     % Column headers
-    % TODO reformat for appDesigner to use Event | Start | Dur | End
     if appDesigner == 1
         fullAnalysis(1) = {'Event               | Start Time | End Time '};
         fullAnalysis(2) = {sprintf('OST Event %d     |    %.3f     |     -',ostStat_initial,ostTrigger)};
@@ -124,12 +98,6 @@ else % Things are going well
 end
 
 %% Perturbation timing OK or not
-% Get OST event number for vowel start. Note that this finds the last time
-% the OST values progressed to the vowel start OST. For example, if the OST
-% events were (simplified) 4 4 4 5 4 5 4 5 6, this would return the
-% second-to-last value as the time that OST event "6" started. Yes it's
-% during OST event 5, but it's the instance of OST event 5 (an in-between
-% OST event) that actually progressed to OST event 6.
 if strcmp(trackingFileLoc,'ata') || strcmp(trackingFileLoc,'capper')
     lastOsts = find(ost_stat==(ostStat_initial + 2));
 else
