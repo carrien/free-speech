@@ -59,9 +59,9 @@ if bPlot
 end
 
 
-%% Fig 1: Car MPG
+%% Fig 2: Car MPG
 
-[bPlot, ifig] = ismember(1, figs2plot);
+[bPlot, ifig] = ismember(2, figs2plot);
 if bPlot
     pos = [50 100 1400 870];
     h(ifig) = figure('Position',pos);
