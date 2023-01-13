@@ -1,4 +1,4 @@
-function [] = audioGUI(dataPath,trialnums,buffertype,figpos,bSaveCheck,folderSuffix)
+function [] = audioGUI(dataPath,trialnums,buffertype,figpos,bSaveCheck,folderSuffix,show_formants)
 %AUDIOGUI  Wrapper for wave_viewer.
 %   AUDIOGUI(DATAPATH,TRIALNUMS,BUFFERTYPE,FIGPOS,PITCHLIMITS,BSAVECHECK)
 %   sends audio data found in DATAPATH to the wave_viewer analysis program.
@@ -8,6 +8,8 @@ function [] = audioGUI(dataPath,trialnums,buffertype,figpos,bSaveCheck,folderSuf
 %   structure to use (e.g. 'signalIn'). FIGPOS overrides the default figure
 %   position. BSAVECHECK is a binary variable specifying whether to check
 %   via a user dialog before overwriting existing files (1 = yes, 0 = no).
+%   SHOW_FORMANTS is a binary for whether to initially display formant
+%   tracks on the spectrogram (1 = show, 0 = hide). 
 %
 %CN 2011
 
@@ -17,6 +19,7 @@ if nargin < 3 || isempty(buffertype), buffertype = 'signalIn'; end
 if nargin < 4, figpos = []; end
 if nargin < 5 || isempty(bSaveCheck), bSaveCheck = 1; end
 if nargin < 6, folderSuffix = []; end
+if nargin < 7 || isempty(show_formants), show_formants = 1; end
 
 % load data
 fprintf('Loading data...')
@@ -133,6 +136,10 @@ while ~strcmp(endstate.name, 'end')
     
     % optionally overwrite figure position
     if ~isempty(figpos), plot_params.figpos = figpos; end
+
+    % overwrite displaying formant tracks
+    plot_params.show_formants = show_formants;
+
     if exist('bPraat','var')
         if bPraat
             sigproc_params.ftrack_method = 'praat';
