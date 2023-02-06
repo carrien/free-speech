@@ -1,4 +1,4 @@
-function [] = audioGUI(dataPath,trialnums,buffertype,figpos,bSaveCheck,folderSuffix,show_formants)
+function [] = audioGUI(dataPath,trialnums,buffertype,figpos,bSaveCheck,folderSuffix,varargin)
 %AUDIOGUI  Wrapper for wave_viewer.
 %   AUDIOGUI(DATAPATH,TRIALNUMS,BUFFERTYPE,FIGPOS,PITCHLIMITS,BSAVECHECK)
 %   sends audio data found in DATAPATH to the wave_viewer analysis program.
@@ -8,8 +8,9 @@ function [] = audioGUI(dataPath,trialnums,buffertype,figpos,bSaveCheck,folderSuf
 %   structure to use (e.g. 'signalIn'). FIGPOS overrides the default figure
 %   position. BSAVECHECK is a binary variable specifying whether to check
 %   via a user dialog before overwriting existing files (1 = yes, 0 = no).
-%   SHOW_FORMANTS is a binary for whether to initially display formant
-%   tracks on the spectrogram (1 = show, 0 = hide). 
+%   VARARGIN takes any number of _pairs_ of field names and field values
+%   for the structure `plot_params`. e.g., the final two input arguments
+%   could be 'yes_show_formants' and 0 to hide formants on startup.
 %
 %CN 2011
 
@@ -19,7 +20,10 @@ if nargin < 3 || isempty(buffertype), buffertype = 'signalIn'; end
 if nargin < 4, figpos = []; end
 if nargin < 5 || isempty(bSaveCheck), bSaveCheck = 1; end
 if nargin < 6, folderSuffix = []; end
-if nargin < 7 || isempty(show_formants), show_formants = 1; end
+if ~isempty(varargin) && mod(length(varargin), 2) ~= 0
+    error('Wrong number of varargin inputs. They must be in pairs: param name, param value');
+    % eg: varargin = 'yes_show_formants', 1, 'yes_gray', 0
+end
 
 % load data
 fprintf('Loading data...')
@@ -133,12 +137,21 @@ while ~strcmp(endstate.name, 'end')
             plot_params = get_plot_defaults;
         end
     end
-    
+
     % optionally overwrite figure position
     if ~isempty(figpos), plot_params.figpos = figpos; end
 
-    % overwrite displaying formant tracks
-    plot_params.show_formants = show_formants;
+    % default to show formants
+    plot_params.yes_show_formants = 1;
+
+    % set plot_params fields using varargin
+    argin_index = 1;
+    if ~isempty(varargin)
+        while argin_index+1 <= length(varargin)
+            plot_params.(varargin{argin_index}) = (varargin{argin_index+1}); % set it
+            argin_index = argin_index + 2; % increment to the next pair (so add 2)
+        end
+    end        
 
     if exist('bPraat','var')
         if bPraat
