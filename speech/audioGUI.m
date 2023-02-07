@@ -136,9 +136,6 @@ while ~strcmp(endstate.name, 'end')
     % optionally overwrite figure position
     if ~isempty(figpos), plot_params.figpos = figpos; end
 
-    % default to show formants
-    plot_params.yes_show_formants = 1;
-
     if exist('bPraat','var')
         if bPraat
             sigproc_params.ftrack_method = 'praat';
