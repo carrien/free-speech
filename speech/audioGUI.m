@@ -8,9 +8,8 @@ function [] = audioGUI(dataPath,trialnums,buffertype,figpos,bSaveCheck,folderSuf
 %   structure to use (e.g. 'signalIn'). FIGPOS overrides the default figure
 %   position. BSAVECHECK is a binary variable specifying whether to check
 %   via a user dialog before overwriting existing files (1 = yes, 0 = no).
-%   VARARGIN takes any number of _pairs_ of field names and field values
-%   for the structure `plot_params`. e.g., the final two input arguments
-%   could be 'yes_show_formants' and 0 to hide formants on startup.
+%   VARARGIN takes any number of pairs of field names and field values. 
+%   These are passed wholesale to wave_viewer.
 %
 %CN 2011
 
@@ -20,10 +19,6 @@ if nargin < 3 || isempty(buffertype), buffertype = 'signalIn'; end
 if nargin < 4, figpos = []; end
 if nargin < 5 || isempty(bSaveCheck), bSaveCheck = 1; end
 if nargin < 6, folderSuffix = []; end
-if ~isempty(varargin) && mod(length(varargin), 2) ~= 0
-    error('Wrong number of varargin inputs. They must be in pairs: param name, param value');
-    % eg: varargin = 'yes_show_formants', 1, 'yes_gray', 0
-end
 
 % load data
 fprintf('Loading data...')
@@ -144,15 +139,6 @@ while ~strcmp(endstate.name, 'end')
     % default to show formants
     plot_params.yes_show_formants = 1;
 
-    % set plot_params fields using varargin
-    argin_index = 1;
-    if ~isempty(varargin)
-        while argin_index+1 <= length(varargin)
-            plot_params.(varargin{argin_index}) = (varargin{argin_index+1}); % set it
-            argin_index = argin_index + 2; % increment to the next pair (so add 2)
-        end
-    end        
-
     if exist('bPraat','var')
         if bPraat
             sigproc_params.ftrack_method = 'praat';
@@ -171,7 +157,7 @@ while ~strcmp(endstate.name, 'end')
     endstate = wave_viewer(y,'fs',fs,'name',sprintf('trial(%d)',trialNum), ...
         'nformants',2,'sigproc_params',sigproc_params, ...
         'plot_params',plot_params,'event_params',event_params,...
-        'sigmat',sigmat);
+        'sigmat',sigmat, varargin{:})
     
     %% save outputs
     trialparams.sigproc_params = endstate.sigproc_params;
