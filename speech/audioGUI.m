@@ -1,4 +1,4 @@
-function [] = audioGUI(dataPath,trialnums,buffertype,figpos,bSaveCheck,folderSuffix)
+function [] = audioGUI(dataPath,trialnums,buffertype,figpos,bSaveCheck,folderSuffix,varargin)
 %AUDIOGUI  Wrapper for wave_viewer.
 %   AUDIOGUI(DATAPATH,TRIALNUMS,BUFFERTYPE,FIGPOS,PITCHLIMITS,BSAVECHECK)
 %   sends audio data found in DATAPATH to the wave_viewer analysis program.
@@ -8,6 +8,8 @@ function [] = audioGUI(dataPath,trialnums,buffertype,figpos,bSaveCheck,folderSuf
 %   structure to use (e.g. 'signalIn'). FIGPOS overrides the default figure
 %   position. BSAVECHECK is a binary variable specifying whether to check
 %   via a user dialog before overwriting existing files (1 = yes, 0 = no).
+%   VARARGIN takes any number of pairs of field names and field values. 
+%   These are passed wholesale to wave_viewer.
 %
 %CN 2011
 
@@ -130,9 +132,10 @@ while ~strcmp(endstate.name, 'end')
             plot_params = get_plot_defaults;
         end
     end
-    
+
     % optionally overwrite figure position
     if ~isempty(figpos), plot_params.figpos = figpos; end
+
     if exist('bPraat','var')
         if bPraat
             sigproc_params.ftrack_method = 'praat';
@@ -151,7 +154,7 @@ while ~strcmp(endstate.name, 'end')
     endstate = wave_viewer(y,'fs',fs,'name',sprintf('trial(%d)',trialNum), ...
         'nformants',2,'sigproc_params',sigproc_params, ...
         'plot_params',plot_params,'event_params',event_params,...
-        'sigmat',sigmat);
+        'sigmat',sigmat, varargin{:})
     
     %% save outputs
     trialparams.sigproc_params = endstate.sigproc_params;
