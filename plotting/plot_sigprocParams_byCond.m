@@ -15,6 +15,7 @@ if nargin < 3 || isempty(trialdir), trialdir = 'trials'; end
 load(fullfile(dataPath,'expt.mat'),'expt');
 groups = fieldnames(expt.inds.(grouping));
 ngroups = length(groups);
+
 nLPCs = get_sigproc_param_pertrial(dataPath,'nlpc',trialdir);
 preemphs = get_sigproc_param_pertrial(dataPath,'preemph',trialdir);
 
@@ -22,9 +23,11 @@ figure;
 for g = 1:ngroups
     group = groups{g};
     inds = expt.inds.(grouping).(group);
+
     subplot(2,ngroups,g)
     plot(nLPCs(inds));
     title(sprintf('nLPCs: %s',group))
+
     subplot(2,ngroups,g+ngroups)
     plot(preemphs(inds));
     title(sprintf('preemphs: %s',group))
@@ -34,10 +37,12 @@ figure;
 for g = 1:ngroups
     group = groups{g};
     inds = expt.inds.(grouping).(group);
+
     subplot(2,ngroups,g)
-    plot(histogram(nLPCs(inds)));
+    histogram(nLPCs(inds));
     title(sprintf('nLPCs: %s',group))
+
     subplot(2,ngroups,g+ngroups)
-    plot(histogram(preemphs(inds)));
+    histogram(preemphs(inds));
     title(sprintf('preemphs: %s',group))
 end
