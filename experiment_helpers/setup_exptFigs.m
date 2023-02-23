@@ -7,7 +7,15 @@ function [h_fig] = setup_exptFigs()
 
 % set figure positions
 get_figinds_audapter;
-pos{stim} = [1 0 1 1];         % participant view
+
+% check if 2nd monitor is to the right (pos. value) or left (neg. value) of main screen
+monitorPositions = get(0, 'MonitorPositions');
+if height(monitorPositions) > 1 && monitorPositions(2,1) < 0
+    pos{stim} = [-1 0 1 1];         % participant view on left screen
+else
+    pos{stim} = [1 0 1 1];         % participant view on right screen
+end
+
 pos{ctrl} = [0.6 0.2 0.4 0.8]; % experimenter view and formant tracking
 pos{dup} = [0 0.3 0.6 0.7];    % duplicate participant view for experimenter
 
