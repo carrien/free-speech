@@ -1,7 +1,8 @@
-function [expt] = randomize_stimuli(expt, nTrialsPerPert, nTrialsPerNonpert, nBaseline, nWashout, bAlternatePnp)
+function [expt] = randomize_stimuli(expt, nTrialsPerPert, nTrialsPerNonpert, nBaseline, nWashout, bAlternatePnp, tAdjacRestrict)
 % Pseudorandomize words and conditions for experiments. Specifically meant for experiments that have more than one
-% perturbation AND more than one word. For experiments where you are only randomizing one of the variables (for example, most
-% adaptation experiments only randomize expt.words), see randomize_wordOrder. 
+% perturbation AND more than one word. For experiments where you are only randomizing one of the variables, AND that variable
+% is the only variable with multiple levels (for example, most adaptation experiments only randomize expt.words, and there 
+% is only one perturbation condition, or perturbation condition maps to word), see randomize_wordOrder. 
 %
 % Input arguments:
 %   EXPT. The expt file is assumed to have the following fields:
@@ -44,19 +45,40 @@ function [expt] = randomize_stimuli(expt, nTrialsPerPert, nTrialsPerNonpert, nBa
 % 
 %                       Note that with bAlternatePnp = 1, you may still have two of the same word together or two of the same
 %                       cond together (specifically two non perturbed trials together). With bAlternatePnp = 0, no adjacent
-%                       trials will share either characteristic. 
+%                       trials will share either characteristic. *** NOTE: altered by RPK February 2023, see additional
+%                       argument tAdjacRestrict
 % 
 %                       Note also that you can actually use this function with bAlternatePnp set to 0 even if you don't have 
 %                       any nonpert trials. A potential use case is a compensation experiment with many different 
 %                       perturbations where there is no concern about learning as long as the same kinds of trials don't 
 %                       occur together. In this case, set nTrialsPerNonpert to the same as nTrialsPerPert. The algorithm 
 %                       treats everything equally other than the weighting (repetitions per condition). 
+%
+%   tAdjacRestrict      A toggle-type variable that defines which dimensions (word, cond, or both) has adjacency
+%                       restrictions. Possible inputs: 'word' 'cond' 'both'; default = 'both'. Currently only implemented
+%                       under bAlternatePnp = 0 
+% 
+%                       If 'word': the only restriction that will be followed is that no two adjacent trials can share the
+%                       same word. Adjacent trials may share condition. E.g., an allowed sequence is 'buy/decel guide/decel',
+%                       but 'buy/decel buy/accel' is not allowed. 
+% 
+%                       If 'cond': the only restriction that will be followed is that no two adjacent trials can share the
+%                       same condition. Adjacent trials may share word. E.g., an allowed sequence is 'buy/accel buy/decel',
+%                       but 'buy/decel guide/decel' is not allowed. 
+% 
+%                       If 'both': adjacent trials cannot share word OR condition. So neither of the two permitted cases in
+%                       the previous two settings would be allowed. buy/decel guide/accel would be acceptable. 
+% 
+%                       Use cases: 'cond' as the only adjacency restriction is useful if you have a study with only two words
+%                       and you don't want to strictly alternate words (which would be the end result if words couldn't be
+%                       shared across adjacent trials). 
 % 
 % 
 %
 % CWN v1 2021-01
 % RPK added bAlternatePnp flag 2022-07-28
 % RPK changed how failures work in non-alternating sequences 2022-10-25 
+% RPK added another flag for 
 
 
 %% Requirements for this pseudorandomization procedure:
@@ -163,6 +185,9 @@ if nargin < 5 || isempty(nWashout)
 end
 if nargin < 6 || isempty(bAlternatePnp)
     bAlternatePnp = 1; 
+end
+if nargin < 7 || isempty(tAdjacRestrict)
+    tAdjacRestrict = 'both'; 
 end
 
 
@@ -363,10 +388,16 @@ else
             wordCondReps(wordIx, condIx) = wordCondReps(wordIx, condIx) - 1; 
             
             % Make the new drawweight vector. This is the updated wordCondReps, with everything that is in the same word or pert column
-            % set to 0 
+            % set to 0 (or just word, or just column, depending on tAdjacRestrict)
             drawWeightTable = wordCondReps; 
-            drawWeightTable(wordIx, :) = 0; % Change the same word/pert condition ones to 0 
-            drawWeightTable(:, condIx) = 0; 
+            if strcmp(tAdjacRestrict, 'both') || strcmp(tAdjacRestrict, 'word')
+                % Make impossible to draw from same word if have adjacency restrictions on both word/cond OR just word
+                drawWeightTable(wordIx, :) = 0; 
+            end
+            if strcmp(tAdjacRestrict, 'both') || strcmp(tAdjacRestrict, 'cond')
+                % Make impossible to draw from same cond if have adjacency restrictions on both word/cond OR just cond
+                drawWeightTable(:, condIx) = 0; 
+            end
             drawWeights = reshape(drawWeightTable, 1, []); 
             drawWeights = drawWeights/sum(drawWeights); 
 
