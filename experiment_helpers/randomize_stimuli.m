@@ -10,7 +10,7 @@ function [expt] = randomize_stimuli(expt, nTrialsPerPert, nTrialsPerNonpert, nBa
 %       - expt.ntrials_per_block, the number of trials in each block.
 %       - expt.words, a cell array of the words in the experiment
 %       - expt.conds, a cell array of the names of each condition. 
-%       ***** The no perturbation condition must be the first member of this cell array, e.g. {'noPert' 'accel' 'decel'}
+%       ***** The no perturbation condition must be the first member of expt.conds, e.g. {'noPert' 'accel' 'decel'}
 %   NTRIALSPERPERT. In each block, the number of trials that each unique
 %       word-condition pair should be, for perturbation conditions. For
 %       example, if you have 3 words and 2 perturbation conditions, the
@@ -38,15 +38,14 @@ function [expt] = randomize_stimuli(expt, nTrialsPerPert, nTrialsPerNonpert, nBa
 % 
 %                       If 0, indicates that a trial should never be adjacent to another trial with the exact same expt.words
 %                       OR expt.conds value. That is, two perturbation trials can be adjacent, as long as they have DIFFERENT
-%                       perturbations (and different words).  
-% 
+%                       perturbations (and different words). This can be configured more via input argument tAdjacRestrict.
+%
 %                       E.g. with bAlternatePnp = 0, a sequence of sigh/accel side/decel would be acceptable. 
 %                       With bAlternatePnp = 1, the sequence would have to be (e.g.) sigh/accel side/noPert side/decel
 % 
 %                       Note that with bAlternatePnp = 1, you may still have two of the same word together or two of the same
 %                       cond together (specifically two non perturbed trials together). With bAlternatePnp = 0, no adjacent
-%                       trials will share either characteristic. *** NOTE: altered by RPK February 2023, see additional
-%                       argument tAdjacRestrict
+%                       trials will share either characteristic. See input argument tAdjacRestrict for exceptions.
 % 
 %                       Note also that you can actually use this function with bAlternatePnp set to 0 even if you don't have 
 %                       any nonpert trials. A potential use case is a compensation experiment with many different 
@@ -54,31 +53,29 @@ function [expt] = randomize_stimuli(expt, nTrialsPerPert, nTrialsPerNonpert, nBa
 %                       occur together. In this case, set nTrialsPerNonpert to the same as nTrialsPerPert. The algorithm 
 %                       treats everything equally other than the weighting (repetitions per condition). 
 %
-%   tAdjacRestrict      A toggle-type variable that defines which dimensions (word, cond, or both) has adjacency
-%                       restrictions. Possible inputs: 'word' 'cond' 'both'; default = 'both'. Currently only implemented
-%                       under bAlternatePnp = 0 
+%   tAdjacRestrict      Default = 'both'. "Type of adjacency resctriction."
+%                       Defines which dimensions (word, cond, or both) can't be adjacent.
+%                       Possible inputs: 'word' 'cond' 'both'; default = 'both'.
+%                       Only does anything if input argument bAlternatePnp = 0.
 % 
-%                       If 'word': the only restriction that will be followed is that no two adjacent trials can share the
-%                       same word. Adjacent trials may share condition. E.g., an allowed sequence is 'buy/decel guide/decel',
-%                       but 'buy/decel buy/accel' is not allowed. 
+%                       If 'word': Adjacent trials can't use the same word.
+%                       E.g., an allowed sequence is 'buy/decel guide/decel', but 'buy/decel buy/accel' is not allowed. 
 % 
-%                       If 'cond': the only restriction that will be followed is that no two adjacent trials can share the
-%                       same condition. Adjacent trials may share word. E.g., an allowed sequence is 'buy/accel buy/decel',
-%                       but 'buy/decel guide/decel' is not allowed. 
+%                       If 'cond': Adjacent trials can't use the same condition.
+%                       E.g., an allowed sequence is 'buy/accel buy/decel', but 'buy/decel guide/decel' is not allowed. 
 % 
-%                       If 'both': adjacent trials cannot share word OR condition. So neither of the two permitted cases in
-%                       the previous two settings would be allowed. buy/decel guide/accel would be acceptable. 
+%                       If 'both': Adjacent trials can't use the same word OR condition. 
+%                       E.g., buy/decel guide/accel would be acceptable. 
 % 
-%                       Use cases: 'cond' as the only adjacency restriction is useful if you have a study with only two words
-%                       and you don't want to strictly alternate words (which would be the end result if words couldn't be
-%                       shared across adjacent trials). 
+%                       Use cases: You have a study with only 2 words, but you don't want to always alternate between
+%                       word1 and word2. Set tAdjacRestrict to 'cond', then word1 and word1 can be adjacent.
 % 
 % 
 %
 % CWN v1 2021-01
 % RPK added bAlternatePnp flag 2022-07-28
 % RPK changed how failures work in non-alternating sequences 2022-10-25 
-% RPK added another flag for 
+% RPK added tAdjacRestrict input argument 2023-03
 
 
 %% Requirements for this pseudorandomization procedure:
