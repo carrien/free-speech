@@ -1,7 +1,8 @@
-function [expt] = randomize_stimuli(expt, nTrialsPerPert, nTrialsPerNonpert, nBaseline, nWashout, bAlternatePnp)
+function [expt] = randomize_stimuli(expt, nTrialsPerPert, nTrialsPerNonpert, nBaseline, nWashout, bAlternatePnp, tAdjacRestrict)
 % Pseudorandomize words and conditions for experiments. Specifically meant for experiments that have more than one
-% perturbation AND more than one word. For experiments where you are only randomizing one of the variables (for example, most
-% adaptation experiments only randomize expt.words), see randomize_wordOrder. 
+% perturbation AND more than one word. For experiments where you are only randomizing one of the variables, AND that variable
+% is the only variable with multiple levels (for example, most adaptation experiments only randomize expt.words, and there 
+% is only one perturbation condition, or perturbation condition maps to word), see randomize_wordOrder. 
 %
 % Input arguments:
 %   EXPT. The expt file is assumed to have the following fields:
@@ -9,7 +10,7 @@ function [expt] = randomize_stimuli(expt, nTrialsPerPert, nTrialsPerNonpert, nBa
 %       - expt.ntrials_per_block, the number of trials in each block.
 %       - expt.words, a cell array of the words in the experiment
 %       - expt.conds, a cell array of the names of each condition. 
-%       ***** The no perturbation condition must be the first member of this cell array, e.g. {'noPert' 'accel' 'decel'}
+%       ***** The no perturbation condition must be the first member of expt.conds, e.g. {'noPert' 'accel' 'decel'}
 %   NTRIALSPERPERT. In each block, the number of trials that each unique
 %       word-condition pair should be, for perturbation conditions. For
 %       example, if you have 3 words and 2 perturbation conditions, the
@@ -37,26 +38,44 @@ function [expt] = randomize_stimuli(expt, nTrialsPerPert, nTrialsPerNonpert, nBa
 % 
 %                       If 0, indicates that a trial should never be adjacent to another trial with the exact same expt.words
 %                       OR expt.conds value. That is, two perturbation trials can be adjacent, as long as they have DIFFERENT
-%                       perturbations (and different words).  
-% 
+%                       perturbations (and different words). This can be configured more via input argument tAdjacRestrict.
+%
 %                       E.g. with bAlternatePnp = 0, a sequence of sigh/accel side/decel would be acceptable. 
 %                       With bAlternatePnp = 1, the sequence would have to be (e.g.) sigh/accel side/noPert side/decel
 % 
 %                       Note that with bAlternatePnp = 1, you may still have two of the same word together or two of the same
 %                       cond together (specifically two non perturbed trials together). With bAlternatePnp = 0, no adjacent
-%                       trials will share either characteristic. 
+%                       trials will share either characteristic. See input argument tAdjacRestrict for exceptions.
 % 
 %                       Note also that you can actually use this function with bAlternatePnp set to 0 even if you don't have 
 %                       any nonpert trials. A potential use case is a compensation experiment with many different 
 %                       perturbations where there is no concern about learning as long as the same kinds of trials don't 
 %                       occur together. In this case, set nTrialsPerNonpert to the same as nTrialsPerPert. The algorithm 
 %                       treats everything equally other than the weighting (repetitions per condition). 
+%
+%   tAdjacRestrict      Default = 'both'. "Type of adjacency resctriction."
+%                       Defines which dimensions (word, cond, or both) can't be adjacent.
+%                       Possible inputs: 'word' 'cond' 'both'; default = 'both'.
+%                       Only does anything if input argument bAlternatePnp = 0.
+% 
+%                       If 'word': Adjacent trials can't use the same word.
+%                       E.g., an allowed sequence is 'buy/decel guide/decel', but 'buy/decel buy/accel' is not allowed. 
+% 
+%                       If 'cond': Adjacent trials can't use the same condition.
+%                       E.g., an allowed sequence is 'buy/accel buy/decel', but 'buy/decel guide/decel' is not allowed. 
+% 
+%                       If 'both': Adjacent trials can't use the same word OR condition. 
+%                       E.g., buy/decel guide/accel would be acceptable. 
+% 
+%                       Use cases: You have a study with only 2 words, but you don't want to always alternate between
+%                       word1 and word2. Set tAdjacRestrict to 'cond', then word1 and word1 can be adjacent.
 % 
 % 
 %
 % CWN v1 2021-01
 % RPK added bAlternatePnp flag 2022-07-28
 % RPK changed how failures work in non-alternating sequences 2022-10-25 
+% RPK added tAdjacRestrict input argument 2023-03
 
 
 %% Requirements for this pseudorandomization procedure:
@@ -163,6 +182,9 @@ if nargin < 5 || isempty(nWashout)
 end
 if nargin < 6 || isempty(bAlternatePnp)
     bAlternatePnp = 1; 
+end
+if nargin < 7 || isempty(tAdjacRestrict)
+    tAdjacRestrict = 'both'; 
 end
 
 
@@ -363,10 +385,16 @@ else
             wordCondReps(wordIx, condIx) = wordCondReps(wordIx, condIx) - 1; 
             
             % Make the new drawweight vector. This is the updated wordCondReps, with everything that is in the same word or pert column
-            % set to 0 
+            % set to 0 (or just word, or just column, depending on tAdjacRestrict)
             drawWeightTable = wordCondReps; 
-            drawWeightTable(wordIx, :) = 0; % Change the same word/pert condition ones to 0 
-            drawWeightTable(:, condIx) = 0; 
+            if strcmp(tAdjacRestrict, 'both') || strcmp(tAdjacRestrict, 'word')
+                % Make impossible to draw from same word if have adjacency restrictions on both word/cond OR just word
+                drawWeightTable(wordIx, :) = 0; 
+            end
+            if strcmp(tAdjacRestrict, 'both') || strcmp(tAdjacRestrict, 'cond')
+                % Make impossible to draw from same cond if have adjacency restrictions on both word/cond OR just cond
+                drawWeightTable(:, condIx) = 0; 
+            end
             drawWeights = reshape(drawWeightTable, 1, []); 
             drawWeights = drawWeights/sum(drawWeights); 
 
