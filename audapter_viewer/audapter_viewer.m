@@ -185,7 +185,8 @@ p.sigproc_params.triggerStatus = triggerStatus;
 ostStatus = triggerStatus;  % ostStatus can change, but starts out as triggerStatus
 allHeuristics = {'ELAPSED_TIME', 'INTENSITY_RISE_HOLD', 'INTENSITY_RISE_HOLD_POS_SLOPE', 'POS_INTENSITY_SLOPE_STRETCH',...
     'NEG_INTENSITY_SLOPE_STRETCH_SPAN', 'INTENSITY_SLOPE_BELOW_THRESH', 'INTENSITY_SLOPE_ABOVE_THRESH', 'INTENSITY_FALL', 'INTENSITY_BELOW_THRESH_NEG_SLOPE', ...
-    'INTENSITY_RATIO_RISE', 'INTENSITY_RATIO_ABOVE_THRESH_WITH_RMS_FLOOR', 'INTENSITY_AND_RATIO_ABOVE_THRESH', ...
+    'INTENSITY_RATIO_RISE', 'INTENSITY_RATIO_ABOVE_THRESH_WITH_RMS_FLOOR', ...
+    'INTENSITY_AND_RATIO_ABOVE_THRESH', 'INTENSITY_AND_RATIO_BELOW_THRESH', ...
     'INTENSITY_RATIO_FALL_HOLD', ...
     'INTENSITY_RATIO_SLOPE_ABOVE_THRESH', 'INTENSITY_RATIO_SLOPE_BELOW_THRESH'}; 
 
@@ -3120,9 +3121,26 @@ function [heurunits, heurmin, heurmax, heursliderstep] = get_heuristicParams(heu
            heursliderstep(2,:) = [0.001/heur2range 0.01/heur2range];
            % Third heuristic add
             heurmin(3) = 0; 
-            heurmax(3) = 5; 
-            heur3range = heurmax(3) - heurmin(3); 
-            heursliderstep(3,:) = [0.01/heur3range 0.1/heur3range]; 
+            heurmax(3) = 5;
+            heur3range = heurmax(3) - heurmin(3);
+            heursliderstep(3,:) = [0.01/heur3range 0.1/heur3range];
+       case 'INTENSITY_AND_RATIO_BELOW_THRESH'  % CWN add-on
+           heurunits{1} = 'RMS';
+           heurunits{2} = 'RMS ratio';
+           heurunits{3} = 's';
+           heurmin(1) = 0;
+           heurmin(2) = 0;
+           heurmax(1) = 5;
+           heurmax(2) = 5;
+           heur1range = heurmax(1) - heurmin(1);
+           heur2range = heurmax(2) - heurmin(2);
+           heursliderstep(1,:) = [0.01/heur1range 0.1/heur1range];
+           heursliderstep(2,:) = [0.001/heur2range 0.01/heur2range];
+           % Third heuristic add
+           heurmin(3) = 0;
+           heurmax(3) = 5;
+           heur3range = heurmax(3) - heurmin(3);
+           heursliderstep(3,:) = [0.01/heur3range 0.1/heur3range];
         case 'INTENSITY_RATIO_SLOPE_ABOVE_THRESH' % CWN add-on
             heurunits{1} = 'RMS Ratio Slope'; 
             heurunits{2} = 's';
@@ -3187,7 +3205,7 @@ rms_rmsSlope = {'INTENSITY_RISE_HOLD_POS_SLOPE' 'INTENSITY_BELOW_THRESH_NEG_SLOP
 rmsSlope_only = {'POS_INTENSITY_SLOPE_STRETCH' 'NEG_INTENSITY_SLOPE_STRETCH_SPAN' 'INTENSITY_SLOPE_BELOW_THRESH' 'INTENSITY_SLOPE_ABOVE_THRESH'}; 
 ratio_only = {'INTENSITY_RATIO_RISE' 'INTENSITY_RATIO_FALL_HOLD' 'INTENSITY_RATIO_ABOVE_THRESH_WITH_RMS_FLOOR'}; 
 ratioSlope_only = {'INTENSITY_RATIO_SLOPE_ABOVE_THRESH' 'INTENSITY_RATIO_SLOPE_BELOW_THRESH'}; 
-ratio_rms = {'INTENSITY_AND_RATIO_ABOVE_THRESH'}; 
+ratio_rms = {'INTENSITY_AND_RATIO_ABOVE_THRESH' 'INTENSITY_AND_RATIO_BELOW_THRESH'}; 
 ratio_rmsSlope = {}; 
 miscHeuristics = {'ELAPSED_TIME'}; 
 
