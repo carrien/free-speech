@@ -19,7 +19,7 @@ UserData.f =f;
 % load data
 UserData.dataPath = dataPath;
 load(fullfile(dataPath,'data.mat'),'data');
-if ~exist(fullfile(dataPath,'data_uncorrectedLPC.mat'))
+if ~exist(fullfile(dataPath,'data_uncorrectedLPC.mat'), 'file')
     save(fullfile(dataPath,'data_uncorrectedLPC.mat'),'data') %save original data
 end
 load(fullfile(dataPath,'expt.mat'),'expt');
