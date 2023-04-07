@@ -259,8 +259,8 @@ function updatePlots(src)
             offset = [floor(0.05 / framedur) floor(0.01 / framedur)];
             vowelFrames = vowelFrames(1)-offset(1):vowelFrames(end)-offset(2); %account for offset in ost tracking
             vowelFmts = UserData.data(i).fmts(vowelFrames,:);
-            f1s(i) = nanmedian(midnperc(vowelFmts(:,1),50));
-            f2s(i) = nanmedian(midnperc(vowelFmts(:,2),50));
+            f1s(i) = median(midnperc(vowelFmts(:,1),50), 'omitnan');
+            f2s(i) = median(midnperc(vowelFmts(:,2),50), 'omitnan');
         else
             if bWarn
                 warning('Expected OST statuses not found! Using audapter formant track length to estimate vowel midpoint')
@@ -309,7 +309,7 @@ function updatePlots(src)
             set(UserData.scatterPlot.(vow)(i),'ButtonDownFcn',{@pickTrial,vow,i,v})
         end
         goodTrials = vowTrials(~UserData.expt.bExcl(vowTrials));
-        plot(nanmean(f1s(goodTrials)),nanmean(f2s(goodTrials)),...
+        plot(mean(f1s(goodTrials), 'omitnan'),mean(f2s(goodTrials), 'omitnan'),...
             '+','MarkerEdgeColor',plotColors(v,:));
     end
     hold off
@@ -327,8 +327,8 @@ function updatePlots(src)
         else
             currF1s = f1s(vowTrials);
             currF2s = f2s(vowTrials);
-            meanF1 = nanmean(currF1s);
-            meanF2s = nanmean(currF2s);
+            meanF1 = mean(currF1s, 'omitnan');
+            meanF2s = mean(currF2s, 'omitnan');
             dists = sqrt((currF1s-meanF1).^2+(currF2s-meanF2s).^2);
             [~,trialInd] = max(dists);
             UserData.trial2plot.(vow) = trialInd;
