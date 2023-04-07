@@ -194,7 +194,7 @@ function changeLPC(src,evt)
     %set warning
     set(UserData.warnPanel,'HighlightColor','yellow')
     outstring = textwrap(UserData.warnText,{'Loading data...'});
-    set(UserData.warnText,'String',outstring)
+    set(UserData.warnText,'String',outstring); pause(0.001) % without pause, message won't appear
 
     % set UserData.nLPC
     UserData.nLPC = str2double(cell2mat(UserData.LPCdrop.String(UserData.LPCdrop.Value)));
