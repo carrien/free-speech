@@ -214,7 +214,7 @@ function changeLPC(src,evt)
         % run Audapter offline
         fprintf('Running Audapter with nLPC = %d...\n',UserData.nLPC);
         for d = 1:length(UserData.data)
-            p.nlpc = UserData.nLPC;
+            p.nLPC = UserData.nLPC;
             p.gender = UserData.expt.gender;
             data(d) = audapter_runFrames(UserData.data(d),p);
         end
