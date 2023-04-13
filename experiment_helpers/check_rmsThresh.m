@@ -16,9 +16,23 @@ if isgraphics(subAxis)
     plot(tAxis/data.params.sr,data.rms(:,1));
     ylim([0 0.1])
     xlim([0 tAxis(end)/data.params.sr])
-    hline(rmsThresh,'k',':');
+    hline(0.030, [0.7 0.7 0], '-')
+    hline(0.035, [0 0.7 0],'-')
+    hline(0.043, [0 0.7 0],'-')
+    hline(0.048, [0.7 0.7 0], '-')
+    
+    onset = find(data.ost_stat == 2, 1);
+    offset = find(data.ost_stat == 4, 1);
+    midpoint_frame = floor(mean([onset offset]));
+    midpoint_rel = midpoint_frame / length(data.ost_stat) * max(tAxis) / data.params.sr;
+    rms_mean = mean(data.rms(onset:offset, 1));
+    hold on;
+    plot(midpoint_rel, rms_mean, 'o', 'Color', 'm')
+    hold off;
+
     yyaxis right
     plot(tAxis/data.params.sr,data.ost_stat);
+
     if ~bGoodTrial
         title({'';'Amplitude below threshold!'})
     else
