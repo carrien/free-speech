@@ -21,9 +21,9 @@ get_figinds_audapter; % names figs: stim = 1, ctrl = 2, dup = 3;
 color2display = [1 1 1]; %white
 stimtxtsize = 50;
 
-fprintf('Starting passage-reading section.\nGive instructions, then press any key to START Audapter.\n');
-h_text = draw_exptText(h_fig,.5,.5,'Time for a break.', 'Color',color2display, 'FontSize',stimtxtsize, 'HorizontalAlignment','center');
-pause
+fprintf('Starting passage-reading section.\nGive instructions, then press ENTER to START Audapter.\n');
+h_text = draw_exptText(h_fig,.5,.5,'Please wait.', 'Color',color2display, 'FontSize',stimtxtsize, 'HorizontalAlignment','center');
+input('', 's');
 
 % clear screen
 delete_exptText(h_fig,h_text)
@@ -50,12 +50,12 @@ p.fb3Gain = 0.02;   % gain for noise waveform
 AudapterIO('init', p);
 Audapter('reset'); %reset Audapter
 Audapter('start'); %start trial
-fprintf('Press any key to STOP Audapter when finished reading.\n');
-pause
+fprintf('Press ENTER to STOP Audapter when finished reading.\n');
+input('', 's');
 Audapter('stop'); %stop Audapter
 
 fprintf('Press any key to leave passage-reading section.\n');
-h_text = draw_exptText(h_fig,.5,.5,'Time for a break.', 'Color',color2display, 'FontSize',stimtxtsize, 'HorizontalAlignment','center');
+h_text = draw_exptText(h_fig,.5,.5,'Please wait.', 'Color',color2display, 'FontSize',stimtxtsize, 'HorizontalAlignment','center');
 pause
 fprintf('Leaving passage-reading section.\n'); 
 close(h_fig); 
