@@ -107,6 +107,21 @@ for i = 1:length(sortedTrialnums)
             numUserEvents = 0;
         end
 
+        % reorder events first-to-last
+        if numUserEvents >= 2
+            event_times = trialparams.event_params.user_event_times;
+            event_names = trialparams.event_params.user_event_names;
+
+            [~, sortOrder] = sort(event_times(:));
+            if ~isequal(sortOrder', 1:numUserEvents) % events not ordered first-to-last
+                fprintf('Reordering events for trial %d\n', trialnum);
+                trialparams.event_params.user_event_times = event_times(sortOrder);
+                trialparams.event_params.user_event_names = event_names(sortOrder);
+                save(fullfile(trialPath,filename), 'sigmat', 'trialparams');
+            end
+        end
+
+
         try
             bGoodTrial = trialparams.event_params.is_good_trial;
         catch
