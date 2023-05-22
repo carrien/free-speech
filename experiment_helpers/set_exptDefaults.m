@@ -121,12 +121,21 @@ durcalc.bPrintDuration = 0;
 durcalc.bMeasureOst = 0;
 expt = set_missingField(expt,'durcalc',durcalc);
 
-%% amplitude tracking parameters
+%% amplitude tracking parameters - old, mostly used with brut
 amplcalc.min_ampl = 0.04; %0.02;
 amplcalc.max_ampl = 0.24; %0.2;
 amplcalc.ons_thresh = 0.01;
 amplcalc.offs_thresh = 0.015;
 expt = set_missingField(expt,'amplcalc',amplcalc);
+
+%% amplitude parameters for experimenter monitoring
+% mainly used in free-speech\experiment_helpers\check_rmsThresh
+amp.targetRMS = 0.04;   % approximately 78.5 dBA with SMNG hardware
+amp.limGoodLower = 0.04;
+amp.limGoodUpper = 0.08;
+amp.limWarnLower = 0;
+amp.limWarnUpper = 0;
+expt = set_missingField(expt,'amp',amp);
 
 %% instructions
 instruct = get_defaultInstructions;
