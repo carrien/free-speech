@@ -129,13 +129,8 @@ amplcalc.offs_thresh = 0.015;
 expt = set_missingField(expt,'amplcalc',amplcalc);
 
 %% amplitude parameters for experimenter monitoring
-% mainly used in free-speech\experiment_helpers\check_rmsThresh
-amp.targetRMS = 0.04;   % approximately 78.5 dBA with SMNG hardware
-amp.limGoodLower = 0.04;
-amp.limGoodUpper = 0.08;
-amp.limWarnLower = 0;
-amp.limWarnUpper = 0;
-expt = set_missingField(expt,'amp',amp);
+defaultAmp = get_rmsThresh_defaults('main');
+expt = set_missingField(expt, 'amp', defaultAmp);
 
 %% instructions
 instruct = get_defaultInstructions;
