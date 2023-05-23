@@ -54,7 +54,7 @@ if isgraphics(subAxis)
     % if no ost tracking, use RMS data to find onset/offset
     elseif ~any(data.ost_stat >= 1) && any(data.rms(:, 1) > 0.03)
         onset = find(data.rms > 0.01, 1, 'first') + 5;
-        offset = find(data.rms(:, 1)<0.03 & data.rms(:, 1)>0.02 & data.rms_slope<0, 1, 'last') - 5;
+        offset = find(data.rms(:, 1)<0.03 & data.rms(:, 1)>0.02 & data.rms_slope<0, 1, 'first') - 5;
 
         % use middle 80%
         onset = floor(onset + ((offset-onset)/10));
