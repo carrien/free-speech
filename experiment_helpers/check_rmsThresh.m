@@ -4,12 +4,8 @@ if nargin < 3, subAxis = []; end
 if nargin < 4
     params = struct;
 end
-params = set_missingField(params, 'bUsePeak', 0);
-params = set_missingField(params, 'targetRMS', 0.04);
-params = set_missingField(params, 'limGoodUpper', 0.08, 0);
-params = set_missingField(params, 'limGoodLower', 0.04, 0);
-params = set_missingField(params, 'limWarnUpper', 0, 0);
-params = set_missingField(params, 'limWarnLower', 0, 0);
+defaultParams = get_rmsThresh_defaults('main');
+params = set_missingFields(params, defaultParams, 0);
 
 if nargin < 2 || isempty(rmsThresh)
     rmsThresh = params.targetRMS;
@@ -24,13 +20,13 @@ if isgraphics(subAxis)
     ylim([0 0.1])
     xlim([0 tAxis(end)/data.params.sr])
 
-    yGood = [params.limGoodLower params.limGoodLower params.limGoodUpper params.limGoodUpper];
-    yWarn = [params.limWarnLower params.limWarnLower params.limWarnUpper params.limWarnUpper];
+    yGood = [params.limits(1,1) params.limits(1,1) params.limits(1,2) params.limits(1,2)];
+    yWarn = [params.limits(2,1) params.limits(2,1) params.limits(2,2) params.limits(2,2)];
 
     colorWarn = [1,   1,   0.3];
     colorGood = [0.4, 1,   0.4];
 
-    xPatchShade = [0, length(data.ost_stat), length(data.ost_stat), 0];
+    xPatchShade = [0, length(data.rms), length(data.rms), 0];
 
     patch(xPatchShade,yWarn,colorWarn, 'FaceAlpha', 0.3, 'EdgeColor', 'none')
     patch(xPatchShade,yGood,colorGood, 'FaceAlpha', 0.3, 'EdgeColor', 'none')
@@ -55,16 +51,16 @@ if isgraphics(subAxis)
         onset = 1 + find(data.ost_stat == 0, 1, 'last');
         offset = 1 + find(data.ost_stat == 2, 1, 'last');
 
-        % if no ost tracking, use RMS data to find onset/offset
+    % if no ost tracking, use RMS data to find onset/offset
     elseif ~any(data.ost_stat >= 1) && any(data.rms(:, 1) > 0.03)
         onset = find(data.rms > 0.01, 1, 'first') + 5;
         offset = find(data.rms(:, 1)<0.03 & data.rms(:, 1)>0.02 & data.rms_slope<0, 1, 'last') - 5;
 
-        % lob off 10% on each side
+        % use middle 80%
         onset = floor(onset + ((offset-onset)/10));
         offset = ceil(offset - ((offset-onset)/10));
 
-        % can't determine rms mean, because no ost-based vowel found, and RMS too low
+    % can't determine rms mean, because no ost-based vowel found, and RMS too low
     else
         onset = [];
         offset = [];
@@ -101,4 +97,4 @@ if isgraphics(subAxis)
     
 end % of subplot conditional
 
-end %of function
+end % of function
