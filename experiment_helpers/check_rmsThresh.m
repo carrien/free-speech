@@ -1,14 +1,18 @@
 function bGoodTrial = check_rmsThresh(data,rmsThresh,subAxis,params)
+% Takes a data file from Audapter, 
 
 if nargin < 3, subAxis = []; end
 if nargin < 4
     params = struct;
 end
-defaultParams = get_rmsThresh_defaults('main');
+defaultParams.checkMethod = 'mean';
+defaultParams.limits = [0.037, 0.100; 0 0];
+defaultParams.rmsThresh = 0.037;
 params = set_missingFields(params, defaultParams, 0);
 
-if nargin < 2 || isempty(rmsThresh)
-    rmsThresh = params.targetRMS;
+% for backwards compatibility, the second input parameter can override params.rmsThresh
+if nargin >= 2 && ~isempty(rmsThresh)
+    params.rmsThresh = rmsThresh;
 end
 
 if isgraphics(subAxis)
@@ -32,62 +36,53 @@ if isgraphics(subAxis)
     patch(xPatchShade,yGood,colorGood, 'FaceAlpha', 0.3, 'EdgeColor', 'none')
 
     %% If evaluating based on peak amplitude, do that
-    if params.bUsePeak
-        if max(data.rms(:,1)) > params.rmsThresh
-            bGoodTrial = 1;
-            title({'',''})
-        else
-            bGoodTrial = 0;
-            title({'';'Amplitude below threshold!'})
-        end
-        return;
+    switch params.checkMethod
+        case 'peak'
+            rmsValue = max(data.rms(:,1));
+        case 'mean'
+            %% determine onset and offset
+            % if OST onset and offset exist, use that
+            if any(data.ost_stat == 4)
+                % Finding the last instance of status 0 implies that the next status
+                % was 1, and did eventually successfully become status 2.
+                onset = 1 + find(data.ost_stat == 0, 1, 'last');
+                offset = 1 + find(data.ost_stat == 2, 1, 'last');
+                rmsValue = mean(data.rms(onset:offset, 1));
+
+                % if no ost tracking, use RMS data to find onset/offset
+            elseif ~any(data.ost_stat >= 1) && any(data.rms(:, 1) > 0.03)
+                onset = find(data.rms > 0.01, 1, 'first') + 5;
+                offset = find(data.rms(:, 1)<0.03 & data.rms(:, 1)>0.02 & data.rms_slope<0, 1, 'first') - 5;
+
+                % use middle 80%
+                onset = floor(onset + ((offset-onset)/10));
+                offset = ceil(offset - ((offset-onset)/10));
+                rmsValue = mean(data.rms(onset:offset, 1));
+
+                % can't determine rms mean, because no ost-based vowel found, and RMS too low
+            else
+                rmsValue = NaN;
+            end
+
+            %% plot amplitude data
+            %plot mean RMS during vowel as a bar whose x position is vowel onset/offset, and y position is mean RMS
+
+            % TODO see if LineWidth is good. Default is 0.5
+            if ~isnan(rmsValue) && ~isempty(onset) && ~isempty(offset)
+                hold on;
+                xRMS = [onset offset] / length(data.rms) * max(tAxis) / data.params.sr;  %convert from frames to milliseconds
+                plot(xRMS, [rmsValue, rmsValue], '-', 'm')
+                hold off;
+            end
     end
 
-    %% determine onset and offset
-    % if OST onset and offset exist, use that
-    if any(data.ost_stat == 4)
-        % Finding the last instance of status 0 implies that the next status
-        % was 1, and did eventually successfully become status 2.
-        onset = 1 + find(data.ost_stat == 0, 1, 'last');
-        offset = 1 + find(data.ost_stat == 2, 1, 'last');
-
-    % if no ost tracking, use RMS data to find onset/offset
-    elseif ~any(data.ost_stat >= 1) && any(data.rms(:, 1) > 0.03)
-        onset = find(data.rms > 0.01, 1, 'first') + 5;
-        offset = find(data.rms(:, 1)<0.03 & data.rms(:, 1)>0.02 & data.rms_slope<0, 1, 'first') - 5;
-
-        % use middle 80%
-        onset = floor(onset + ((offset-onset)/10));
-        offset = ceil(offset - ((offset-onset)/10));
-
-    % can't determine rms mean, because no ost-based vowel found, and RMS too low
-    else
-        onset = [];
-        offset = [];
-        rms_mean = NaN;
-    end
-
-    %% plot amplitude data
-    %plot mean RMS during vowel as a bar whose x position is vowel onset/offset, and y position is mean RMS
-    if ~isempty(onset) && ~isempty(offset)
-        xPatchRMS = [onset offset offset onset];
-        xPatchRMS = xPatchRMS / length(data.ost_stat) * max(tAxis) / data.params.sr;  %convert from frames to milliseconds
-        rms_mean = mean(data.rms(onset:offset, 1));
-        yPatchRMS = [rms_mean-0.0007, rms_mean-0.0007, rms_mean+0.0007, rms_mean+0.0007];
-
-        % plot the bar
-        hold on;
-        patch(xPatchRMS, yPatchRMS, 'm', 'EdgeColor', 'none');
-        hold off;
-
-        % plot OST status
-        yyaxis right
-        plot(tAxis/data.params.sr,data.ost_stat);
-        ylim([0 max(data.ost_stat + 2)]);
-    end
+    %% plot OST status
+    yyaxis right
+    plot(tAxis/data.params.sr,data.ost_stat);
+    ylim([0 max(data.ost_stat + 2)]);
 
     %% set title and bGoodTrial
-    if rms_mean > rmsThresh
+    if rmsValue > params.rmsThresh
         bGoodTrial = 1;
         title({'',''})
     else

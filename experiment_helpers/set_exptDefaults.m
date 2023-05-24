@@ -129,8 +129,15 @@ amplcalc.offs_thresh = 0.015;
 expt = set_missingField(expt,'amplcalc',amplcalc);
 
 %% amplitude parameters for experimenter monitoring
-defaultAmp = get_rmsThresh_defaults('main');
-expt = set_missingField(expt, 'amp', defaultAmp);
+amp.checkMethod = 'mean';   % Compare mean RMS during vowel against amp.rmsThresh
+amp.rmsThresh = 0.037;      % RMS values below this trigger "speak louder" prompt. 0.037 is ~78.5 dBA on SMNG hardware
+    % expt.amp.limits is a 2x2 array structured like this:
+    %        [GoodLow, GoodHi;
+    %         WarnLow, WarnHi]
+    % In check_rmsThresh, a line is drawn in green between the low and hi Good limits,
+    % and a line in yellow between the Warn limits.
+amp.limits = [0.037, 0.100; 0 0];
+expt = set_missingField(expt, 'amp', amp);
 
 %% instructions
 instruct = get_defaultInstructions;
