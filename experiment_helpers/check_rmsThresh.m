@@ -1,5 +1,29 @@
 function bGoodTrial = check_rmsThresh(data,rmsThresh,subAxis,params)
-% Takes a data file from Audapter, 
+% Takes a data file from Audapter and checks the amplitude of that signal
+% against certain parmeters. Primarily, it checks if the calculated
+% RMS value is above a certain threshold (rmsThresh). It also displays
+% information about acceptable RMS values on the subAxis. `params` controls
+% how the RMS value is calculated, and how values are displayed on the plot.
+%
+% Input arguments:
+%   * data. The output data structure from Audapter
+%   * rmsThresh. If the RMS value of data is below rmsThresh, the output
+%       parameter bGoodTrial will be 0.
+%   * subAxis. If a graphics object is included in the 3rd input parameter,
+%       the mean RMS and OST values are plotted.
+%   * params: A structure controlling parts of this function, with fields:
+%       * checkMethod. If 'mean', the RMS value is calculated as the mean
+%           RMS during the vowel. If 'peak', the RMS value is the peak RMS.
+%       * limits. A 2x2 array structured like this:
+%               [GoodLow, GoodHi;
+%               WarnLow, WarnHi]
+%           In check_rmsThresh, a line is drawn in green between the low
+%           and hi Good limits, and a line in yellow between the Warn limits.
+%       * rmsThresh. If the RMS value is below rmsThresh, the output
+%           parameter bGoodTrial will be 0. This parameter is overridden by
+%           the 2nd input param `rmsThresh`, if that input param is used.
+%
+% 
 
 if nargin < 3, subAxis = []; end
 if nargin < 4
