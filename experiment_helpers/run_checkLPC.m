@@ -34,20 +34,6 @@ else
     defaultParams.nblocks = 10; % number of repetitions of each word
 end
 defaultParams.breakTrials = exptPre.ntrials; % no breaks
-% uncomment this section when changes to check_rmsThresh and expt.amp is finalized
-%{
-expt.amp.checkMethod = 'mean';
-expt.amp.rmsThresh = 0; % don't automatically prompt pp to change volume during pretest phase
-% expt.amp.limits is a 2x2 array structured like this:
-%        [GoodLow, GoodHi;
-%         WarnLow, WarnHi]
-% In check_rmsThresh, a line is drawn in green between the low and hi Good limits,
-% and a line in yellow between the Warn limits.
-% With these limits, the green region is 80-86 dBA on SMNG hardware.
-% Warn region is +/- another 1.5 dBA.
-expt.amp.limits = [0.042, 0.060; 0.037, 0.065];
-
-%}
 
 % reconcile exptPre and defaultParams
 exptPre = set_missingFields(exptPre, defaultParams, 0);
