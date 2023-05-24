@@ -73,7 +73,7 @@ if isgraphics(subAxis)
                 offset = 1 + find(data.ost_stat == 2, 1, 'last');
                 rmsValue = mean(data.rms(onset:offset, 1));
 
-                % if no ost tracking, use RMS data to find onset/offset
+            % if no ost tracking, use RMS data to find onset/offset
             elseif ~any(data.ost_stat >= 1) && any(data.rms(:, 1) > 0.03)
                 onset = find(data.rms > 0.01, 1, 'first') + 5;
                 offset = find(data.rms(:, 1)<0.03 & data.rms(:, 1)>0.02 & data.rms_slope<0, 1, 'first') - 5;
@@ -83,19 +83,17 @@ if isgraphics(subAxis)
                 offset = ceil(offset - ((offset-onset)/10));
                 rmsValue = mean(data.rms(onset:offset, 1));
 
-                % can't determine rms mean, because no ost-based vowel found, and RMS too low
+            % can't determine rms mean, because no ost-based vowel found, and RMS too low
             else
                 rmsValue = NaN;
             end
 
             %% plot amplitude data
             %plot mean RMS during vowel as a bar whose x position is vowel onset/offset, and y position is mean RMS
-
-            % TODO see if LineWidth is good. Default is 0.5
             if ~isnan(rmsValue) && ~isempty(onset) && ~isempty(offset)
                 hold on;
                 xRMS = [onset offset] / length(data.rms) * max(tAxis) / data.params.sr;  %convert from frames to milliseconds
-                plot(xRMS, [rmsValue, rmsValue], '-', 'm')
+                plot(xRMS, [rmsValue, rmsValue], '-m', 'LineWidth', 2.2);
                 hold off;
             end
     end
