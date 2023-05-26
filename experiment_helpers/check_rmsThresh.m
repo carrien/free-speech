@@ -11,7 +11,8 @@ function bGoodTrial = check_rmsThresh(data,rmsThresh,subAxis,params)
 %       parameter bGoodTrial will be 0.
 %   * subAxis. If a graphics object is included in the 3rd input parameter,
 %       the mean RMS and OST values are plotted.
-%   * params: A structure controlling parts of this function, with fields:
+%   * params: A structure (often stored in expt.amplcalc)
+%       controlling parts of this function, with relevant fields:
 %       * checkMethod. If 'mean', the RMS value is calculated as the mean
 %           RMS during the vowel. If 'peak', the RMS value is the peak RMS.
 %       * limits. A 2x2 array structured like this:
