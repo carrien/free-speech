@@ -131,8 +131,8 @@ amplcalc.rmsThresh = 0.037;      % RMS values below this trigger "speak louder" 
     % expt.amplcalc.limits is a 2x2 array structured like this:
     %        [GoodLow, GoodHi;
     %         WarnLow, WarnHi]
-    % In check_rmsThresh, a line is drawn in green between the low and hi Good limits,
-    % and a line in yellow between the Warn limits.
+    % In check_rmsThresh, an area is shaded green between the low and hi Good limits,
+    % and an area is shaded yellow between Warn limits.
 amplcalc.limits = [0.037, 0.100; 0 0];
 expt = set_missingField(expt,'amplcalc',amplcalc);
 
