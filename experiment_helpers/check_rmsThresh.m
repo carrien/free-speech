@@ -43,7 +43,6 @@ end
 %% find rmsValue
 switch params.checkMethod
     case 'peak'
-        % TODO make sure this works
         [rmsValue, onset] = max(data.rms(:,1));
         offset = onset;
     case 'mean'     
@@ -103,7 +102,12 @@ if isgraphics(subAxis)
     if ~isnan(rmsValue) && ~isempty(onset) && ~isempty(offset)
         hold on;
         xRMS = [onset offset] / length(data.rms) * max(tAxis) / data.params.sr;  %convert from frames to milliseconds
-        plot(xRMS, [rmsValue, rmsValue], '-m', 'LineWidth', 2.2);
+        switch params.checkMethod
+            case 'peak'
+                plot(xRMS(1), rmsValue, 'om', 'LineWidth', 2);
+            otherwise
+                plot(xRMS, [rmsValue, rmsValue], '-m', 'LineWidth', 2.2);
+        end
         hold off;
     end
 
