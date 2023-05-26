@@ -40,8 +40,47 @@ if nargin >= 2 && ~isempty(rmsThresh)
     params.rmsThresh = rmsThresh;
 end
 
+%% find rmsValue
+switch params.checkMethod
+    case 'peak'
+        % TODO make sure this works
+        [rmsValue, onset] = max(data.rms(:,1));
+        offset = onset;
+    case 'mean'     
+        % if OST onset and offset exist, use that
+        if any(data.ost_stat == 4)
+            % Finding the last instance of status 0 implies that the next status
+            % was 1, and did eventually successfully become status 2.
+            onset = 1 + find(data.ost_stat == 0, 1, 'last');
+            offset = 1 + find(data.ost_stat == 2, 1, 'last');
+            rmsValue = mean(data.rms(onset:offset, 1));
+
+        % if no ost tracking, use RMS data to find onset/offset
+        elseif ~any(data.ost_stat >= 1) && any(data.rms(:, 1) > 0.03)
+            onset = find(data.rms > 0.01, 1, 'first') + 5;
+            offset = find(data.rms(:, 1)<0.03 & data.rms(:, 1)>0.02 & data.rms_slope<0, 1, 'first') - 5;
+
+            % use middle 80%
+            onset = floor(onset + ((offset-onset)/10));
+            offset = ceil(offset - ((offset-onset)/10));
+            rmsValue = mean(data.rms(onset:offset, 1));
+
+        % can't determine rms mean, because no ost-based vowel found, and RMS too low
+        else
+            rmsValue = NaN;
+        end
+end % of switch/case
+    
+%% set bGoodTrial
+if rmsValue > params.rmsThresh
+    bGoodTrial = 1;
+else
+    bGoodTrial = 0;
+end
+
+%% plot
 if isgraphics(subAxis)
-    %% plot Good and Warn shaded regions
+    % plot Good and Warn shaded regions
     subplot(subAxis)
     tAxis = 0 : data.params.frameLen : data.params.frameLen * (size(data.fmts, 1) - 1);
     yyaxis left
@@ -60,43 +99,19 @@ if isgraphics(subAxis)
     patch(xPatchShade,yWarn,colorWarn, 'FaceAlpha', 0.3, 'EdgeColor', 'none')
     patch(xPatchShade,yGood,colorGood, 'FaceAlpha', 0.3, 'EdgeColor', 'none')
 
-    %% If evaluating based on peak amplitude, do that
-    switch params.checkMethod
-        case 'peak'
-            rmsValue = max(data.rms(:,1));
-        case 'mean'
-            %% determine onset and offset
-            % if OST onset and offset exist, use that
-            if any(data.ost_stat == 4)
-                % Finding the last instance of status 0 implies that the next status
-                % was 1, and did eventually successfully become status 2.
-                onset = 1 + find(data.ost_stat == 0, 1, 'last');
-                offset = 1 + find(data.ost_stat == 2, 1, 'last');
-                rmsValue = mean(data.rms(onset:offset, 1));
+    % plot a bar whose x position is vowel onset/offset, and y position is rmsValue
+    if ~isnan(rmsValue) && ~isempty(onset) && ~isempty(offset)
+        hold on;
+        xRMS = [onset offset] / length(data.rms) * max(tAxis) / data.params.sr;  %convert from frames to milliseconds
+        plot(xRMS, [rmsValue, rmsValue], '-m', 'LineWidth', 2.2);
+        hold off;
+    end
 
-            % if no ost tracking, use RMS data to find onset/offset
-            elseif ~any(data.ost_stat >= 1) && any(data.rms(:, 1) > 0.03)
-                onset = find(data.rms > 0.01, 1, 'first') + 5;
-                offset = find(data.rms(:, 1)<0.03 & data.rms(:, 1)>0.02 & data.rms_slope<0, 1, 'first') - 5;
-
-                % use middle 80%
-                onset = floor(onset + ((offset-onset)/10));
-                offset = ceil(offset - ((offset-onset)/10));
-                rmsValue = mean(data.rms(onset:offset, 1));
-
-            % can't determine rms mean, because no ost-based vowel found, and RMS too low
-            else
-                rmsValue = NaN;
-            end
-
-            %% plot amplitude data
-            %plot mean RMS during vowel as a bar whose x position is vowel onset/offset, and y position is mean RMS
-            if ~isnan(rmsValue) && ~isempty(onset) && ~isempty(offset)
-                hold on;
-                xRMS = [onset offset] / length(data.rms) * max(tAxis) / data.params.sr;  %convert from frames to milliseconds
-                plot(xRMS, [rmsValue, rmsValue], '-m', 'LineWidth', 2.2);
-                hold off;
-            end
+    % set title
+    if bGoodTrial
+        title({'',''})
+    else
+        title({'';'Amplitude below threshold!'})
     end
 
     %% plot OST status
@@ -104,15 +119,6 @@ if isgraphics(subAxis)
     plot(tAxis/data.params.sr,data.ost_stat);
     ylim([0 max(data.ost_stat + 2)]);
 
-    %% set title and bGoodTrial
-    if rmsValue > params.rmsThresh
-        bGoodTrial = 1;
-        title({'',''})
-    else
-        bGoodTrial = 0;
-        title({'';'Amplitude below threshold!'})
-    end
-    
 end % of subplot conditional
 
 end % of function
