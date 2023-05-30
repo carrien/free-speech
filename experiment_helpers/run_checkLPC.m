@@ -17,7 +17,7 @@ function [expt, exptPre] = run_checkLPC(expt, exptPre)
 
 %% setup
 if nargin < 2
-    exptPre = [];
+    exptPre = struct;
 end
 
 defaultParams.snum = expt.snum;
