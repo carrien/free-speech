@@ -66,12 +66,12 @@ switch params.checkMethod
 
         % can't determine rms mean, because no ost-based vowel found, and RMS too low
         else
-            rmsValue = NaN;
+            rmsValue = 0;
         end
 end % of switch/case
     
 %% set bGoodTrial
-if rmsValue > params.rmsThresh
+if rmsValue >= params.rmsThresh
     bGoodTrial = 1;
 else
     bGoodTrial = 0;
@@ -99,7 +99,7 @@ if isgraphics(subAxis)
     patch(xPatchShade,yGood,colorGood, 'FaceAlpha', 0.3, 'EdgeColor', 'none')
 
     % plot a bar whose x position is vowel onset/offset, and y position is rmsValue
-    if ~isnan(rmsValue) && ~isempty(onset) && ~isempty(offset)
+    if rmsValue > 0 && ~isempty(onset) && ~isempty(offset)
         hold on;
         xRMS = [onset offset] / length(data.rms) * max(tAxis) / data.params.sr;  %convert from frames to milliseconds
         switch params.checkMethod
