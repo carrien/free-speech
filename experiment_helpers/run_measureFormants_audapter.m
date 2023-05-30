@@ -29,9 +29,6 @@ stimtxtsize = 200;
 % set missing expt fields to defaults
 expt = set_exptDefaults(expt);
 
-%set RMS threshold for deciding if a trial is good or not
-rmsThresh = 0.04;
-
 %% set up audapter
 audioInterfaceName = 'Focusrite USB'; %SMNG default for Windows 10
 Audapter('deviceName', audioInterfaceName);
@@ -134,17 +131,8 @@ for itrial = 1:length(trials2run)  % for each trial
         data.bChangeOst = 0; 
 
         %plot amplitude and ost tracking
-        bGoodTrial = check_rmsThresh(data,rmsThresh,h_sub(3));
-    %     figure(h_fig(ctrl))
-    %     subplot(h_sub(3))
-    %     yyaxis left
-    %     plot(data.rms(:,1));
-    % %     ylim([0 0.1]) 
-    %     
-    %     yyaxis right
-    %     plot(data.ost_stat);
-    %     hline(0.01,'k',':');
-    %     
+        bGoodTrial = check_rmsThresh(data,[],h_sub(3), expt.amplcalc);
+
         % clear screen
         delete_exptText(h_fig,h_text)
         clear h_text
