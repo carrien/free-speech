@@ -101,15 +101,29 @@ for i = 1:length(sortedTrialnums)
         filename = sortedFilenames{i};
         load(fullfile(trialPath,filename), 'sigmat', 'trialparams');
 
-        try
+        if isfield(trialparams,'event_params') && isfield(trialparams.eventparams,'user_event_times')
             numUserEvents = length(trialparams.event_params.user_event_times);
-        catch
+        else
             numUserEvents = 0;
         end
 
-        try
+        % reorder events first-to-last
+        if numUserEvents >= 2
+            event_times = trialparams.event_params.user_event_times;
+            event_names = trialparams.event_params.user_event_names;
+
+            [~, sortOrder] = sort(event_times);
+            if ~isequal(sortOrder, 1:numUserEvents) % events not ordered first-to-last
+                fprintf('Reordering events for trial %d\n', trialnum);
+                trialparams.event_params.user_event_times = event_times(sortOrder);
+                trialparams.event_params.user_event_names = event_names(sortOrder);
+                save(fullfile(trialPath,filename), 'sigmat', 'trialparams');
+            end
+        end
+
+        if isfield(trialparams,'event_params') && isfield(trialparams.eventparams,'is_good_trial')
             bGoodTrial = trialparams.event_params.is_good_trial;
-        catch
+        else
             bGoodTrial = 1; % if field doesn't exist, assume it's good
         end
 
