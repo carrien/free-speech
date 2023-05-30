@@ -33,13 +33,15 @@ if isfield(expt, 'bTestMode') && expt.bTestMode
 else
     defaultParams.nblocks = 10; % number of repetitions of each word
 end
-defaultParams.breakTrials = exptPre.ntrials; % no breaks
 
 % reconcile exptPre and defaultParams
 exptPre = set_missingFields(exptPre, defaultParams, 0);
 
 % settings that require reconciled exptPre and defaultParams
 exptPre.ntrials = exptPre.nblocks * length(exptPre.words);
+if ~isfield(exptPre, 'breakTrials')
+    exptPre.breakTrials = exptPre.ntrials; % no breaks
+end
 refreshWorkingCopy(exptPre.trackingFileLoc,exptPre.trackingFileName,'both');
 if ~exist(exptPre.dataPath, 'dir')
     mkdir(exptPre.dataPath)
