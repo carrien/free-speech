@@ -66,9 +66,7 @@ switch params.checkMethod
             end
 
             % use middle 80%
-            onset = floor(onset + ((offset-onset)/10));
-            offset = ceil(offset - ((offset-onset)/10));
-            rmsValue = mean(data.rms(onset:offset, 1));
+            rmsValue = mean(data.rms(midnperc(onset:offset, 80), 1));
 
         % can't determine rms mean, because no ost-based vowel found, and RMS too low
         else
