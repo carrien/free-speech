@@ -34,7 +34,7 @@ else
     defaultParams.nblocks = 10; % number of repetitions of each word
 end
 defaultParams.amplcalc.checkMethod = 'mean';
-defaultParams.amplcalc.rmsThresh = 0; % don't automatically prompt pp to change volume during pretest phase
+defaultParams.amplcalc.rmsThresh = 0.03; % quite low amplitude required for "talk louder" message
 % amplcalc.limits is a 2x2 array structured like this:
 %        [GoodLow, GoodHi;
 %         WarnLow, WarnHi]
