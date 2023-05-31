@@ -48,10 +48,10 @@ switch params.checkMethod
     case 'mean'     
         % if OST onset and offset exist, use that
         if any(data.ost_stat == 4)
-            % Finding the last instance of status 0 implies that the next status
-            % was 1, and did eventually successfully become status 2.
-            onset = 1 + find(data.ost_stat == 0, 1, 'last');
-            offset = 1 + find(data.ost_stat == 2, 1, 'last');
+            % Finding the last instance of status 1 implies the next status
+            % was 2 (the next event)
+            onset = 1 + find(data.ost_stat == 1, 1, 'last');
+            offset = 1 + find(data.ost_stat == 3, 1, 'last');
             rmsValue = mean(data.rms(onset:offset, 1));
 
         % if no ost tracking, use RMS data to find onset/offset
