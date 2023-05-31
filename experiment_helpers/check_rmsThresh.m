@@ -55,9 +55,12 @@ switch params.checkMethod
             rmsValue = mean(data.rms(onset:offset, 1));
 
         % if no ost tracking, use RMS data to find onset/offset
-        elseif any(data.rms(:, 1) > 0.025)
-            onset = find(data.rms > 0.025, 1, 'first') + 5;
-            offset = find(data.rms(:, 1)<0.03 & data.rms(:, 1)>0.015 & data.rms_slope<0, 1, 'first') - 5;
+        elseif any(data.rms(:, 1) > 0.03)
+            % These values are more lax versions of the settings
+            % in free-speech\experiment_helpers\measureFormants.ost. They
+            % are relatively imprecise and would benefit from more nuance in the future.
+            onset = find(data.rms > 0.03, 1, 'first') + 5;
+            offset = find(data.rms(:, 1)<0.03 & data.rms(:, 1)>0.02 & data.rms_slope<0, 1, 'first') - 5;
             if isempty(offset)
                 offset = min(onset+10,length(data.rms));
             end
