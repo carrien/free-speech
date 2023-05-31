@@ -59,10 +59,7 @@ switch params.checkMethod
             onset = find(data.rms > 0.025, 1, 'first') + 5;
             offset = find(data.rms(:, 1)<0.03 & data.rms(:, 1)>0.015 & data.rms_slope<0, 1, 'first') - 5;
             if isempty(offset)
-                offset = onset+10;
-            end
-            if offset > length(data.rms)
-                offset = length(data.rms);
+                offset = min(onset+10,length(data.rms));
             end
 
             % use middle 80%
