@@ -29,8 +29,11 @@ function bGoodTrial = check_rmsThresh(data,rmsThresh,subAxis,params)
 if nargin < 3, subAxis = []; end
 if nargin < 4
     params = struct;
+    defaultParams.checkMethod = 'peak';     % maintain legacy behavior
+else
+    defaultParams.checkMethod = 'mean';
 end
-defaultParams.checkMethod = 'mean';
+
 defaultParams.limits = [0.037, 0.100; 0 0];
 defaultParams.rmsThresh = 0.037;
 params = set_missingFields(params, defaultParams, 0);
@@ -55,13 +58,15 @@ switch params.checkMethod
             rmsValue = mean(data.rms(onset:offset, 1));
 
         % if no ost tracking, use RMS data to find onset/offset
-        elseif ~any(data.ost_stat >= 1) && any(data.rms(:, 1) > 0.03)
-            onset = find(data.rms > 0.01, 1, 'first') + 5;
+        elseif any(data.rms(:, 1) > 0.03)
+            % These values are more lax versions of the settings
+            % in free-speech\experiment_helpers\measureFormants.ost. They
+            % are relatively imprecise and would benefit from more nuance in the future.
+            onset = find(data.rms > 0.03, 1, 'first') + 5;
             offset = find(data.rms(:, 1)<0.03 & data.rms(:, 1)>0.02 & data.rms_slope<0, 1, 'first') - 5;
-
-            % use middle 80%
-            onset = floor(onset + ((offset-onset)/10));
-            offset = ceil(offset - ((offset-onset)/10));
+            if isempty(offset)
+                offset = min(onset+10,length(data.rms));
+            end
             rmsValue = mean(data.rms(onset:offset, 1));
 
         % can't determine rms mean, because no ost-based vowel found, and RMS too low
