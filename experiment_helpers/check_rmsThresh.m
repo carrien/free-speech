@@ -67,9 +67,7 @@ switch params.checkMethod
             if isempty(offset)
                 offset = min(onset+10,length(data.rms));
             end
-
-            % use middle 80%
-            rmsValue = mean(data.rms(midnperc(onset:offset, 80), 1));
+            rmsValue = mean(data.rms(onset:offset));
 
         % can't determine rms mean, because no ost-based vowel found, and RMS too low
         else
