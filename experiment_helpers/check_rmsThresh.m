@@ -29,8 +29,11 @@ function bGoodTrial = check_rmsThresh(data,rmsThresh,subAxis,params)
 if nargin < 3, subAxis = []; end
 if nargin < 4
     params = struct;
+    defaultParams.checkMethod = 'peak';     % maintain legacy behavior
+else
+    defaultParams.checkMethod = 'mean';
 end
-defaultParams.checkMethod = 'mean';
+
 defaultParams.limits = [0.037, 0.100; 0 0];
 defaultParams.rmsThresh = 0.037;
 params = set_missingFields(params, defaultParams, 0);
