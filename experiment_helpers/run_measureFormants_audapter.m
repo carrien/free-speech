@@ -137,7 +137,7 @@ for itrial = 1:length(trials2run)  % for each trial
         delete_exptText(h_fig,h_text)
         clear h_text
 
-        if ~bGoodTrial && itrial > 9
+        if ~bGoodTrial && itrial > 1
             h_text = draw_exptText(h_fig,.5,.2,'Please speak a little louder','FontSize',40,'HorizontalAlignment','center','Color','y');
             pause(1)
             delete_exptText(h_fig,h_text)
