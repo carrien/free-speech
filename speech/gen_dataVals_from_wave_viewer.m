@@ -101,7 +101,7 @@ for i = 1:length(sortedTrialnums)
         filename = sortedFilenames{i};
         load(fullfile(trialPath,filename), 'sigmat', 'trialparams');
 
-        if isfield(trialparams,'event_params') && isfield(trialparams.eventparams,'user_event_times')
+        if isfield(trialparams,'event_params') && isfield(trialparams.event_params,'user_event_times')
             numUserEvents = length(trialparams.event_params.user_event_times);
         else
             numUserEvents = 0;
@@ -121,7 +121,7 @@ for i = 1:length(sortedTrialnums)
             end
         end
 
-        if isfield(trialparams,'event_params') && isfield(trialparams.eventparams,'is_good_trial')
+        if isfield(trialparams,'event_params') && isfield(trialparams.event_params,'is_good_trial')
             bGoodTrial = trialparams.event_params.is_good_trial;
         else
             bGoodTrial = 1; % if field doesn't exist, assume it's good
