@@ -1,4 +1,4 @@
-function bGoodTrial = check_rmsThresh(data,rmsThresh,subAxis,params)
+function bGoodTrial = check_rmsThresh(data,inputArg2,subAxis)
 % Takes a data file from Audapter and checks the amplitude of that signal
 % against certain parmeters. Primarily, it checks if the calculated
 % RMS value is above a certain threshold (rmsThresh). It also displays
@@ -7,41 +7,46 @@ function bGoodTrial = check_rmsThresh(data,rmsThresh,subAxis,params)
 %
 % Input arguments:
 %   * data. The output data structure from Audapter
-%   * rmsThresh. If the RMS value of data is below rmsThresh, the output
-%       parameter bGoodTrial will be 0.
+%   * inputArg2. Can be a struct (new format) or double (historical format).
+%       If it's a DOUBLE: When the RMS value of data is below rmsThresh,
+%         the output parameter bGoodTrial will be 0.
+%       If it's a STRUCT: It controls parts of this function. Often stored
+%         in expt.amplcalc. Relevant fields:
+%           * checkMethod. If 'mean', the RMS value is calculated as the mean
+%              RMS during the vowel. If 'peak', the RMS value is the peak RMS.
+%           * limits. A 2x2 array structured like this:
+%                  [GoodLow, GoodHi;
+%                   WarnLow, WarnHi]
+%              In check_rmsThresh, an area is shaded green between the low
+%              and hi Good limits, and an area is shaded yellow between Warn limits.
+%          * rmsThresh. If the RMS value is below rmsThresh, the output
+%              parameter bGoodTrial will be 0. This parameter is overridden by
+%               the 2nd input param `rmsThresh`, if that input param is used.
 %   * subAxis. If a graphics object is included in the 3rd input parameter,
 %       the mean RMS and OST values are plotted.
 %   * params: A structure (often stored in expt.amplcalc)
 %       controlling parts of this function, with relevant fields:
-%       * checkMethod. If 'mean', the RMS value is calculated as the mean
-%           RMS during the vowel. If 'peak', the RMS value is the peak RMS.
-%       * limits. A 2x2 array structured like this:
-%               [GoodLow, GoodHi;
-%               WarnLow, WarnHi]
-%           In check_rmsThresh, an area is shaded green between the low
-%           and hi Good limits, and an area is shaded yellow between Warn limits.
-%       * rmsThresh. If the RMS value is below rmsThresh, the output
-%           parameter bGoodTrial will be 0. This parameter is overridden by
-%           the 2nd input param `rmsThresh`, if that input param is used.
-%
-% 
 
-if nargin < 3, subAxis = []; end
-if nargin < 4
+%
+%
+
+if nargin < 2
     params = struct;
-    defaultParams.checkMethod = 'peak';     % maintain legacy behavior
+    defaultParams.checkMethod = 'peak';
 else
-    defaultParams.checkMethod = 'mean';
+    if isstruct(inputArg2)
+        params = inputArg2;
+        defaultParams.checkMethod = 'mean';
+    else % do we want an elseif isnumeric(inputArg2)
+        params.rmsThresh = inputArg2;
+        defaultParams.checkMethod = 'peak';
+    end
 end
+if nargin < 3, subAxis = []; end
 
 defaultParams.limits = [0.037, 0.100; 0 0];
 defaultParams.rmsThresh = 0.037;
 params = set_missingFields(params, defaultParams, 0);
-
-% for backwards compatibility, the second input parameter can override params.rmsThresh
-if nargin >= 2 && ~isempty(rmsThresh)
-    params.rmsThresh = rmsThresh;
-end
 
 %% find rmsValue
 switch params.checkMethod
