@@ -131,7 +131,7 @@ for itrial = 1:length(trials2run)  % for each trial
         data.bChangeOst = 0; 
 
         %plot amplitude and ost tracking
-        bGoodTrial = check_rmsThresh(data,[],h_sub(3), expt.amplcalc);
+        bGoodTrial = check_rmsThresh(data, expt.amplcalc, h_sub(3));
 
         % clear screen
         delete_exptText(h_fig,h_text)
