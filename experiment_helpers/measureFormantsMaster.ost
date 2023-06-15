@@ -3,8 +3,8 @@ rmsSlopeWin = 0.050000
 
 # Heuristics
 n = 3 
-0 INTENSITY_AND_RATIO_ABOVE_THRESH 0.035 0.170 0.008 # /ai/ onset (rise in intensity with rise in ratio/formant energy) 
-2 INTENSITY_AND_RATIO_BELOW_THRESH 0.035 0.170 0.008 # next voiced stop /g/ or /d/ (looks for low RMS intensity) 
+0 INTENSITY_AND_RATIO_ABOVE_THRESH 0.035 0.170 0.008 # Vowel onset. Rise in intensity and rise in ratio/formant energy
+2 INTENSITY_AND_RATIO_BELOW_THRESH 0.035 0.170 0.008 # Vowel offset/voiced stop. Low RMS intensity and ratio.
 4 OST_END NaN NaN {}
 
 n = 0
