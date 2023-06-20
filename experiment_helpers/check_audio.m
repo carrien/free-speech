@@ -223,7 +223,7 @@ function goToNextSet(src,evt)
         guidata(src,UserData);
         plotTrials(src)
     elseif trials2Go > 0
-        UserData.currTrials = UserData.trials2Track(UserData.trialIndex(1)):UserData.trials2Track(end);
+        UserData.currTrials = UserData.trials2Track(UserData.trialIndex(1):UserData.trialIndex(end));
         guidata(src,UserData);
         plotTrials(src)
     end
