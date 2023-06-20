@@ -223,7 +223,7 @@ function goToNextSet(src,evt)
         guidata(src,UserData);
         plotTrials(src)
     elseif trials2Go > 0
-        UserData.currTrials = UserData.trials2Track(UserData.trialIndex(1):UserData.trialIndex(end));
+        UserData.currTrials = UserData.trials2Track(UserData.trialIndex(1):UserData.trialIndex(trials2Go)); %because trialIndex is always a vector length 10, but there may be fewer than 10 trials left
         guidata(src,UserData);
         plotTrials(src)
     end
