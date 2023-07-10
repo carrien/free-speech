@@ -198,6 +198,18 @@ wp.word = word;
 % For recalculating everything 
 bAllOstRecalculated = 1; 
 bTheseOstRecalculated = 1; 
+% Initialize calcSubjOstParams if it doesn't already exist
+if ~isfield(y, 'calcSubjOstParams')
+    if isfield(y, 'subjOstParams')
+        [y.calcSubjOstParams] = y(:).subjOstParams; 
+    else
+        % Some backwards compatibility if you are opening up a study that didn't store parameters by trial 
+        for i = 1:length(y)
+            y(i).subjOstParams = x.subjOstParams; 
+            y(i).calcSubjOstParams = x.subjOstParams; 
+        end
+    end
+end
 
 % For tooltips on the OST status lines 
 p.eventNumbers = str2double(ostList); 
@@ -815,10 +827,12 @@ normal_bgcolor = get(hbutton.calcAllOST,'BackgroundColor');
 %                 [heur,param1,param2,param3] = get_ost(trackingFileDir,trackingFileName,ostNumber,'working'); 
 %                 calcSubjOstParams{o} = {ostNumber heur param1 param2 param3}; 
 %             end
-            calcSubjOstParams = get_ost(trackingFileDir, trackingFileName, 'full', 'working'); 
+            calcSubjOstParamsLine = {ostStatus, heuristic, newThresh, newDur, newThird}; 
+            % Find the line that has this ost status 
+            whichLine = find(strcmp(num2str(ostStatus), ostList));  
             for t = trials2calc
                 % Put this info into the calcSubjOstParams for those trials
-                y(t).calcSubjOstParams = calcSubjOstParams; 
+                y(t).calcSubjOstParams{whichLine} = calcSubjOstParamsLine; 
             end
 
             % To keep track of when a subset of trials has been recalculated
