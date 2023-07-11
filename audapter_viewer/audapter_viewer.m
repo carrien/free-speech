@@ -172,7 +172,7 @@ end
 
 % Reset OST file to how it was when the experiment ran. Prioritize data
 %   over expt; and calcSubjOstParams over subjOstParams.
-set_subjOstParams_auto(x, y, 1, ostTrial);
+methodUsed = set_subjOstParams_auto(x, y, 1, ostTrial);
 
 ostList = get_ost(trackingFileDir, trackingFileName, 'list'); 
 triggerStatus = get_pcf(trackingFileDir, trackingFileName, 'time', '1', 'ostStat_initial'); % note that this assumes that you only want to look at the first time warping event
@@ -200,14 +200,27 @@ bAllOstRecalculated = 1;
 bTheseOstRecalculated = 1; 
 % Initialize calcSubjOstParams if it doesn't already exist
 if ~isfield(y, 'calcSubjOstParams')
-    if isfield(y, 'subjOstParams')
+    % Some backwards compatibility if you are opening up a study that didn't store parameters by trial 
+    if strcmp(methodUsed, 'data.subjOstParams')
         [y.calcSubjOstParams] = y(:).subjOstParams; 
-    else
-        % Some backwards compatibility if you are opening up a study that didn't store parameters by trial 
+
+    elseif strcmp(methodUsed, 'expt.calcSubjOstParams')
         for i = 1:length(y)
-            y(i).subjOstParams = x.subjOstParams; 
+            y(i).calcSubjOstParams = x.calcSubjOstParams; 
+        end
+
+    elseif strcmp(methodUsed, 'expt.subjOstParams')
+        for i = 1:length(y)
             y(i).calcSubjOstParams = x.subjOstParams; 
         end
+
+    elseif strcmp(methodUsed, 'refreshWorkingCopy')
+        warning('No OST params saved for this participant (may be an old study, or not have used OSTs). calcSubjOstParams not initiated.');         
+        subjOstParams = get_ost(trackingFileDir, trackingFileName, 'full', 'master'); 
+        for i = 1:length(y)
+            y(i).calcSubjOstParams = subjOstParams; 
+        end
+            
     end
 end
 
