@@ -214,7 +214,7 @@ if ~isfield(y, 'calcSubjOstParams')
             y(i).calcSubjOstParams = x.subjOstParams; 
         end
 
-    elseif strcmp(methodUsed, 'refreshWorkingCopy')
+    elseif strcmp(methodUsed, 'refreshWorkingCopy') || strcmp(methodUsed, 'none')
         warning('No OST params saved for this participant (may be an old study, or not have used OSTs). calcSubjOstParams not initiated.');         
         subjOstParams = get_ost(trackingFileDir, trackingFileName, 'full', 'master'); 
         for i = 1:length(y)
