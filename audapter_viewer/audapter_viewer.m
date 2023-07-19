@@ -172,7 +172,7 @@ end
 
 % Reset OST file to how it was when the experiment ran. Prioritize data
 %   over expt; and calcSubjOstParams over subjOstParams.
-set_subjOstParams_auto(x, y, 1, ostTrial);
+methodUsed = set_subjOstParams_auto(x, y, 1, ostTrial);
 
 ostList = get_ost(trackingFileDir, trackingFileName, 'list'); 
 triggerStatus = get_pcf(trackingFileDir, trackingFileName, 'time', '1', 'ostStat_initial'); % note that this assumes that you only want to look at the first time warping event
@@ -198,6 +198,31 @@ wp.word = word;
 % For recalculating everything 
 bAllOstRecalculated = 1; 
 bTheseOstRecalculated = 1; 
+% Initialize calcSubjOstParams if it doesn't already exist
+if ~isfield(y, 'calcSubjOstParams')
+    % Some backwards compatibility if you are opening up a study that didn't store parameters by trial 
+    if strcmp(methodUsed, 'data.subjOstParams')
+        [y.calcSubjOstParams] = y(:).subjOstParams; 
+
+    elseif strcmp(methodUsed, 'expt.calcSubjOstParams')
+        for i = 1:length(y)
+            y(i).calcSubjOstParams = x.calcSubjOstParams; 
+        end
+
+    elseif strcmp(methodUsed, 'expt.subjOstParams')
+        for i = 1:length(y)
+            y(i).calcSubjOstParams = x.subjOstParams; 
+        end
+
+    elseif strcmp(methodUsed, 'refreshWorkingCopy') || strcmp(methodUsed, 'none')
+        warning('No OST params saved for this participant (may be an old study, or not have used OSTs). calcSubjOstParams not initiated.');         
+        subjOstParams = get_ost(trackingFileDir, trackingFileName, 'full', 'master'); 
+        for i = 1:length(y)
+            y(i).calcSubjOstParams = subjOstParams; 
+        end
+            
+    end
+end
 
 % For tooltips on the OST status lines 
 p.eventNumbers = str2double(ostList); 
@@ -725,6 +750,17 @@ hbutton.calcAllOST = uicontrol(p.guidata.buttonPanel,'Style','pushbutton',...
         % For handling mismatches between mex and available heuristics
         try 
             set_ost(trackingFileDir,trackingFileName,ostStatus,heuristic,newThresh,newDur,newThird); 
+            
+            % Put new parameters into calcSubjOstParams for the entire dataset
+            % Note: this only puts the new LINE in for every trial, it doesn't change every trial to match the full parameter
+            % set
+            calcSubjOstParamsLine = {ostStatus, heuristic, newThresh, newDur, newThird}; 
+            % Find the line that has this ost status 
+            whichLine = find(strcmp(num2str(ostStatus), ostList));             
+            for t = 1:length(y)
+                % Put this info into the calcSubjOstParams for those trials
+                y(t).calcSubjOstParams{whichLine} = calcSubjOstParamsLine; 
+            end
 
             % Keeping track of when all OSTs have been recalculated
             bAllOstRecalculated = 1; 
@@ -804,10 +840,12 @@ normal_bgcolor = get(hbutton.calcAllOST,'BackgroundColor');
 %                 [heur,param1,param2,param3] = get_ost(trackingFileDir,trackingFileName,ostNumber,'working'); 
 %                 calcSubjOstParams{o} = {ostNumber heur param1 param2 param3}; 
 %             end
-            calcSubjOstParams = get_ost(trackingFileDir, trackingFileName, 'full', 'working'); 
+            calcSubjOstParamsLine = {ostStatus, heuristic, newThresh, newDur, newThird}; 
+            % Find the line that has this ost status 
+            whichLine = find(strcmp(num2str(ostStatus), ostList));  
             for t = trials2calc
                 % Put this info into the calcSubjOstParams for those trials
-                y(t).calcSubjOstParams = calcSubjOstParams; 
+                y(t).calcSubjOstParams{whichLine} = calcSubjOstParamsLine; 
             end
 
             % To keep track of when a subset of trials has been recalculated
@@ -3107,7 +3145,7 @@ function [heurunits, heurmin, heurmax, heursliderstep] = get_heuristicParams(heu
             heur3range = NaN; 
             heursliderstep(3,:) = [0.01/heur3range 0.1/heur3range]; 
            
-       case 'INTENSITY_AND_RATIO_ABOVE_THRESH'  % CWN add-on
+       case {'INTENSITY_AND_RATIO_ABOVE_THRESH' 'INTENSITY_AND_RATIO_BELOW_THRESH'} % CWN add-on
            heurunits{1} = 'RMS';
            heurunits{2} = 'RMS ratio';
             heurunits{3} = 's'; 
@@ -3124,24 +3162,8 @@ function [heurunits, heurmin, heurmax, heursliderstep] = get_heuristicParams(heu
             heurmax(3) = 5;
             heur3range = heurmax(3) - heurmin(3);
             heursliderstep(3,:) = [0.01/heur3range 0.1/heur3range];
-       case 'INTENSITY_AND_RATIO_BELOW_THRESH'  % CWN add-on
-           heurunits{1} = 'RMS';
-           heurunits{2} = 'RMS ratio';
-           heurunits{3} = 's';
-           heurmin(1) = 0;
-           heurmin(2) = 0;
-           heurmax(1) = 5;
-           heurmax(2) = 5;
-           heur1range = heurmax(1) - heurmin(1);
-           heur2range = heurmax(2) - heurmin(2);
-           heursliderstep(1,:) = [0.01/heur1range 0.1/heur1range];
-           heursliderstep(2,:) = [0.001/heur2range 0.01/heur2range];
-           % Third heuristic add
-           heurmin(3) = 0;
-           heurmax(3) = 5;
-           heur3range = heurmax(3) - heurmin(3);
-           heursliderstep(3,:) = [0.01/heur3range 0.1/heur3range];
-        case 'INTENSITY_RATIO_SLOPE_ABOVE_THRESH' % CWN add-on
+
+        case {'INTENSITY_RATIO_SLOPE_ABOVE_THRESH' 'INTENSITY_RATIO_SLOPE_BELOW_THRESH'} % CWN add-on
             heurunits{1} = 'RMS Ratio Slope'; 
             heurunits{2} = 's';
             heurunits{3} = '--'; 
@@ -3158,23 +3180,7 @@ function [heurunits, heurmin, heurmax, heursliderstep] = get_heuristicParams(heu
             heurmax(3) = NaN; 
             heur3range = NaN; 
             heursliderstep(3,:) = [0.01/heur3range 0.1/heur3range]; 
-        case 'INTENSITY_RATIO_SLOPE_BELOW_THRESH' % CWN add-on
-            heurunits{1} = 'RMS Ratio Slope'; 
-            heurunits{2} = 's';
-            heurunits{3} = '--'; 
-            heurmin(1) = -5;
-            heurmin(2) = 0; 
-            heurmax(1) = 5; 
-            heurmax(2) = 1; 
-            heur1range = heurmax(1) - heurmin(1); 
-            heur2range = heurmax(2) - heurmin(2);
-            heursliderstep(1,:) = [0.01/heur1range 0.1/heur1range]; 
-            heursliderstep(2,:) = [0.001/heur2range 0.01/heur2range]; 
-            % Third heuristic add
-            heurmin(3) = NaN; 
-            heurmax(3) = NaN; 
-            heur3range = NaN; 
-            heursliderstep(3,:) = [0.01/heur3range 0.1/heur3range]; 
+
        case 'OST_END'
             heurunits{1} = ''; 
             heurunits{2} = '';

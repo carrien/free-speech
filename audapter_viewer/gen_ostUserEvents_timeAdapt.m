@@ -115,17 +115,18 @@ if exist(ostFN,'file') ~= 2
 end
 
 % Open file and load file line by line into structure finfo
-fid = fopen(ostFN,'r');
-tline = fgetl(fid);
-itrial = 1;
-% clear finfo
-ostInfo{itrial} = tline;
-while ischar(tline)
-    itrial = itrial+1;
-    tline = fgetl(fid);
-    ostInfo{itrial} = tline;
-end
-fclose(fid);
+ostInfo = get_ost(trackingPath, trackingFileName, 'full', 'working'); 
+% fid = fopen(ostFN,'r');
+% tline = fgetl(fid);
+% itrial = 1;
+% % clear finfo
+% ostInfo{itrial} = tline;
+% while ischar(tline)
+%     itrial = itrial+1;
+%     tline = fgetl(fid);
+%     ostInfo{itrial} = tline;
+% end
+% fclose(fid);
 
 % ostStatBegin_line = find(strncmp(finfo, num2str(ostStatBegin), 1)); 
 % cellfun(@(x) strncmp(x, num2str(ostStatPrev), 1), finfo, 'UniformOutput', 0);
@@ -140,15 +141,23 @@ for a = 1:nEvents
     else 
         nComp = 1; 
     end
-    prevLineComponents = strsplit(ostInfo{strncmp(ostInfo, num2str(ost.events(a) - 2), nComp)}, ' '); 
+    ostComponents = ostInfo{a}; % strsplit(ostInfo{strncmp(ostInfo, num2str(ost.events(a) - 2), nComp)}, ' '); 
     % the two is hard-coded---shouldn't matter as long as we don't have any +1 events
     % The additional lag will be the 4th element
-    beginPrevHeur = prevLineComponents{2}; 
-    % Unless you're using a stretch/span heuristic in which case it will be the number of frames in the 3rd component / framelen
-    if contains(beginPrevHeur,'STRETCH')
-        ost.eventLag.(ost.eventNames{a}) = str2double(prevLineComponents{3}) * expt.audapterParams.frameLen / expt.audapterParams.sr; 
-    else
-        ost.eventLag.(ost.eventNames{a}) = str2double(prevLineComponents{4}); 
+    heuristicToReachOst = ostComponents{2}; % beginPrevHeur = ostComponents{2}; 
+    param1 = ostComponents{3}; 
+    param2 = ostComponents{4}; 
+    param3 = ostComponents{5}; 
+   
+    if contains(heuristicToReachOst,'STRETCH')
+         % If you're using a stretch/span heuristic in which case it will be the number of frames in the 3rd component / framelen
+        ost.eventLag.(ost.eventNames{a}) = param1 * expt.audapterParams.frameLen / expt.audapterParams.sr; 
+    elseif ~isnan(param3) 
+        % If there's a defined third parameter means that the third parameter can be used as a duration in seconds
+        ost.eventLag.(ost.eventNames{a}) = param3; 
+    else 
+        % Otherwise, should be the second parameter that is the duration
+        ost.eventLag.(ost.eventNames{a}) = param2; 
     end
 
 end
