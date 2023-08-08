@@ -3,12 +3,11 @@ function [] = pause_trial(h_fig,params)
 get_figinds_audapter;
 
 % text params
-% Addition for simonToneLex RK 2022-01-31
 if nargin < 2 || isempty(params)
     params = struct;
 end
-params = set_missingField(params, 'pausetxt', 'Paused. Press the space bar to continue.', 1);
-params = set_missingField(params, 'conttxt', 'We will now continue.', 1);
+params = set_missingField(params, 'pausetxt', 'Experiment paused. Please wait.', 1);
+params = set_missingField(params, 'conttxt', 'Experiment will now continue.', 1);
 pausetxt = params.pausetxt;
 conttxt = params.conttxt;
 

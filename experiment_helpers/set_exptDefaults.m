@@ -150,6 +150,11 @@ expt = set_missingField(expt,'startBlock',ceil(expt.startTrial/expt.ntrials_per_
 expt = set_missingField(expt,'isRestart',0);
 expt = set_missingField(expt,'crashTrials',[]);
 
+%% pause parameters
+pauseParams.pausetxt = 'Experiment paused. Please wait.';
+pauseParams.conttxt  = 'Experiment will now continue.';
+expt = set_missingField(expt, 'pauseParams', pauseParams);
+
 %% trial indices
 
 expt.inds = get_exptInds(expt);
