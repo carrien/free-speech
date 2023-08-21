@@ -1,4 +1,4 @@
-function bGoodTrial = check_rmsThresh(data,inputArg2,subAxis)
+function bGoodTrial = check_rmsThresh(data,params,subAxis)
 % Takes a data file from Audapter and checks the amplitude of that signal
 % against certain parmeters. Primarily, it checks if the calculated
 % RMS value is above a certain threshold (rmsThresh). It also displays
@@ -7,11 +7,9 @@ function bGoodTrial = check_rmsThresh(data,inputArg2,subAxis)
 %
 % Input arguments:
 %   * data. The output data structure from Audapter
-%   * inputArg2. Can be a struct (new format) or double (historical format).
-%       If it's a DOUBLE: When the RMS value of data is below rmsThresh,
-%         the output parameter bGoodTrial will be 0.
-%       If it's a STRUCT: It controls parts of this function. Often stored
-%         in expt.amplcalc. Relevant fields:
+%   * params. Can be a struct (new format) or double (historical format).
+%       If `params` is a STRUCT: It can contain the following fields
+%         which affect the amplitude calculation:
 %           * checkMethod. If 'mean', the RMS value is calculated as the mean
 %              RMS during the vowel. If 'peak', the RMS value is the peak RMS.
 %           * limits. A 2x2 array structured like this:
@@ -21,29 +19,24 @@ function bGoodTrial = check_rmsThresh(data,inputArg2,subAxis)
 %              and hi Good limits, and an area is shaded yellow between Warn limits.
 %          * rmsThresh. If the RMS value is below rmsThresh, the output
 %              parameter bGoodTrial will be 0. This parameter is overridden by
-%               the 2nd input param `rmsThresh`, if that input param is used.
+%              the 2nd input param `rmsThresh`, if that input param is used.
+%       If `params` is a DOUBLE: params will be interpreted as
+%         the value of the field rmsThresh (see above).
 %   * subAxis. If a graphics object is included in the 3rd input parameter,
 %       the mean RMS and OST values are plotted.
-%   * params: A structure (often stored in expt.amplcalc)
-%       controlling parts of this function, with relevant fields:
-
-%
 %
 
 if nargin < 2
+    params.checkMethod = 'peak';
+elseif isnumeric(params)
+    rmsThresh = params;
     params = struct;
-    defaultParams.checkMethod = 'peak';
-else
-    if isstruct(inputArg2)
-        params = inputArg2;
-        defaultParams.checkMethod = 'mean';
-    else % do we want an elseif isnumeric(inputArg2)
-        params.rmsThresh = inputArg2;
-        defaultParams.checkMethod = 'peak';
-    end
+    params.checkMethod = 'peak';
+    params.rmsThresh = rmsThresh;
 end
 if nargin < 3, subAxis = []; end
 
+defaultParams.checkMethod = 'mean';
 defaultParams.limits = [0.037, 0.100; 0 0];
 defaultParams.rmsThresh = 0.037;
 params = set_missingFields(params, defaultParams, 0);
