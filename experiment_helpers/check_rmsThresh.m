@@ -38,6 +38,7 @@ if nargin < 3, subAxis = []; end
 
 defaultParams.checkMethod = 'mean';
 defaultParams.limits = [0.037, 0.100; 0 0];
+defaultParams.peakBufferSecs = 0.1;
 defaultParams.rmsThresh = 0.037;
 params = set_missingFields(params, defaultParams, 0);
 
@@ -46,31 +47,23 @@ switch params.checkMethod
     case 'peak'
         [rmsValue, onset] = max(data.rms(:,1));
         offset = onset;
-    case 'mean'     
-        % if OST onset and offset exist, use that
-        if any(data.ost_stat == 4)
-            % Finding the last instance of status 1 implies the next status
-            % was 2 (the next event)
-            onset = 1 + find(data.ost_stat == 1, 1, 'last');
-            offset = 1 + find(data.ost_stat == 3, 1, 'last');
-            rmsValue = mean(data.rms(onset:offset, 1));
-
-        % if no ost tracking, use RMS data to find onset/offset
-        elseif any(data.rms(:, 1) > 0.03)
-            % These values are more lax versions of the settings
-            % in free-speech\experiment_helpers\measureFormants.ost. They
-            % are relatively imprecise and would benefit from more nuance in the future.
-            onset = find(data.rms > 0.03, 1, 'first') + 5;
-            offset = find(data.rms(:, 1)<0.03 & data.rms(:, 1)>0.02 & data.rms_slope<0, 1, 'first') - 5;
-            if isempty(offset)
-                offset = min(onset+10,length(data.rms));
-            end
-            rmsValue = mean(data.rms(onset:offset, 1));
-
-        % can't determine rms mean, because no ost-based vowel found, and RMS too low
-        else
-            rmsValue = NaN;
+    case 'mean'
+        % onset and offset are some number of ms before and after the peak.
+        % rmsValue is the mean RMS between onset and offset.
+        frameLenInSecs = data.params.frameLen/data.params.sRate;
+        peakBufferNFrames = round(params.peakBufferSecs/frameLenInSecs);
+        [~, peak] = max(data(1).rms(:, 1));
+        onset = peak-peakBufferNFrames;
+        if onset < 1
+            onset = 1;
+            fprintf('Yes onset\n')
         end
+        offset = peak+peakBufferNFrames;
+        if offset > length(data.rms)
+            offset = length(data.rms);
+            fprintf('Yes offset\n')
+        end
+        rmsValue = mean(data.rms(onset:offset, 1));
 end % of switch/case
     
 %% set bGoodTrial
