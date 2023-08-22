@@ -58,7 +58,7 @@ else
             load(fullfile(dataPath,'trials',sortedFilenames{i}))
             fileNameParts = strsplit(sortedFilenames{i},'.');
             trialIndex = str2double(fileNameParts{1});
-            if ~isfield(trialparams,'event_params') || trialparams.event_params.is_good_trial
+            if ~isfield(trialparams,'event_params') || ~isfield(trialparams.event_params, 'is_good_trial') || trialparams.event_params.is_good_trial
                 UserData.dataVals(trialIndex).bExcl = 0;
             else
                 UserData.dataVals(trialIndex).bExcl = 1;

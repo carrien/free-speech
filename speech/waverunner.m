@@ -192,6 +192,9 @@ for itrial = trials2track
                 [tg_user_event_times, tg_user_event_names] = get_uev_from_tg_mpraat(tgPath);
                 trialparams.event_params.user_event_times = [trialparams.event_params.user_event_times, tg_user_event_times];
                 trialparams.event_params.user_event_names = [trialparams.event_params.user_event_names, tg_user_event_names];
+                if ~isfield(trialparams.event_params, 'is_good_trial')
+                    trialparams.event_params.is_good_trial = 1; 
+                end
             end
         end
         
