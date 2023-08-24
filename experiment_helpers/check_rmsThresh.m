@@ -18,8 +18,7 @@ function bGoodTrial = check_rmsThresh(data,params,subAxis)
 %              In check_rmsThresh, an area is shaded green between the low
 %              and hi Good limits, and an area is shaded yellow between Warn limits.
 %          * rmsThresh. If the RMS value is below rmsThresh, the output
-%              parameter bGoodTrial will be 0. This parameter is overridden by
-%              the 2nd input param `rmsThresh`, if that input param is used.
+%              parameter bGoodTrial will be 0.
 %       If `params` is a DOUBLE: params will be interpreted as
 %         the value of the field rmsThresh (see above).
 %   * subAxis. If a graphics object is included in the 3rd input parameter,
