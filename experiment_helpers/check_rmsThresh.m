@@ -56,12 +56,10 @@ switch params.checkMethod
         onset = peak-peakBufferNFrames;
         if onset < 1
             onset = 1;
-            fprintf('Yes onset\n')
         end
         offset = peak+peakBufferNFrames;
         if offset > length(data.rms)
             offset = length(data.rms);
-            fprintf('Yes offset\n')
         end
         rmsValue = mean(data.rms(onset:offset, 1));
 end % of switch/case
