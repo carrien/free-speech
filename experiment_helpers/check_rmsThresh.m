@@ -10,8 +10,9 @@ function bGoodTrial = check_rmsThresh(data,params,subAxis)
 %   * params. Can be a struct (new format) or double (historical format).
 %       If `params` is a STRUCT: It can contain the following fields
 %         which affect the amplitude calculation:
-%           * checkMethod. If 'mean', the RMS value is calculated as the mean
-%              RMS during the vowel. If 'peak', the RMS value is the peak RMS.
+%           * checkMethod. If 'peak_window', the RMS value is the mean RMS
+%               during a period centered on the peak. If 'peak',
+%               the RMS value is the absolute peak RMS.
 %           * limits. A 2x2 array structured like this:
 %                  [GoodLow, GoodHi;
 %                   WarnLow, WarnHi]
@@ -35,7 +36,7 @@ elseif isnumeric(params)
 end
 if nargin < 3, subAxis = []; end
 
-defaultParams.checkMethod = 'mean';
+defaultParams.checkMethod = 'peak_window';
 defaultParams.limits = [0.037, 0.100; 0 0];
 defaultParams.peakBufferSecs = 0.1;
 defaultParams.rmsThresh = 0.037;
@@ -46,7 +47,7 @@ switch params.checkMethod
     case 'peak'
         [rmsValue, onset] = max(data.rms(:,1));
         offset = onset;
-    case 'mean'
+    case 'peak_window'
         % onset and offset are some number of ms before and after the peak.
         % rmsValue is the mean RMS between onset and offset.
         frameLenInSecs = data.params.frameLen/data.params.sRate;
