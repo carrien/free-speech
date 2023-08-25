@@ -151,6 +151,7 @@ expt = set_missingField(expt,'isRestart',0);
 expt = set_missingField(expt,'crashTrials',[]);
 
 %% pause parameters
+% if changing these fields, consider also updating free-speech/experiment_helpers\pause_trial.m
 pauseParams.pausetxt = 'Experiment paused. Please wait.';
 pauseParams.conttxt  = 'Experiment will now continue.';
 expt = set_missingField(expt, 'pauseParams', pauseParams);

@@ -6,6 +6,8 @@ get_figinds_audapter;
 if nargin < 2 || isempty(params)
     params = struct;
 end
+
+% if changing defaults, consider also changing free-speech\experiment_helpers\set_exptDefaults.m
 params = set_missingField(params, 'pausetxt', 'Experiment paused. Please wait.', 1);
 params = set_missingField(params, 'conttxt', 'Experiment will now continue.', 1);
 pausetxt = params.pausetxt;
