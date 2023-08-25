@@ -122,10 +122,13 @@ durcalc.bMeasureOst = 0;
 expt = set_missingField(expt,'durcalc',durcalc);
 
 %% amplitude tracking parameters
+%used with older experiments
 amplcalc.min_ampl = 0.04; %0.02;
 amplcalc.max_ampl = 0.24; %0.2;
 amplcalc.ons_thresh = 0.01;
 amplcalc.offs_thresh = 0.015;
+
+% used with newer experiments
 amplcalc.checkMethod = 'mean';   % Compare mean RMS during vowel against amplcalc.rmsThresh
 amplcalc.peakWindowSecs = 0.200; % Number of seconds of buffer to include surrounding the peak amplitude to find RMS value
 amplcalc.rmsThresh = 0.037;      % RMS values below this trigger "speak louder" prompt. 0.037 is ~78.5 dBA on SMNG hardware
