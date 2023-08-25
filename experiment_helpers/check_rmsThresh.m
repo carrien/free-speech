@@ -20,6 +20,7 @@ function bGoodTrial = check_rmsThresh(data,params,subAxis)
 %              and hi Good limits, and an area is shaded yellow between Warn limits.
 %          * rmsThresh. If the RMS value is below rmsThresh, the output
 %              parameter bGoodTrial will be 0.
+%          * peakWindowSecs. 
 %       If `params` is a DOUBLE: params will be interpreted as
 %         the value of the field rmsThresh (see above).
 %   * subAxis. If a graphics object is included in the 3rd input parameter,
@@ -38,7 +39,7 @@ if nargin < 3, subAxis = []; end
 
 defaultParams.checkMethod = 'peak_window';
 defaultParams.limits = [0.037, 0.100; 0 0];
-defaultParams.peakBufferSecs = 0.1;
+defaultParams.peakWindowSecs = 0.2;
 defaultParams.rmsThresh = 0.037;
 params = set_missingFields(params, defaultParams, 0);
 
@@ -51,13 +52,13 @@ switch params.checkMethod
         % onset and offset are some number of ms before and after the peak.
         % rmsValue is the mean RMS between onset and offset.
         frameLenInSecs = data.params.frameLen/data.params.sRate;
-        peakBufferNFrames = round(params.peakBufferSecs/frameLenInSecs);
+        peakWindowNFrames = round(params.peakWindowSecs/frameLenInSecs);
         [~, peak] = max(data(1).rms(:, 1));
-        onset = peak-peakBufferNFrames;
+        onset = peak - peakWindowNFrames/2;
         if onset < 1
             onset = 1;
         end
-        offset = peak+peakBufferNFrames;
+        offset = peak + peakWindowNFrames/2;
         if offset > length(data.rms)
             offset = length(data.rms);
         end
