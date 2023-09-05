@@ -54,7 +54,7 @@ switch params.checkMethod
         frameLenInSecs = data.params.frameLen/data.params.sRate;
         peakWindowNFrames = round(params.peakWindowSecs/frameLenInSecs);
         [~, peak] = max(data(1).rms(:, 1));
-        onset = peak - peakWindowNFrames/2;
+        onset = round(peak - peakWindowNFrames/2);
         if onset < 1
             onset = 1;
         end
