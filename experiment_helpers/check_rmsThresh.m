@@ -47,6 +47,7 @@ params = set_missingFields(params, defaultParams, 0);
 switch params.checkMethod
     case 'peak'
         [rmsValue, peak] = max(data.rms(:,1));
+        onset = peak;
         offset = peak;
     case 'peak_window'
         % onset and offset are some number of ms before and after the peak.
