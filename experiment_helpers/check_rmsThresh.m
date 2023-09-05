@@ -28,7 +28,7 @@ function bGoodTrial = check_rmsThresh(data,params,subAxis)
 %
 
 if nargin < 2
-    params.checkMethod = 'peak';
+    params = [];
 elseif isnumeric(params)
     rmsThresh = params;
     params = struct;
