@@ -39,7 +39,7 @@ if nargin < 3, subAxis = []; end
 
 defaultParams.checkMethod = 'peak_window';
 defaultParams.limits = [0.037, 0.100; 0 0];
-defaultParams.peakWindowSecs = 0.2;
+defaultParams.peakWindowSecs = 0.1;
 defaultParams.rmsThresh = 0.037;
 params = set_missingFields(params, defaultParams, 0);
 
