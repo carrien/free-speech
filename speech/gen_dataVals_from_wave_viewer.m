@@ -167,7 +167,7 @@ for i = 1:length(sortedTrialnums)
         dataValsTrial.word = expt.allWords(trialnum);
         if isfield(expt, 'allVowels'), dataValsTrial.vowel = expt.allVowels(trialnum); end
         if isfield(expt, 'allColors'), dataValsTrial.color = expt.allColors(trialnum); end
-        if isfield(expt,'allConds'),   dataValsTrial.color = expt.allConds(trialnum);  end
+        if isfield(expt,'allConds'),   dataValsTrial.cond = expt.allConds(trialnum);  end
         dataValsTrial.token = trialnum;
         dataValsTrial.bExcl = double(~bGoodTrial); %consider changing bExcl to a logical (rather than numeric) at some point
 
