@@ -33,8 +33,8 @@ if isfield(expt, 'bTestMode') && expt.bTestMode
 else
     defaultParams.nblocks = 10; % number of repetitions of each word
 end
-defaultParams.amplcalc.checkMethod = 'mean';
-defaultParams.amplcalc.rmsThresh = 0.03; % quite low amplitude required for "talk louder" message
+defaultParams.amplcalc.checkMethod = 'peak_window';
+defaultParams.amplcalc.rmsThresh = 0.037;
 % amplcalc.limits is a 2x2 array structured like this:
 %        [GoodLow, GoodHi;
 %         WarnLow, WarnHi]
