@@ -32,7 +32,7 @@ if nargin < 2
 elseif isnumeric(params)
     rmsThresh = params;
     params = struct;
-    params.checkMethod = 'peak';
+    params.checkMethod = 'peak'; % maintain legacy behavior
     params.rmsThresh = rmsThresh;
 end
 if nargin < 3, subAxis = []; end
