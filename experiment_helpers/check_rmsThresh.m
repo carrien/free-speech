@@ -1,4 +1,4 @@
-function bGoodTrial = check_rmsThresh(data,rmsThresh,subAxis,params)
+function bGoodTrial = check_rmsThresh(data,params,subAxis)
 % Takes a data file from Audapter and checks the amplitude of that signal
 % against certain parmeters. Primarily, it checks if the calculated
 % RMS value is above a certain threshold (rmsThresh). It also displays
@@ -7,72 +7,63 @@ function bGoodTrial = check_rmsThresh(data,rmsThresh,subAxis,params)
 %
 % Input arguments:
 %   * data. The output data structure from Audapter
-%   * rmsThresh. If the RMS value of data is below rmsThresh, the output
-%       parameter bGoodTrial will be 0.
+%   * params. Can be a struct (new format) or double (historical format).
+%       If `params` is a STRUCT: It can contain the following fields
+%         which affect the amplitude calculation:
+%           * checkMethod. If 'peak_window', the RMS value is the mean RMS
+%               during a period centered on the peak. If 'peak',
+%               the RMS value is the absolute peak RMS.
+%           * limits. A 2x2 array structured like this:
+%                  [GoodLow, GoodHi;
+%                   WarnLow, WarnHi]
+%              In check_rmsThresh, an area is shaded green between the low
+%              and hi Good limits, and an area is shaded yellow between Warn limits.
+%          * rmsThresh. If the RMS value is below rmsThresh, the output
+%              parameter bGoodTrial will be 0.
+%          * peakWindowSecs. Width of the window centered in the peak, in seconds.
+%       If `params` is a DOUBLE: params will be interpreted as
+%         the value of the field rmsThresh (see above).
 %   * subAxis. If a graphics object is included in the 3rd input parameter,
 %       the mean RMS and OST values are plotted.
-%   * params: A structure (often stored in expt.amplcalc)
-%       controlling parts of this function, with relevant fields:
-%       * checkMethod. If 'mean', the RMS value is calculated as the mean
-%           RMS during the vowel. If 'peak', the RMS value is the peak RMS.
-%       * limits. A 2x2 array structured like this:
-%               [GoodLow, GoodHi;
-%               WarnLow, WarnHi]
-%           In check_rmsThresh, an area is shaded green between the low
-%           and hi Good limits, and an area is shaded yellow between Warn limits.
-%       * rmsThresh. If the RMS value is below rmsThresh, the output
-%           parameter bGoodTrial will be 0. This parameter is overridden by
-%           the 2nd input param `rmsThresh`, if that input param is used.
 %
-% 
 
-if nargin < 3, subAxis = []; end
-if nargin < 4
+if nargin < 2
+    params = [];
+elseif isnumeric(params)
+    rmsThresh = params;
     params = struct;
-    defaultParams.checkMethod = 'peak';     % maintain legacy behavior
-else
-    defaultParams.checkMethod = 'mean';
-end
-
-defaultParams.limits = [0.037, 0.100; 0 0];
-defaultParams.rmsThresh = 0.037;
-params = set_missingFields(params, defaultParams, 0);
-
-% for backwards compatibility, the second input parameter can override params.rmsThresh
-if nargin >= 2 && ~isempty(rmsThresh)
+    params.checkMethod = 'peak'; % maintain legacy behavior
     params.rmsThresh = rmsThresh;
 end
+if nargin < 3, subAxis = []; end
+
+defaultParams.checkMethod = 'peak_window';
+defaultParams.limits = [0.037, 0.100; 0 0];
+defaultParams.peakWindowSecs = 0.1;
+defaultParams.rmsThresh = 0.037;
+params = set_missingFields(params, defaultParams, 0);
 
 %% find rmsValue
 switch params.checkMethod
     case 'peak'
-        [rmsValue, onset] = max(data.rms(:,1));
-        offset = onset;
-    case 'mean'     
-        % if OST onset and offset exist, use that
-        if any(data.ost_stat == 4)
-            % Finding the last instance of status 1 implies the next status
-            % was 2 (the next event)
-            onset = 1 + find(data.ost_stat == 1, 1, 'last');
-            offset = 1 + find(data.ost_stat == 3, 1, 'last');
-            rmsValue = mean(data.rms(onset:offset, 1));
-
-        % if no ost tracking, use RMS data to find onset/offset
-        elseif any(data.rms(:, 1) > 0.03)
-            % These values are more lax versions of the settings
-            % in free-speech\experiment_helpers\measureFormants.ost. They
-            % are relatively imprecise and would benefit from more nuance in the future.
-            onset = find(data.rms > 0.03, 1, 'first') + 5;
-            offset = find(data.rms(:, 1)<0.03 & data.rms(:, 1)>0.02 & data.rms_slope<0, 1, 'first') - 5;
-            if isempty(offset)
-                offset = min(onset+10,length(data.rms));
-            end
-            rmsValue = mean(data.rms(onset:offset, 1));
-
-        % can't determine rms mean, because no ost-based vowel found, and RMS too low
-        else
-            rmsValue = NaN;
+        [rmsValue, peak] = max(data.rms(:,1));
+        onset = peak;
+        offset = peak;
+    case 'peak_window'
+        % onset and offset are some number of ms before and after the peak.
+        % rmsValue is the mean RMS between onset and offset.
+        frameLenInSecs = data.params.frameLen/data.params.sRate;
+        peakWindowNFrames = round(params.peakWindowSecs/frameLenInSecs);
+        [~, peak] = max(data(1).rms(:, 1));
+        onset = round(peak - peakWindowNFrames/2);
+        if onset < 1
+            onset = 1;
         end
+        offset = peak + peakWindowNFrames/2;
+        if offset > length(data.rms)
+            offset = length(data.rms);
+        end
+        rmsValue = mean(data.rms(onset:offset, 1));
 end % of switch/case
     
 %% set bGoodTrial
