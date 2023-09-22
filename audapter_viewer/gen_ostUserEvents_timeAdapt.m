@@ -103,7 +103,7 @@ if isfield(expt,'trackingPath')
 elseif isfield(expt,'trackingFileLoc')
     trackingPath = expt.trackingFileLoc; 
 else
-    trackingPath = get_exptRunpath(expt.name); 
+    trackingPath = fullfile(get_gitPath('current-studies'), expt.name); 
 end
 
 ostFN = fullfile(trackingPath,[trackingFileName 'Working.ost']);

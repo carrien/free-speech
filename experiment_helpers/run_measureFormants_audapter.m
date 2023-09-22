@@ -39,8 +39,8 @@ if isfield(expt,'trackingFileName')
         ostFN = fullfile(get_gitPath('free-speech'), expt.trackingFileLoc, [expt.trackingFileName 'Working.ost']); 
         pcfFN = fullfile(get_gitPath('free-speech'), expt.trackingFileLoc, [expt.trackingFileName 'Working.pcf']); 
     else %it's in current-studies repo
-        ostFN = fullfile(get_exptRunpath(expt.trackingFileLoc, [expt.trackingFileName 'Working.ost'])); 
-        pcfFN = fullfile(get_exptRunpath(expt.trackingFileLoc, [expt.trackingFileName 'Working.pcf'])); 
+        ostFN = fullfile(get_gitPath('current-studies'), expt.trackingFileLoc, [expt.trackingFileName 'Working.ost']); 
+        pcfFN = fullfile(get_gitPath('current-studies'), expt.trackingFileLoc, [expt.trackingFileName 'Working.pcf']); 
     end
 else
     ostFN = which('measureFormantsWorking.ost');
