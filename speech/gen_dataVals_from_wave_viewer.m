@@ -192,8 +192,20 @@ if ~isempty(tooManyEvents)
     warning('Trials with more than 2 user events: %s', num2str(tooManyEvents));
 end
 
+%% data logging
+dataVals_params.dataPath = dataPath;
+dataVals_params.trialdir = [];
+dataVals_params.bMultisegment = bMultiSegment;
+if exist('eventMode', 'var')
+    dataVals_params.eventMode = eventMode;
+else
+    dataVals_params.eventMode = [];
+end
+dataVals_params.vowel_list = vowel_list;
+dataVals_params.date = date;
+
 %% save it
-save(savefile,'dataVals');
+save(savefile,'dataVals', 'dataVals_params');
 fprintf('%d trials saved in %s.\n',length(sortedTrialnums),savefile)
 
 end %EOF
