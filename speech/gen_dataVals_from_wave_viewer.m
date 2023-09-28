@@ -194,7 +194,7 @@ end
 
 %% data logging
 dataVals_params.dataPath = dataPath;
-dataVals_params.trialdir = [];
+dataVals_params.trialdir = trialdir;
 dataVals_params.bMultisegment = bMultiSegment;
 if exist('eventMode', 'var')
     dataVals_params.eventMode = eventMode;
