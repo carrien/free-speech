@@ -11,3 +11,9 @@
 # Ignore Working version of Audapter .ost and .pcf files. (Only track Master versions)
 *Working.ost
 *Working.pcf
+
+# Ignore files that get paths that may be different for different labs
+# get_exptSavePath.m : NeSST lab will have same structure, but this might have to be added later
+# get_acoustLoadPath.m : this just calls get_exptLoadpath 
+get_exptLoadPath.m 
+get_gitPath.m
