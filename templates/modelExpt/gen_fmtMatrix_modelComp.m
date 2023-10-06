@@ -1,4 +1,6 @@
 function [savefile] = gen_fmtMatrix_modelComp(dataPath,dataValsStr,bSaveCheck)
+% A wrapper around gen_fmtMatrixByCond designed to be used with data from
+% run_modelComp_expt. See gen_fmtMatrixByCond for more info.
 
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
 if nargin < 2 || isempty(dataValsStr), dataValsStr = 'dataVals_audapter.mat'; end
@@ -27,7 +29,7 @@ for c=1:length(conds)
         word = words{w};
         shiftnum = (c-1)*length(words) + w;
         
-        indShift(shiftnum).name = sprintf('%s%s',cond,word);
+        indShift(shiftnum).name = sprintf('%s%s',cond,word); %#ok<*AGROW> 
         indShift(shiftnum).inds = intersect(expt.inds.conds.(cond),expt.inds.words.(word));
         indShift(shiftnum).shiftind = c;
         indShift(shiftnum).linecolor = colors.(cond);
