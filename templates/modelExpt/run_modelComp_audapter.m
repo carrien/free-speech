@@ -1,10 +1,11 @@
 function [expt] = run_modelComp_audapter(expt)
-% Companion function for modelComp (based on cerebAAF (based on hearingLossAAF))
-% Don't run this directly -- run `run_modelComp_expt` instead.
+% Companion function for modelComp
+% Don't run this directly -- run your `run_xyz_expt` function instead.
 
 if nargin < 1
-    error('Must pass in valid expt variable from run_modelComp_expt')
+    error('Must pass in valid expt variable from run_xyz_expt function.')
 end
+expt = set_exptDefaults(expt);
 
 %%
 
@@ -38,10 +39,6 @@ audioInterfaceName = 'Focusrite USB'; %SMNG default for Windows 10
 Audapter('deviceName', audioInterfaceName);
 
 % set files for vowel tracking
-% ostFN = fullfile(get_exptRunpath(expt.trackingFileLoc),[expt.trackingFileName 'Working.ost']);
-% pcfFN = fullfile(get_exptRunpath(expt.trackingFileLoc),[expt.trackingFileName 'Working.pcf']);
-% check_file(ostFN);
-% check_file(pcfFN);
 Audapter('ost', '', 0); % nullify online status tracking
 Audapter('pcf', '', 0); % nullify pert config files. We're using pert field instead
 
@@ -51,15 +48,10 @@ p = getAudapterDefaultParams(expt.gender); % get default params
 if isfield(expt, 'audapterParams')
     p = add2struct(p,expt.audapterParams);
 end
-p.bShift = 1;
-p.bRatioShift = 0;
-p.bMelShift = 1;
 
 % set noise
 w = get_noiseSource(p);
 Audapter('setParam', 'datapb', w, 1);
-p.fb = 3;          % set feedback mode to 3: speech + noise
-p.fb3Gain = 0.02;   % gain for noise waveform
 
 %% initialize Audapter
 AudapterIO('init', p);

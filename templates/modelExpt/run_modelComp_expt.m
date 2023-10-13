@@ -3,8 +3,6 @@ function expt = run_modelComp_expt(expt,bTestMode)
 % shifted up on 20% of trials, F1 shifted down on 20%, and no shift 60%.
 %
 % Set bTestMode input argument to 1 to run a shortened version.
-%
-% Based around run_cerebAAF_expt and run_modelExpt_expt
 
 % v1 2023-10 - Chris Naber
 
@@ -15,9 +13,6 @@ if nargin < 2 || isempty(bTestMode), bTestMode = 0; end
 
 %% Set up general experiment parameters
 expt.name = 'modelComp';
-expt.trackingFileLoc = 'experiment_helpers'; % Where the OST/PCF files are kept (for audapter_viewer)
-expt.trackingFileName = 'measureFormants'; % What the files are called (does not include Working/Master)
-refreshWorkingCopy(expt.trackingFileLoc,expt.trackingFileName);
 if ~isfield(expt,'snum'), expt.snum = get_snum; end
 expt.dataPath = get_acoustSavePath(expt.name,expt.snum);
 if ~exist(expt.dataPath,'dir')
@@ -34,21 +29,26 @@ if strcmp(expt.gender, 'male')
 else
     expt.audapterParams.nLPC = 15;
 end
+expt.audapterParams.bShift = 1;
+expt.audapterParams.bRatioShift = 0;
+expt.audapterParams.bMelShift = 1;
+expt.audapterParams.fb = 3;          % set feedback mode to 3: speech + noise
+expt.audapterParams.fb3Gain = 0.02;  % gain for noise waveform
 
 %perturbation amount, in mels
 shiftMag = 125;
 
 % timing
-expt.timing.stimdur = 1.9;         % time stim is on screen, in seconds
-expt.timing.interstimdur = .75;    % minimum time between stims, in seconds
-expt.timing.interstimjitter = .75; % maximum extra time between stims (jitter)
-expt.timing.visualfbdur = 0.75; 
+expt.timing.stimdur = 1.9;          % time stim is on screen (in s)
+expt.timing.interstimdur = .75;     % minimum time between stims (in s)
+expt.timing.interstimjitter = .75;  % maximum extra time between stims (in s), ie, jitter
+expt.timing.visualfbdur = 0.75;     % how long to show "speak louder" prompt (in s)
 
 %set up duration feedback parameters
-expt.durcalc.min_dur = .4; % set_exptDefaults normally sets to .25
-expt.durcalc.max_dur = .65;
-expt.durcalc.ons_thresh = 0.15;
-expt.durcalc.offs_thresh = 0.4;
+expt.durcalc.min_dur = .4;          % minimum allowable vowel duration (in s)
+expt.durcalc.max_dur = .65;         % maximum allowable vowel duration (in s)
+expt.durcalc.ons_thresh = 0.15;     % percentage of maximum amplitude for determining onset threshold
+expt.durcalc.offs_thresh = 0.4;     % percentage of maximum amplitude for determining offset threshold
 
 %% Set up duration practice
 exptDur = expt;
@@ -63,7 +63,7 @@ exptDur.shiftMags   = zeros(1,exptDur.ntrials);
 exptDur.shiftAngles = zeros(1,exptDur.ntrials);
 
 exptDur.words = {'head' 'dead' 'Ted'};
-exptDur.allWords = mod(0:exptDur.ntrials-1, numel(exptDur.words)) + 1;
+exptDur.allWords = randomize_wordOrder(length(exptDur.words), exptDur.ntrials);
 exptDur.listWords = exptDur.words(exptDur.allWords);
 
 exptDur.conds = {'noShift'};
@@ -90,8 +90,8 @@ expt = set_missingField(expt,'vowels',vowels);
 
 expt.shiftDirs = {0 -1 1};
 expt.shiftNames = {'noShift' 'shiftDown' 'shiftUp'};
+expt.conds =      {'noShift' 'shiftDown' 'shiftUp'};
 expt.shiftMag = 125;
-expt.conds = {'noShift' 'shiftDown' 'shiftUp'};
 
 if bTestMode
     expt.nblocks = 1;
@@ -99,27 +99,22 @@ else
     expt.nblocks = 6;
 end
 
-expt.ntrials_per_block = nwords*(2+3); %aka 15 trials per block.
-
-% Number of trials that don't receive perturbation
-if bTestMode 
-    nBaseline = 1;
-else 
-    nBaseline = 15;
-end
-
 % Pseudorandomize stimuli like this: In each 15-trial block, each word gets
 % an equal number of trials. Within a word, there are 2 perturbation
 % trials, and 3 unperturbed trials. Within a word's 2 perturbation trials,
 % there's 1 UP and 1 DOWN perturbation. No perturbation trials are adjacent, even across blocks.
-expt = randomize_stimuli(expt,1,3,nBaseline);
+nTrialsPerPert = 1;
+uniquePerts = 2; % shiftUp, shiftDown
+nTrialsPerNonpert = 3;
+expt.ntrials_per_block = nwords*(nTrialsPerPert*uniquePerts + nTrialsPerNonpert); %aka 15 trials per block.
+expt = randomize_stimuli(expt,nTrialsPerPert,nTrialsPerNonpert);
 
 % Set up ntrials, coherence, and direction
 expt.ntrials = expt.nblocks * expt.ntrials_per_block;
 
-% Set up breaks, expt.ntrials must be divisible by break frequency
-breakfrequency = expt.ntrials_per_block * 2;
-expt.breakTrials = breakfrequency:breakfrequency:expt.ntrials;  %pp breaks after baseline; then, every 2 blocks
+% Set up breaks
+expt.breakFrequency = expt.ntrials_per_block * 2; %pp breaks every 2 blocks
+% can also set break trials manually via expt.breakTrials
 
 % set up duration feedback parameters
 expt.bDurFB = ones(1,expt.ntrials); %yes, give participant feedback about vowel duration
@@ -127,8 +122,8 @@ expt.bDurFB = ones(1,expt.ntrials); %yes, give participant feedback about vowel 
 % Set up shifts for the expt structure
 expt.allShiftDirs = expt.allConds; 
 expt.listShiftDirs = [expt.shiftDirs{expt.allConds}];
-expt.allShiftNames = expt.allShiftDirs;
-expt.listShiftNames = expt.shiftNames(expt.allShiftNames);
+expt.allShiftNames = expt.allConds;   %in this experiment, shiftNames and conds are identical
+expt.listShiftNames = expt.listConds;
 
 expt.shiftMags = shiftMag*expt.listShiftDirs;
 
