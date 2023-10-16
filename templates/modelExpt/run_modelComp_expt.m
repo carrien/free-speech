@@ -124,7 +124,7 @@ expt.listShiftDirs = [expt.shiftDirs{expt.allConds}];
 expt.allShiftNames = expt.allConds;   %in this experiment, shiftNames and conds are identical
 expt.listShiftNames = expt.listConds;
 
-expt.shiftMags = shiftMag*expt.listShiftDirs;
+expt.shiftMags = expt.shiftMag*expt.listShiftDirs;
 
 % set missing expt fields to defaults
 expt = set_exptDefaults(expt);
