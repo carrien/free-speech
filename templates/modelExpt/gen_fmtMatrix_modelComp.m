@@ -8,19 +8,12 @@ if nargin < 3 || isempty(bSaveCheck), bSaveCheck = 1; end
 
 load(fullfile(dataPath,'expt.mat'),'expt');
 
-%add shift information to expt.mat
-if ~isfield(expt,'shifts')
-    expt.shifts.mels{1} = [125 0];
-    expt.shifts.mels{2} = [-125 0];
-end
-save(fullfile(dataPath,'expt.mat'),'expt');
-
-conds = {'shiftUp','shiftDown'}; 
+conds = {'shiftDown', 'shiftUp'}; 
 basecond = 'noShift';
 words = expt.words;
 
-colors.shiftUp = [.2 .6 .8];    % blue
 colors.shiftDown = [.8 0 0];    % red
+colors.shiftUp = [.2 .6 .8];    % blue
 colors.noShift = [.5 .5 .5];    % grey
 
 for c=1:length(conds)

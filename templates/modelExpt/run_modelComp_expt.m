@@ -92,6 +92,8 @@ expt.shiftDirs = {0 -1 1};
 expt.shiftNames = {'noShift' 'shiftDown' 'shiftUp'};
 expt.conds =      {'noShift' 'shiftDown' 'shiftUp'};
 expt.shiftMag = 125;
+expt.shifts.mels{1} = [expt.shiftMag*expt.shiftDirs{2}, 0]; %amount of shift as [F1 F2]
+expt.shifts.mels{2} = [expt.shiftMag*expt.shiftDirs{3}, 0]; %amount of shift as [F1 F2]
 
 if bTestMode
     expt.nblocks = 1;
