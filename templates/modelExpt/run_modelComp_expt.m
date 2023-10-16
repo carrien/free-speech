@@ -35,9 +35,6 @@ expt.audapterParams.bMelShift = 1;
 expt.audapterParams.fb = 3;          % set feedback mode to 3: speech + noise
 expt.audapterParams.fb3Gain = 0.02;  % gain for noise waveform
 
-%perturbation amount, in mels
-shiftMag = 125;
-
 % timing
 expt.timing.stimdur = 1.9;          % time stim is on screen (in s)
 expt.timing.interstimdur = .75;     % minimum time between stims (in s)
@@ -91,7 +88,7 @@ expt = set_missingField(expt,'vowels',vowels);
 expt.shiftDirs = {0 -1 1};
 expt.shiftNames = {'noShift' 'shiftDown' 'shiftUp'};
 expt.conds =      {'noShift' 'shiftDown' 'shiftUp'};
-expt.shiftMag = 125;
+expt.shiftMag = 125; %perturbation amount, in mels
 expt.shifts.mels{1} = [expt.shiftMag*expt.shiftDirs{2}, 0]; %amount of shift as [F1 F2]
 expt.shifts.mels{2} = [expt.shiftMag*expt.shiftDirs{3}, 0]; %amount of shift as [F1 F2]
 
