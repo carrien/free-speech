@@ -125,7 +125,7 @@ elseif strcmp(trackingFileDir, 'simonMultisyllable_v2')
 
 % simonPhrase
 elseif strcmp(trackingFileDir, 'simonPhrase')
-    eventNames = {'v1Start' 'v1End' 'v2Start' 'v2End'};
+    eventNames = {'v1Start' 'v1End'};
     triggerNo = get_pcf(trackingFileDir, trackingFileName, 'space', 4, 'stat');
     triggerName = eventNames{triggerNo == eventNos};
     
