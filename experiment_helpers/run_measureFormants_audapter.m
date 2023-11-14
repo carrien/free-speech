@@ -77,7 +77,7 @@ h_fig = setup_exptFigs;
 get_figinds_audapter; % names figs: stim = 1, ctrl = 2, dup = 3;
 
 h_sub = get_subfigs_audapter(h_fig(ctrl),1);
-adjustButton = add_adjustOstButton(h_fig); % For adjusting OSTs mid-run
+add_adjustOstButton(h_fig); % For adjusting OSTs mid-run
 % give instructions and wait for keypress
 h_ready = draw_exptText(h_fig,.5,.5,expt.instruct.introtxt,expt.instruct.txtparams);
 pause
