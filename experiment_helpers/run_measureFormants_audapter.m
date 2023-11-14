@@ -64,6 +64,11 @@ Audapter('setParam', 'datapb', w, 1);
 p.fb = fbMode;          % set feedback mode to 3: speech + noise
 p.fb3Gain = 0.02;   % gain for noise waveform
 
+if isfield(expt, 'audapterParams')
+    p = add2struct(p, expt.audapterParams);
+end
+expt.audapterParams = p;
+
 AudapterIO('init', p);
 
 %% run experiment
