@@ -178,11 +178,16 @@ end
 % collect trials into one variable
 alldata = struct;
 fprintf('Processing data\n')
-for i = 1:trials2run(end)
-    load(fullfile(trialdir,sprintf('%d.mat',i)))
-    names = fieldnames(data);
-    for j = 1:length(names)
-        alldata(i).(names{j}) = data.(names{j});
+for i = 1:expt.ntrials
+    trialfile = fullfile(trialdir,sprintf('%d.mat',i));
+    if exist(trialfile,'file')
+        load(trialfile,'data')
+        names = fieldnames(data);
+        for j = 1:length(names)
+            alldata(i).(names{j}) = data.(names{j});
+        end
+    else
+        warning('Trial %d not found.',i)
     end
 end
 
