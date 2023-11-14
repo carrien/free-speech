@@ -64,6 +64,11 @@ Audapter('setParam', 'datapb', w, 1);
 p.fb = fbMode;          % set feedback mode to 3: speech + noise
 p.fb3Gain = 0.02;   % gain for noise waveform
 
+if isfield(expt, 'audapterParams')
+    p = add2struct(p, expt.audapterParams);
+end
+expt.audapterParams = p;
+
 AudapterIO('init', p);
 
 %% run experiment
@@ -72,7 +77,7 @@ h_fig = setup_exptFigs;
 get_figinds_audapter; % names figs: stim = 1, ctrl = 2, dup = 3;
 
 h_sub = get_subfigs_audapter(h_fig(ctrl),1);
-adjustButton = add_adjustOstButton(h_fig); % For adjusting OSTs mid-run
+add_adjustOstButton(h_fig); % For adjusting OSTs mid-run
 % give instructions and wait for keypress
 h_ready = draw_exptText(h_fig,.5,.5,expt.instruct.introtxt,expt.instruct.txtparams);
 pause
@@ -173,11 +178,16 @@ end
 % collect trials into one variable
 alldata = struct;
 fprintf('Processing data\n')
-for i = 1:trials2run(end)
-    load(fullfile(trialdir,sprintf('%d.mat',i)))
-    names = fieldnames(data);
-    for j = 1:length(names)
-        alldata(i).(names{j}) = data.(names{j});
+for i = 1:expt.ntrials
+    trialfile = fullfile(trialdir,sprintf('%d.mat',i));
+    if exist(trialfile,'file')
+        load(trialfile,'data')
+        names = fieldnames(data);
+        for j = 1:length(names)
+            alldata(i).(names{j}) = data.(names{j});
+        end
+    else
+        warning('Trial %d not found.',i)
     end
 end
 
