@@ -1,4 +1,4 @@
-function [fmtMeans, fmtStds] = calc_vowelMeans(dataPath,conds2analyze,bRmOutliers,ostInds,bTest)
+function [fmtMedians, TargetIx, fmtMeans, fmtStds] = calc_vowelMeans(dataPath,conds2analyze,bRmOutliers,ostInds,bTest)
 %CALC_VOWELMEANS  Calculates mean vowel formants from Audapter OST data.
 %   FMTMEANS = CALC_VOWELMEANS(DATAPATH) calculates mean formants for each
 %   vowel in an Audapter experiment. DATAPATH is the path to a folder
@@ -35,8 +35,8 @@ trials2analyze = sort(trials2analyze);
 ntrials = length(trials2analyze);
 F1s = zeros(1,ntrials);
 F2s = zeros(1,ntrials);
-framedur = 1 / data(1).params.sr*data(1).params.frameLen; %get frame duration
-offset = [floor(0.05 / framedur) floor(0.01 / framedur)]; %account for hold time in ost tracking
+framedur = 1 / data(1).params.sr*data(1).params.frameLen; % get frame duration
+offset = [floor(0.05 / framedur) floor(0.01 / framedur)]; % account for hold time in ost tracking
 if bTest;figure;end
 for itrial = trials2analyze
     if isfield(data, 'ost_calc') && ~isempty(data(itrial).ost_calc)
@@ -68,6 +68,8 @@ end
 % get per-vowel means
 for v = 1:length(expt.vowels)
     vow = expt.vowels{v};
+    F1dist = [];
+    F2dist = [];
     if isfield(expt,'bExcl')
         vowInds = intersect(expt.inds.vowels.(vow),find(~expt.bExcl));
         vowInds = intersect(vowInds, trials2analyze);
@@ -83,6 +85,18 @@ for v = 1:length(expt.vowels)
         F1s(vowInds) = tempDat1;
         F2s(vowInds) = tempDat2;
     end
+    % compute distance of each token to median values of each vowel's distribution
+    F1dist = F1s(vowInds) -  nanmedian(F1s(vowInds)); 
+    F2dist = F2s(vowInds) -  nanmedian(F2s(vowInds));
+    % find the index of the token that is closest to the median values
+    [~,minLoc] =  min(sqrt(F1dist.^2 + F2dist.^2));
+    TargetIx.(vow) = vowInds(minLoc);
+    % save the f1/f2 values for that token
+    TargetIx.fmts.(vow) = [F1s(vowInds(minLoc)) F2s(vowInds(minLoc))];
+    % get median f1/f2 values for each vowel category
+    fmtMedians.(vow) = [nanmedian(F1s(vowInds)) nanmedian(F2s(vowInds))];
+    % get mean f1/f2 values for each vowel category
     fmtMeans.(vow) = [nanmean(F1s(vowInds)) nanmean(F2s(vowInds))];
+    % get standard deviation 
     fmtStds.(vow) = [nanstd(F1s(vowInds)) nanstd(F2s(vowInds))];
 end
