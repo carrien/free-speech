@@ -1,4 +1,4 @@
-function [fmtMedians, TargetIx, fmtMeans, fmtStds] = calc_vowelMeans(dataPath,conds2analyze,bRmOutliers,ostInds,bTest)
+function [fmtMeans, fmtStds, fmtMedians, TargetIx] = calc_vowelMeans(dataPath,conds2analyze,bRmOutliers,ostInds,bTest)
 %CALC_VOWELMEANS  Calculates mean vowel formants from Audapter OST data.
 %   FMTMEANS = CALC_VOWELMEANS(DATAPATH) calculates mean formants for each
 %   vowel in an Audapter experiment. DATAPATH is the path to a folder
@@ -45,14 +45,14 @@ for itrial = trials2analyze
         ost = data(itrial).ost_stat; %values from initial settings
     end
     if bdataVals
-        F1s(itrial) = nanmedian(midnperc(dataVals(itrial).f1,50));
-        F2s(itrial) = nanmedian(midnperc(dataVals(itrial).f2,50));
+        F1s(itrial) = median(midnperc(dataVals(itrial).f1,50), 'omitnan');
+        F2s(itrial) = median(midnperc(dataVals(itrial).f2,50), 'omitnan');
     elseif any(any(ost==ostInds,2)) 
         vowelFrames = find(any(ost == ostInds,2)|any(ost == ostInds+1,2)); % get indices to vowel
         vowelFrames = vowelFrames(1)-offset(1):vowelFrames(end)-offset(2); %account for offset in ost tracking
         vowelFmts = data(itrial).fmts(vowelFrames,:);
-        F1s(itrial) = nanmedian(midnperc(vowelFmts(:,1),50));
-        F2s(itrial) = nanmedian(midnperc(vowelFmts(:,2),50));
+        F1s(itrial) = median(midnperc(vowelFmts(:,1),50), 'omitnan');
+        F2s(itrial) = median(midnperc(vowelFmts(:,2),50), 'omitnan');
     else
         F1s(itrial) = NaN;
         F2s(itrial) = NaN;
@@ -86,17 +86,17 @@ for v = 1:length(expt.vowels)
         F2s(vowInds) = tempDat2;
     end
     % compute distance of each token to median values of each vowel's distribution
-    F1dist = F1s(vowInds) -  nanmedian(F1s(vowInds)); 
-    F2dist = F2s(vowInds) -  nanmedian(F2s(vowInds));
+    F1dist = F1s(vowInds) -  median(F1s(vowInds), 'omitnan'); 
+    F2dist = F2s(vowInds) -  median(F2s(vowInds), 'omitnan');
     % find the index of the token that is closest to the median values
     [~,minLoc] =  min(sqrt(F1dist.^2 + F2dist.^2));
     TargetIx.(vow) = vowInds(minLoc);
     % save the f1/f2 values for that token
     TargetIx.fmts.(vow) = [F1s(vowInds(minLoc)) F2s(vowInds(minLoc))];
     % get median f1/f2 values for each vowel category
-    fmtMedians.(vow) = [nanmedian(F1s(vowInds)) nanmedian(F2s(vowInds))];
+    fmtMedians.(vow) = [median(F1s(vowInds), 'omitnan') median(F2s(vowInds), 'omitnan')];
     % get mean f1/f2 values for each vowel category
-    fmtMeans.(vow) = [nanmean(F1s(vowInds)) nanmean(F2s(vowInds))];
+    fmtMeans.(vow) = [mean(F1s(vowInds), 'omitnan') mean(F2s(vowInds), 'omitnan')];
     % get standard deviation 
-    fmtStds.(vow) = [nanstd(F1s(vowInds)) nanstd(F2s(vowInds))];
+    fmtStds.(vow) = [std(F1s(vowInds), 'omitnan') std(F2s(vowInds), 'omitnan')];
 end
