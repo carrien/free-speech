@@ -1,6 +1,6 @@
 function [] = audioGUI(dataPath,trialnums,buffertype,figpos,bSaveCheck,folderSuffix,varargin)
 %AUDIOGUI  Wrapper for wave_viewer.
-%   AUDIOGUI(DATAPATH,TRIALNUMS,BUFFERTYPE,FIGPOS,PITCHLIMITS,BSAVECHECK)
+%   AUDIOGUI(DATAPATH,TRIALNUMS,BUFFERTYPE,FIGPOS,BSAVECHECK,FOLDERSUFFIX)
 %   sends audio data found in DATAPATH to the wave_viewer analysis program.
 %   This path must contain a file called data.mat with each trial n stored
 %   in data(n).[fieldname]. TRIALNUMS specifies the trials to analyze (if
