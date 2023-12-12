@@ -31,9 +31,13 @@ sigmat.ampl_taxis = ampl_taxis;
 %% pitch
 if params2track(1)
     
-    pitchlimits = sigproc_params.pitchlimits;
-    y_pitch = get_sig_pitch(y,fs,pitchlimits);
-    pitch_taxis = (0:(length(y_pitch)-1))/fs;
+    if isfield(sigproc_params, 'ptrack_method') && strcmp(sigproc_params.ptrack_method, 'praat')
+        [y_pitch, pitch_taxis] = get_sig_pitch(y, fs, sigproc_params.pitchlimits, [], [], [], sigproc_params);
+    else
+        y_pitch = get_sig_pitch(y, fs, pitchlimits, [], [], [], sigproc_params);
+        len_ypitch = length(y_pitch);
+        pitch_taxis = (0:(len_ypitch-1))/fs;
+    end
     
     % set subthreshold values to NaN
     ampl4pitch = interp1(ampl_taxis,y_ampl,pitch_taxis); %if pitch taxis and ampl taxis ever have different increments, then interpolate values such that the amplitude is in terms of pitchtaxis.
