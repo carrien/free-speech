@@ -1,4 +1,4 @@
-function errors = check_dataVals(dataPath,bCalc,buffertype,dataVals, folderSuffix, errorParams)
+function errors = check_dataVals(dataPath,bCalc,buffertype,dataVals, folderSuffix, errorParams,sigs2plot)
 %check formant data for errors and return trial numbers where errors are
 %detected. Types of errors:
 %             * jumpTrials in F1/F2 trajectory
@@ -21,6 +21,8 @@ function errors = check_dataVals(dataPath,bCalc,buffertype,dataVals, folderSuffi
 %                       will use 'trials_transfer' folder.
 %                   errorParams: a struct of parameters used when
 %                       determining if a trial has any errors to be flagged.
+%                   sig2plot: 'formants', 'f0', or 'int'. formants plots f1
+%                       and f2
 %
 % rewritten to include GUI JAN 2019
 
@@ -29,16 +31,30 @@ if nargin < 2 || isempty(bCalc), bCalc = 1; end
 if nargin < 3 || isempty(buffertype), buffertype = 'signalIn'; end
 if nargin < 5, folderSuffix = []; end
 if nargin < 6, errorParams = []; end
+if nargin < 7, sigs2plot = {'f1','f2'}; end
+if ~iscell(sigs2plot)
+    error('sigs2plot must be a cell array. if you input a string, try adding braces.')
+end
 
 % config errorParams
 defaultParams.shortThresh = 0.1; %less than 100 ms
 defaultParams.longThresh = 1; %longer than 1 second
-defaultParams.jumpThresh = 200; %in Hz, upper limit for sample-to-sample change to detect jumpTrials in F1 trajectory
-defaultParams.fishyFThresh = [200 1100]; %acceptable range of possible F1 values
+defaultParams.jumpThresh = 200; %in Hz, upper limit for sample-to-sample change to detect jumpTrials in signal trajectory. Default is for F1.
+defaultParams.fishyThresh = [200 1100]; %acceptable range of possible values. Default is for F1. Only applies to first signal in sig2plot
     % ratio used to determine "late" or not. Absolute duration only used 
 defaultParams.lateThresh_ratio = 0.96; % acceptable endpoint ratio for speech before trial ends "too late"
 defaultParams.lateThresh_absolute = 1.5; % acceptable endpoint in seconds for speech before trial ends "too late". Only used as fallback if trial duration not available.
+
+%set different values for f0
+if strcmp(sigs2plot{1},'f0')
+    defaultParams.jumpThresh = 0.4;
+    defaultParams.fishyThresh = [75 500]; 
+elseif strcmp(sigs2plot{1},'int')
+    defaultParams.fishyThresh = [0 20]; 
+end
+
 errorParams = set_missingFields(errorParams, defaultParams, 0);
+
 
 %% create GUI
 f = figure('Visible','on','Units','Normalized','Position',[.1 .1 .8 .8]);
@@ -49,6 +65,11 @@ UserData.f = f;
 UserData.buffertype = buffertype;
 UserData.folderSuffix = folderSuffix;
 UserData.errorParams = errorParams;
+
+
+%% determine number of signals to plot
+UserData.sigs2plot = sigs2plot;
+UserData.nSigs = length(UserData.sigs2plot);
 
 %% create warning field in GUI
 UserData.xPosMax = 0.975;
@@ -157,30 +178,41 @@ function errors = get_dataVals_errors(UserData,dataVals)
     shortTrials = [];
     longTrials = [];
     nanFTrials = [];
-    jumpF1Trials = [];
-    jumpF2Trials = [];
-    fishyF1Trials = [];
+    for s = 1:UserData.nSigs
+        jumpTrials.(UserData.sigs2plot{s}) = [];
+    end
+    fishyTrials = [];
     earlyTrials = [];
     lateTrials = [];
     goodTrials = [];
 
     %% put trials into error categories
     for i = 1:length(dataVals)
+        %create vector of maximum differences, only for good trials
+        maxDiffs = zeros(1,UserData.nSigs);
+        if ~dataVals(i).bExcl
+            for s = 1:UserData.nSigs
+                maxDiffs(s) = max(abs(diff(dataVals(i).(UserData.sigs2plot{s}))));
+            end
+        end
+        
         if dataVals(i).bExcl
             badTrials = [badTrials dataVals(i).token]; %#ok<*AGROW>
         elseif dataVals(i).dur < UserData.errorParams.shortThresh %check for too short trials
             shortTrials = [shortTrials dataVals(i).token];
         elseif dataVals(i).dur > UserData.errorParams.longThresh %check for too long trials
             longTrials = [longTrials dataVals(i).token];
-        elseif find(isnan(dataVals(i).f1(2:end))) %check if there are NaN values in formant tracks, excepting 1st sample
+        elseif find(isnan(dataVals(i).(UserData.sigs2plot{s})(2:end))) %check if there are NaN values in first signal, excepting 1st sample
             nanFTrials = [nanFTrials dataVals(i).token];
-        elseif max(abs(diff(dataVals(i).f1)))>UserData.errorParams.jumpThresh %check for trials with F1 jumps
-            jumpF1Trials = [jumpF1Trials dataVals(i).token];
-        elseif max(abs(diff(dataVals(i).f2)))>UserData.errorParams.jumpThresh %check for trials with F2 jumps
-            jumpF2Trials = [jumpF2Trials dataVals(i).token];
-        elseif any(dataVals(i).f1 < UserData.errorParams.fishyFThresh(1)) || ...
-                any(dataVals(i).f1 > UserData.errorParams.fishyFThresh(2)) %check if wrong formant is being tracked for F1
-            fishyF1Trials = [fishyF1Trials dataVals(i).token];
+        elseif any(maxDiffs > UserData.errorParams.jumpThresh) %check for trials any jump above threshold
+            for s = 1:UserData.nSigs
+                if maxDiffs(s) > UserData.errorParams.jumpThresh
+                    jumpTrials.(UserData.sigs2plot{s}) = [jumpTrials.(UserData.sigs2plot{s}) dataVals(i).token];
+                end
+            end
+        elseif any(dataVals(i).(UserData.sigs2plot{1}) < UserData.errorParams.fishyThresh(1)) || ...
+                any(dataVals(i).(UserData.sigs2plot{1}) > UserData.errorParams.fishyThresh(2)) %check if wrong formant is being tracked for first signal to plot (default F1)
+            fishyTrials = [fishyTrials dataVals(i).token];
         elseif dataVals(i).ampl_taxis(1) < .0001
             earlyTrials = [earlyTrials dataVals(i).token];
         elseif (isfield(UserData.expt, 'timing') && isfield(UserData.expt.timing, 'stimdur') && dataVals(i).ampl_taxis(end) > UserData.errorParams.lateThresh_ratio*UserData.expt.timing.stimdur) || ...
@@ -197,9 +229,11 @@ function errors = get_dataVals_errors(UserData,dataVals)
     errors.shortTrials = shortTrials;
     errors.longTrials = longTrials;
     errors.nanFTrials = nanFTrials;
-    errors.jumpF1Trials = jumpF1Trials;
-    errors.jumpF2Trials = jumpF2Trials;
-    errors.fishyFTrials = fishyF1Trials;
+    for s = 1:UserData.nSigs
+        jumpTrialName = strcat('jumpTrials_',(UserData.sigs2plot{s}));
+        errors.(jumpTrialName) = jumpTrials.(UserData.sigs2plot{s});
+    end
+    errors.fishyTrials = fishyTrials;
     errors.earlyTrials = earlyTrials;
     errors.lateTrials = lateTrials;
     errors.goodTrials = goodTrials;
@@ -396,13 +430,14 @@ function update_plots(src,evt)
         set(UserData.warnPanel,'HighlightColor','yellow')
         set(UserData.warnText,'String',outstring)
         pause(0.0001)
-        [UserData.htracks,UserData.hsub] = plot_rawFmtTracks(UserData.dataVals,grouping,UserData.trialset,UserData.plotPanel,UserData.expt);
+        [UserData.htracks,UserData.hsub] = plot_rawAcoustTracks(UserData.dataVals,grouping,UserData.trialset,UserData.plotPanel,UserData.expt,UserData.sigs2plot);
         set(UserData.warnText,'String',[])
         set(UserData.warnPanel,'HighlightColor',[1 1 1])
         for iPlot = 1:length(UserData.htracks)
-            for iLine = 1:length(UserData.htracks(iPlot).f1)
-                set(UserData.htracks(iPlot).f1(iLine),'ButtonDownFcn',{@pick_line,iLine,iPlot})
-                set(UserData.htracks(iPlot).f2(iLine),'ButtonDownFcn',{@pick_line,iLine,iPlot})
+            for s = 1:UserData.nSigs
+                for iLine = 1:length(UserData.htracks(iPlot).(UserData.sigs2plot{s}))
+                    set(UserData.htracks(iPlot).(UserData.sigs2plot{s})(iLine),'ButtonDownFcn',{@pick_line,iLine,iPlot})
+                end
             end
         end
     end
@@ -414,37 +449,33 @@ end
 function pick_line(src,evt,iLine,iPlot)
     UserData = guidata(src);
     unselectedColor = [0.7 0.7 0.7];
-    f1color = [0 0 1]; % blue
-    f2color = [1 0 0]; % red
+    plotcolor{1} = [0 0 1]; % blue
+    plotcolor{2} = [1 0 0]; % red
     UserData.TB_select_trial.Value = 1;
     
     outstring = textwrap(UserData.warnText,{'Selected trial: ', src.Tag});
     set(UserData.warnText,'String',outstring)
     UserData.trialset = str2double(src.Tag);
-    if strcmp(src.YDataSource,'f1')
-        selF = UserData.htracks(iPlot).f1;
-    else
-        selF = UserData.htracks(iPlot).f2;
+    selF = UserData.htracks(iPlot).(src.YDataSource);
+    for s = 1:UserData.nSigs
+        set(UserData.htracks(iPlot).(UserData.sigs2plot{s})(selF==src),'Color',plotcolor{s},'LineWidth',3)
+        handleName = strcat(UserData.sigs2plot{s},'Ends');
+        set(UserData.htracks(iPlot).(handleName)(selF==src),'MarkerEdgeColor',plotcolor{s},'MarkerFaceColor',get_lightcolor(plotcolor{s},1.2))
+        
+        uistack(UserData.htracks(iPlot).(UserData.sigs2plot{s})(selF==src),'top');
+        uistack(UserData.htracks(iPlot).(handleName)(selF==src),'top');
+        
+        set(UserData.htracks(iPlot).(UserData.sigs2plot{s})(selF~=src),'Color',unselectedColor,'LineWidth',1)
+        set(UserData.htracks(iPlot).(handleName)(selF~=src),'MarkerEdgeColor',unselectedColor,'MarkerFaceColor',get_lightcolor(unselectedColor,1.2))
     end
-    set(UserData.htracks(iPlot).f1(selF==src),'Color',f1color,'LineWidth',3)
-    set(UserData.htracks(iPlot).f2(selF==src),'Color',f2color,'LineWidth',3)
-    set(UserData.htracks(iPlot).f1Ends(selF==src),'MarkerEdgeColor',f1color,'MarkerFaceColor',get_lightcolor(f1color,1.2))
-    set(UserData.htracks(iPlot).f2Ends(selF==src),'MarkerEdgeColor',f2color,'MarkerFaceColor',get_lightcolor(f2color,1.2))
-    uistack(UserData.htracks(iPlot).f1(selF==src),'top');
-    uistack(UserData.htracks(iPlot).f2(selF==src),'top');
-    uistack(UserData.htracks(iPlot).f1Ends(selF==src),'top');
-    uistack(UserData.htracks(iPlot).f2Ends(selF==src),'top');
-    
-    set(UserData.htracks(iPlot).f1(selF~=src),'Color',unselectedColor,'LineWidth',1)
-    set(UserData.htracks(iPlot).f2(selF~=src),'Color',unselectedColor,'LineWidth',1)
-    set(UserData.htracks(iPlot).f1Ends(selF~=src),'MarkerEdgeColor',unselectedColor,'MarkerFaceColor',get_lightcolor(unselectedColor,1.2))
-    set(UserData.htracks(iPlot).f2Ends(selF~=src),'MarkerEdgeColor',unselectedColor,'MarkerFaceColor',get_lightcolor(unselectedColor,1.2))
+
     for i = 1:length(UserData.htracks)
         if i ~= iPlot
-            set(UserData.htracks(i).f1(:),'Color',unselectedColor,'LineWidth',1)
-            set(UserData.htracks(i).f2(:),'Color',unselectedColor,'LineWidth',1)
-            set(UserData.htracks(i).f1Ends(:),'MarkerEdgeColor',unselectedColor,'MarkerFaceColor',get_lightcolor(unselectedColor,1.2))
-            set(UserData.htracks(i).f2Ends(:),'MarkerEdgeColor',unselectedColor,'MarkerFaceColor',get_lightcolor(unselectedColor,1.2))
+            for s = 1:UserData.nSigs
+                handleName = strcat(UserData.sigs2plot{s},'Ends');
+                set(UserData.htracks(i).(UserData.sigs2plot{s})(:),'Color',unselectedColor,'LineWidth',1)
+                set(UserData.htracks(i).(handleName)(:),'MarkerEdgeColor',unselectedColor,'MarkerFaceColor',get_lightcolor(unselectedColor,1.2))
+            end
         end
     end
     guidata(src,UserData);
@@ -452,13 +483,14 @@ end
 
 function TB_all(src,evt)
     UserData = guidata(src);
-    f1color = [0 0 1]; % blue
-    f2color = [1 0 0]; % red
+    plotcolor{1} = [0 0 1]; % blue
+    plotcolor{2} = [1 0 0]; % red
     for i = 1:length(UserData.htracks)
-        set(UserData.htracks(i).f1(:),'Color',f1color,'LineWidth',1)
-        set(UserData.htracks(i).f1Ends(:),'MarkerEdgeColor',f1color,'MarkerFaceColor',get_lightcolor(f1color,1.2))
-        set(UserData.htracks(i).f2(:),'Color',f2color,'LineWidth',1)
-        set(UserData.htracks(i).f2Ends(:),'MarkerEdgeColor',f2color,'MarkerFaceColor',get_lightcolor(f2color,1.2))
+        for s = 1:UserData.nSigs
+            handleName = strcat(UserData.sigs2plot{s},'Ends');
+            set(UserData.htracks(i).(UserData.sigs2plot{s})(:),'Color',plotcolor{s},'LineWidth',1)
+            set(UserData.htracks(i).handleNames(:),'MarkerEdgeColor',plotcolor{s},'MarkerFaceColor',get_lightcolor(plotcolor{s},1.2))
+        end
     end
     errorField = UserData.errorPanel.SelectedObject.String{1};
     UserData.trialset = UserData.errors.(errorField);
