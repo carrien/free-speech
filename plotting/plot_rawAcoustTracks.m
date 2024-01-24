@@ -7,19 +7,22 @@ function [htracks,hsub] = plot_rawAcoustTracks(dataVals,grouping,trialset,parent
 %   which data should be grouped; e.g. GROUPING = 'vowel' will create a
 %   separate subplot for each vowel.
 
-if nargin < 2 || isempty(grouping), grouping = 'vowel'; end
 if nargin < 1 || isempty(dataVals)
     fprintf('Loading dataVals from current directory...')
     load dataVals.mat;
     fprintf(' done.\n')
-    if exist(fullfile(cd,'expt.mat'),'file')
-        fprintf('Loading expt from current directory...')
-        load expt.mat;
-        fprintf(' done.\n')
-    end
 end
+if nargin < 2 || isempty(grouping), grouping = 'vowel'; end
 if nargin < 3 || isempty(trialset), trialset = [dataVals.token]; end
 if nargin < 4 || isempty(parent), h = figure('Units','normalized', 'Position',[.01 .25 .98 .5]); parent = h; end
+if nargin < 5 || isempty(expt)
+    if exist(fullfile(cd,'expt.mat'),'file')
+            fprintf('Loading expt from current directory...')
+            load expt.mat;
+            fprintf(' done.\n')
+    end
+end
+if nargin < 6 || isempty(sigs2plot); sigs2plot = {'f1','f2'}; end
 
 
 plotcolor{1} = [0 0 1]; % blue
