@@ -47,7 +47,7 @@ defaultParams.lateThresh_absolute = 1.5; % acceptable endpoint in seconds for sp
 
 %set different values for f0
 if strcmp(sigs2plot{1},'f0')
-    defaultParams.jumpThresh = 0.4;
+    defaultParams.jumpThresh = 10;
     defaultParams.fishyThresh = [75 500]; 
 elseif strcmp(sigs2plot{1},'int')
     defaultParams.fishyThresh = [0 20]; 
