@@ -49,6 +49,7 @@ defaultParams.lateThresh_absolute = 1.5; % acceptable endpoint in seconds for sp
 if strcmp(sigs2plot{1},'f0')
     defaultParams.jumpThresh = 10;
     defaultParams.fishyThresh = [75 500]; 
+    defaultParams.longThresh = 100; %longer than 100 seconds, ~= no upper limit
 elseif strcmp(sigs2plot{1},'int')
     defaultParams.fishyThresh = [0 20]; 
 end
@@ -100,6 +101,7 @@ UserData.dataVals = dataVals;
 UserData.expt = expt;
 UserData.errors = get_dataVals_errors(UserData,dataVals);
 
+errors = UserData.errors;
 %% create other buttons
 % create panel for plots
 plotPanelXPos = 0.175;
@@ -188,9 +190,11 @@ function errors = get_dataVals_errors(UserData,dataVals)
 
     %% put trials into error categories
     for i = 1:length(dataVals)
-        %create vector of maximum differences, only for good trials
+        %create vector of maximum differences, only for good trials and
+        %trials that are not just nans
         maxDiffs = zeros(1,UserData.nSigs);
-        if ~dataVals(i).bExcl
+        bNaNVals = all(isnan(dataVals(i).(UserData.sigs2plot{1})));
+        if ~dataVals(i).bExcl && ~bNaNVals
             for s = 1:UserData.nSigs
                 maxDiffs(s) = max(abs(diff(dataVals(i).(UserData.sigs2plot{s}))));
             end
@@ -213,7 +217,7 @@ function errors = get_dataVals_errors(UserData,dataVals)
         elseif any(dataVals(i).(UserData.sigs2plot{1}) < UserData.errorParams.fishyThresh(1)) || ...
                 any(dataVals(i).(UserData.sigs2plot{1}) > UserData.errorParams.fishyThresh(2)) %check if wrong formant is being tracked for first signal to plot (default F1)
             fishyTrials = [fishyTrials dataVals(i).token];
-        elseif dataVals(i).ampl_taxis(1) < .0001
+        elseif dataVals(i).ampl_taxis(1) < .01
             earlyTrials = [earlyTrials dataVals(i).token];
         elseif (isfield(UserData.expt, 'timing') && isfield(UserData.expt.timing, 'stimdur') && dataVals(i).ampl_taxis(end) > UserData.errorParams.lateThresh_ratio*UserData.expt.timing.stimdur) || ...
                 ~(isfield(UserData.expt, 'timing') && isfield(UserData.expt.timing, 'stimdur')) && dataVals(i).ampl_taxis(end) > UserData.errorParams.lateThresh_absolute
