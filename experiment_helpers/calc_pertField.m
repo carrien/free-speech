@@ -176,6 +176,8 @@ if bPlot
     
     xlabel(xlab);
     ylabel(ylab);
+
+    drawnow;
 end
 
 %% asign values to output variable (p)
