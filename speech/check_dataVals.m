@@ -206,14 +206,14 @@ function errors = get_dataVals_errors(UserData,dataVals)
             shortTrials = [shortTrials dataVals(i).token];
         elseif dataVals(i).dur > UserData.errorParams.longThresh %check for too long trials
             longTrials = [longTrials dataVals(i).token];
-        elseif find(isnan(dataVals(i).(UserData.sigs2plot{s})(2:end))) %check if there are NaN values in first signal, excepting 1st sample
-            nanFTrials = [nanFTrials dataVals(i).token];
         elseif any(maxDiffs > UserData.errorParams.jumpThresh) %check for trials any jump above threshold
             for s = 1:UserData.nSigs
                 if maxDiffs(s) > UserData.errorParams.jumpThresh
                     jumpTrials.(UserData.sigs2plot{s}) = [jumpTrials.(UserData.sigs2plot{s}) dataVals(i).token];
                 end
             end
+        elseif find(isnan(dataVals(i).(UserData.sigs2plot{s})(2:end))) %check if there are NaN values in first signal, excepting 1st sample
+            nanFTrials = [nanFTrials dataVals(i).token];
         elseif any(dataVals(i).(UserData.sigs2plot{1}) < UserData.errorParams.fishyThresh(1)) || ...
                 any(dataVals(i).(UserData.sigs2plot{1}) > UserData.errorParams.fishyThresh(2)) %check if wrong formant is being tracked for first signal to plot (default F1)
             fishyTrials = [fishyTrials dataVals(i).token];
@@ -232,11 +232,11 @@ function errors = get_dataVals_errors(UserData,dataVals)
     errors.badTrials = badTrials;
     errors.shortTrials = shortTrials;
     errors.longTrials = longTrials;
-    errors.nanFTrials = nanFTrials;
     for s = 1:UserData.nSigs
         jumpTrialName = strcat('jumpTrials_',(UserData.sigs2plot{s}));
         errors.(jumpTrialName) = jumpTrials.(UserData.sigs2plot{s});
     end
+    errors.nanFTrials = nanFTrials;
     errors.fishyTrials = fishyTrials;
     errors.earlyTrials = earlyTrials;
     errors.lateTrials = lateTrials;
