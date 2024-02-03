@@ -1,4 +1,4 @@
-function expt = check_audapterLPC(dataPath, referenceMethod, defaultSelected)
+function expt = check_audapterLPC(dataPath, refPointCalcMethod, defaultPointSelected)
 % EXPT = CHECK_AUDAPTERLPC(dataPath)
 %Check that the LPC order used by Audapter is correctly tracking formants.
 %Update LPC order if needed. 
@@ -7,8 +7,14 @@ function expt = check_audapterLPC(dataPath, referenceMethod, defaultSelected)
 %   directory
 
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
-if nargin < 2 || isempty(referenceMethod), referenceMethod = 'mean'; end
-if nargin < 3 || isempty(defaultSelected), defaultSelected = 'peripheral'; end
+if nargin < 2 || isempty(refPointCalcMethod), refPointCalcMethod = 'mean'; end
+if nargin < 3 || isempty(defaultPointSelected)
+    if strcmp(refPointCalcMethod, 'median')
+        defaultPointSelected = 'near';
+    else % assumes 'mean' for refPointCalcMethod
+        defaultPointSelected = 'far';
+    end
+end
 
 %% create GUI
 f = figure('Visible','off','Units','Normalized','Position',[.05 .1 .9 .8]);
@@ -19,8 +25,8 @@ UserData = guihandles(f);
 UserData.f =f;
 
 % global settings
-UserData.referenceMethod = referenceMethod;
-UserData.defaultSelected = defaultSelected;
+UserData.refPointCalcMethod = refPointCalcMethod;
+UserData.defaultPointSelected = defaultPointSelected;
 UserData.formantTrackVisibility = 'on';
 UserData.vowelBoundsVisibility = 'on';
 
@@ -262,10 +268,10 @@ end
 
 function updateReferenceMarker(src, ~)
     UserData = guidata(src);
-    if strcmp(UserData.referenceMethod, 'mean')
-        UserData.referenceMethod = 'median';
+    if strcmp(UserData.refPointCalcMethod, 'mean')
+        UserData.refPointCalcMethod = 'median';
     else
-        UserData.referenceMethod = 'mean';
+        UserData.refPointCalcMethod = 'mean';
     end
 
     guidata(src,UserData)
@@ -361,7 +367,7 @@ function updatePlots(src)
             set(UserData.scatterPlot.(vow)(i),'ButtonDownFcn',{@pickTrial,vow,i,v})
         end
         goodTrials = vowTrials(~UserData.expt.bExcl(vowTrials));
-        if strcmp(UserData.referenceMethod, 'median')
+        if strcmp(UserData.refPointCalcMethod, 'median')
             currF1s = f1s(goodTrials);
             currF2s = f2s(goodTrials);
             medianF1s = median(currF1s, 'omitnan');
@@ -391,7 +397,7 @@ function updatePlots(src)
         else
             currF1s = f1s(vowTrials);
             currF2s = f2s(vowTrials);
-            if strcmp(UserData.referenceMethod, 'median')
+            if strcmp(UserData.refPointCalcMethod, 'median')
                 referenceF1s = median(currF1s, 'omitnan');
                 referenceF2s = median(currF2s, 'omitnan');
             else
@@ -399,9 +405,9 @@ function updatePlots(src)
                 referenceF2s = mean(currF2s, 'omitnan');
             end
             dists = sqrt((currF1s-referenceF1s).^2+(currF2s-referenceF2s).^2);
-            if strcmp(UserData.defaultSelected, 'peripheral')
+            if strcmp(UserData.defaultPointSelected, 'far')
                 [~,trialInd] = max(dists);
-            else % assume 'central'
+            else % assume 'near'
                 [~,trialInd] = min(dists);
             end
             UserData.trial2plot.(vow) = trialInd;
