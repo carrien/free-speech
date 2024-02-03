@@ -178,9 +178,17 @@ UserData.toggle_formant = uicontrol(UserData.plotPanelTracks,'Style','pushbutton
 %create exclude data button
 UserData.toggle_formant = uicontrol(UserData.plotPanelF1F2,'Style','pushbutton',...
     'String','exclude/include trial',...
-    'Units','Normalized','Position',[.2 0 .6 .05],...
+    'Units','Normalized','Position',[0.25 0 .5 .05],...
     'FontUnits','Normalized','FontSize',0.5,...
     'Callback',@toggleIncludeData);
+
+%create play audio button
+% TODO change position to be next to "exclude/include trial" button
+UserData.toggle_formant = uicontrol(UserData.plotPanelF1F2,'Style','pushbutton',...
+    'String','Play',...
+    'Units','Normalized','Position',[.8 0 .15 .05],... 
+    'FontUnits','Normalized','FontSize',0.35,...
+    'Callback',@playSelectedTrial);
 
 
 guidata(f,UserData)
@@ -254,16 +262,29 @@ end
 
 function updateReferenceMarker(src, ~)
     UserData = guidata(src);
-    
     if strcmp(UserData.referenceMethod, 'mean')
         UserData.referenceMethod = 'median';
     else
         UserData.referenceMethod = 'mean';
     end
-    
+
     guidata(src,UserData)
     updatePlots(src)
+end
 
+function playSelectedTrial(src, ~)
+    UserData = guidata(src);
+    if isfield(UserData, 'selTrial')
+        vowels = fields(UserData.expt.inds.vowels);
+        vow = vowels{UserData.selTrial.vow};
+        iTrial = UserData.expt.inds.vowels.(vow)(UserData.selTrial.trial);
+        
+        y = UserData.data(iTrial).signalIn;
+        fs = UserData.data(iTrial).params.sRate;
+        sound(y, fs);
+    else
+        warndlg('Please select a trial')
+    end
 end
 
 function updatePlots(src)
