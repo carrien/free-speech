@@ -21,6 +21,8 @@ UserData.f =f;
 % global settings
 UserData.referenceMethod = referenceMethod;
 UserData.defaultSelected = defaultSelected;
+UserData.formantTrackVisibility = 'on';
+UserData.vowelBoundsVisibility = 'on';
 
 % load data
 UserData.dataPath = dataPath;
@@ -398,6 +400,7 @@ function updatePlots(src)
             color2plot = plotColors(v,:);
         end
         UserData.formantTracks.(vow) = plot(tAxis/UserData.data(trial2plot).params.sr,UserData.data(trial2plot).fmts(:,1:2), 'Color',color2plot,'LineWidth',3);
+        set(UserData.formantTracks.(vow),'Visible',UserData.formantTrackVisibility);
         
         %plot ost
         framedur = 1 / UserData.data(trial2plot).params.sr*UserData.data(trial2plot).params.frameLen; %get frame duration
@@ -421,6 +424,7 @@ function updatePlots(src)
             UserData.vowelBounds.(vow)(4) = vline(vowMidOffs*framedur,'c');
             set(UserData.vowelBounds.(vow)(3),'LineWidth',2)
             set(UserData.vowelBounds.(vow)(4),'LineWidth',2)
+            set(UserData.vowelBounds.(vow),'Visible',UserData.vowelBoundsVisibility);
         else    
             set(UserData.warnPanel,'HighlightColor','yellow');
             outstring = textwrap(UserData.warnText,sprintf("Missing OST trigger: trial %d of %s", trialInd, vow));
@@ -454,8 +458,10 @@ function toggleFormants(src,evt)
         for j = 1:length(UserData.formantTracks.(vow))
             if strcmp(UserData.formantTracks.(vow)(j).Visible,'on')
                 set(UserData.formantTracks.(vow)(j),'Visible','off')
+                UserData.formantTrackVisibility = 'off';
             else
                 set(UserData.formantTracks.(vow)(j),'Visible','on')
+                UserData.formantTrackVisibility = 'on';
             end
         end
     end
@@ -470,8 +476,10 @@ function toggleVowelBounds(src,evt)
         for j = 1:length(UserData.vowelBounds.(vow))
             if strcmp(UserData.vowelBounds.(vow)(j).Visible,'on')
                 set(UserData.vowelBounds.(vow)(j),'Visible','off')
+                UserData.vowelBoundsVisibility = 'off';
             else
                 set(UserData.vowelBounds.(vow)(j),'Visible','on')
+                UserData.vowelBoundsVisibility = 'on';
             end
         end
     end
