@@ -1,12 +1,14 @@
-function expt = check_audapterLPC(dataPath)
-% DATA = CHECK_AUDIO(dataPath,trialinds)
+function expt = check_audapterLPC(dataPath, referenceMethod, defaultSelected)
+% EXPT = CHECK_AUDAPTERLPC(dataPath)
 %Check that the LPC order used by Audapter is correctly tracking formants.
-%Update order if needed. 
+%Update LPC order if needed. 
 %Inputs:
 %   dataPath: path where data.mat and expt.mat are. Default is current
 %   directory
 
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
+if nargin < 2 || isempty(referenceMethod), referenceMethod = 'mean'; end
+if nargin < 3 || isempty(defaultSelected), defaultSelected = 'peripheral'; end
 
 %% create GUI
 f = figure('Visible','off','Units','Normalized','Position',[.05 .1 .9 .8]);
@@ -15,6 +17,10 @@ set(f,'Tag', 'check_LPC','HandleVisibility','on');
 UserData = guihandles(f);
 
 UserData.f =f;
+
+% global settings
+UserData.referenceMethod = referenceMethod;
+UserData.defaultSelected = defaultSelected;
 
 % load data
 UserData.dataPath = dataPath;
@@ -144,6 +150,15 @@ UserData.toggle_formant = uicontrol(UserData.f,'Style','pushbutton',...
     'FontUnits','Normalized','FontSize',0.35,...
     'Callback',@goto_audapter_viewer);
 
+%create toggle reference method button
+yPos = 0.300 + plotMargin/2;
+ySpan = 0.375 - plotMargin/2 - yPos;
+UserData.toggle_formant = uicontrol(UserData.f,'Style','pushbutton',...
+    'String','toggle mean/median',...
+    'Units','Normalized','Position',[xPos,yPos,xSpan,ySpan],... 
+    'FontUnits','Normalized','FontSize',0.35,...
+    'Callback',@updateReferenceMarker);
+
 %create toggle formants button
 UserData.toggle_formant = uicontrol(UserData.plotPanelTracks,'Style','pushbutton',...
     'String','toggle formants',...
@@ -151,7 +166,7 @@ UserData.toggle_formant = uicontrol(UserData.plotPanelTracks,'Style','pushbutton
     'FontUnits','Normalized','FontSize',0.5,...
     'Callback',@toggleFormants);
 
-%create toggle formants button
+%create toggle vowel bounds button
 UserData.toggle_formant = uicontrol(UserData.plotPanelTracks,'Style','pushbutton',...
     'String','toggle vowel bounds',...
     'Units','Normalized','Position',[.525 0 .425 .05],...
@@ -235,6 +250,20 @@ function changeLPC(src,evt)
 
 end
 
+function updateReferenceMarker(src, ~)
+    UserData = guidata(src);
+    
+    if strcmp(UserData.referenceMethod, 'mean')
+        UserData.referenceMethod = 'median';
+    else
+        UserData.referenceMethod = 'mean';
+    end
+    
+    guidata(src,UserData)
+    updatePlots(src)
+
+end
+
 function updatePlots(src)
     UserData = guidata(src);
 
@@ -309,8 +338,20 @@ function updatePlots(src)
             set(UserData.scatterPlot.(vow)(i),'ButtonDownFcn',{@pickTrial,vow,i,v})
         end
         goodTrials = vowTrials(~UserData.expt.bExcl(vowTrials));
-        plot(mean(f1s(goodTrials), 'omitnan'),mean(f2s(goodTrials), 'omitnan'),...
-            '+','MarkerEdgeColor',plotColors(v,:));
+        if strcmp(UserData.referenceMethod, 'median')
+            currF1s = f1s(goodTrials);
+            currF2s = f2s(goodTrials);
+            medianF1s = median(currF1s, 'omitnan');
+            medianF2s = median(currF2s, 'omitnan');
+            dists = sqrt((currF1s-medianF1s).^2+(currF2s-medianF2s).^2);
+            [~, trialInd] = min(dists);
+            plusSignObj = plot(currF1s(trialInd),currF2s(trialInd),...
+                '+','MarkerEdgeColor',plotColors(v,:));
+        else %assume mean
+            plusSignObj = plot(mean(f1s(goodTrials), 'omitnan'),mean(f2s(goodTrials), 'omitnan'),...
+                '+','MarkerEdgeColor',plotColors(v,:));
+        end
+        uistack(plusSignObj, "bottom")
     end
     hold off
     set(UserData.plotPanelF1F2,'FontUnits','normalized','FontSize',.025)
@@ -327,10 +368,19 @@ function updatePlots(src)
         else
             currF1s = f1s(vowTrials);
             currF2s = f2s(vowTrials);
-            meanF1 = mean(currF1s, 'omitnan');
-            meanF2s = mean(currF2s, 'omitnan');
-            dists = sqrt((currF1s-meanF1).^2+(currF2s-meanF2s).^2);
-            [~,trialInd] = max(dists);
+            if strcmp(UserData.referenceMethod, 'median')
+                referenceF1s = median(currF1s, 'omitnan');
+                referenceF2s = median(currF2s, 'omitnan');
+            else
+                referenceF1s = mean(currF1s, 'omitnan');
+                referenceF2s = mean(currF2s, 'omitnan');
+            end
+            dists = sqrt((currF1s-referenceF1s).^2+(currF2s-referenceF2s).^2);
+            if strcmp(UserData.defaultSelected, 'peripheral')
+                [~,trialInd] = max(dists);
+            else % assume 'central'
+                [~,trialInd] = min(dists);
+            end
             UserData.trial2plot.(vow) = trialInd;
         end
         trial2plot = vowTrials(trialInd);
