@@ -1,4 +1,4 @@
-function expt = check_audapterLPC(dataPath, refPointCalcMethod, defaultPointSelected)
+function expt = check_audapterLPC(dataPath, params)
 % EXPT = CHECK_AUDAPTERLPC(dataPath)
 %Check that the LPC order used by Audapter is correctly tracking formants.
 %Update LPC order if needed. 
@@ -7,14 +7,11 @@ function expt = check_audapterLPC(dataPath, refPointCalcMethod, defaultPointSele
 %   directory
 
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
-if nargin < 2 || isempty(refPointCalcMethod), refPointCalcMethod = 'mean'; end
-if nargin < 3 || isempty(defaultPointSelected)
-    if strcmp(refPointCalcMethod, 'median')
-        defaultPointSelected = 'near';
-    else % assumes 'mean' for refPointCalcMethod
-        defaultPointSelected = 'far';
-    end
-end
+if nargin < 2 || isempyt(params), params = struct; end
+
+defaultParams.refPointCalcMethod = 'mean';
+defaultParams.defaultPointSelected = 'far';
+params = set_missingFields(params, defaultParams, 0);
 
 %% create GUI
 f = figure('Visible','off','Units','Normalized','Position',[.05 .1 .9 .8]);
@@ -25,8 +22,8 @@ UserData = guihandles(f);
 UserData.f =f;
 
 % global settings
-UserData.refPointCalcMethod = refPointCalcMethod;
-UserData.defaultPointSelected = defaultPointSelected;
+UserData.refPointCalcMethod = params.refPointCalcMethod;
+UserData.defaultPointSelected = params.defaultPointSelected;
 UserData.formantTrackVisibility = 'on';
 UserData.vowelBoundsVisibility = 'on';
 
