@@ -82,11 +82,10 @@ for i = 1:UserData.nVowels
 end
 
 %create panel for LPC info
-
 plotPanelXPos = 0.8+plotMargin;
 plotPanelXSpan = UserData.xPosMax-plotMargin/2-plotPanelXPos;
-plotPanelYSpan = 0.2 + plotMargin/2;
-plotPanelYPos = 0.75 - plotMargin/2 - plotPanelYSpan; 
+plotPanelYSpan = 0.15 + plotMargin/2;
+plotPanelYPos = 0.78 - plotMargin/2 - plotPanelYSpan; 
 
 plotPanelPos = [plotPanelXPos plotPanelYPos plotPanelXSpan plotPanelYSpan];
 UserData.lpcPanel = uipanel(UserData.f,'Units','Normalized','Position',...
@@ -99,8 +98,8 @@ UserData.nLPC = data(1).params.nLPC;
 
 xPos = 0.05;
 xSpan = 0.95 - xPos;
-yPos = 0.3;
-ySpan = 0.2;
+yPos = 0.25;
+ySpan = 0.25;
 LPCoptions = {'10','11','12','13','14','15','16','17','18','19','20'};
 UserData.LPCdrop = uicontrol(UserData.lpcPanel,...
     'Style','popupmenu',...
@@ -111,7 +110,7 @@ UserData.LPCdrop = uicontrol(UserData.lpcPanel,...
     'FontUnits','Normalized','FontSize',0.75,...
     'Callback',@changeLPC);
 
-yPos = 0.8;
+yPos = 0.65;
 UserData.LPCtext = uicontrol(UserData.lpcPanel,...
     'Style','text',...
     'Units','Normalized',...
@@ -132,6 +131,30 @@ UserData.warnText = uicontrol(UserData.warnPanel,'style','text',...
             'String',[],...
             'Units','Normalized','Position',[.1 .1 .8 .8],...
             'FontUnits','Normalized','FontSize',.3);
+
+%create panel for displaying reference point (mean vs median)
+xPos = 0.8+plotMargin;
+xSpan = UserData.xPosMax-plotMargin/2-xPos;
+yPos = 0.4;
+ySpan = 0.15;
+UserData.refPointPanel = uipanel(UserData.f,'Units','Normalized','Position',...
+            [xPos,yPos,xSpan,ySpan],...
+            'Tag','refPointPanel','Visible','on');
+
+UserData.refPointTextCtr = uicontrol(UserData.refPointPanel,'style','text',...
+            'String','Reference point',...
+            'Units','Normalized','Position',[.1 .65 .8 .25],...
+            'FontUnits','Normalized','FontSize',.75);
+
+refPointOptions = {'mean' 'median'};
+UserData.refPointCalcCtr = uicontrol(UserData.refPointPanel,...
+    'Style','popupmenu',...
+    'Units','Normalized',...
+    'Position',[.1, .25, .8, .30],...
+    'String',refPointOptions,...
+    'Value',find(strcmp(refPointOptions,UserData.refPointCalcMethod)),...
+    'FontUnits','Normalized','FontSize',0.75,...
+    'Callback',@updateReferenceMarker);
         
         
 %create OK button
@@ -147,22 +170,13 @@ UserData.hOK = uicontrol(UserData.f,'Style','pushbutton','String','OK',...
 %create change OSTs button (launches audapter_viewer)
 %yPos = 0.2+plotMargin/2;   
 %ySpan = 0.25 - plotMargin/2-yPos;
-yPos = 0.375 + plotMargin/2;
-ySpan = 0.475 - plotMargin/2 - yPos;
+yPos = 0.250 + plotMargin/2;
+ySpan = 0.350 - plotMargin/2 - yPos;
 UserData.toggle_formant = uicontrol(UserData.f,'Style','pushbutton',...
     'String','change OSTs',...
     'Units','Normalized','Position',[xPos,yPos,xSpan,ySpan],... 
     'FontUnits','Normalized','FontSize',0.35,...
     'Callback',@goto_audapter_viewer);
-
-%create toggle reference method button
-yPos = 0.300 + plotMargin/2;
-ySpan = 0.375 - plotMargin/2 - yPos;
-UserData.toggle_formant = uicontrol(UserData.f,'Style','pushbutton',...
-    'String','toggle mean/median',...
-    'Units','Normalized','Position',[xPos,yPos,xSpan,ySpan],... 
-    'FontUnits','Normalized','FontSize',0.35,...
-    'Callback',@updateReferenceMarker);
 
 %create toggle formants button
 UserData.toggle_formant = uicontrol(UserData.plotPanelTracks,'Style','pushbutton',...
@@ -186,7 +200,6 @@ UserData.toggle_formant = uicontrol(UserData.plotPanelF1F2,'Style','pushbutton',
     'Callback',@toggleIncludeData);
 
 %create play audio button
-% TODO change position to be next to "exclude/include trial" button
 UserData.toggle_formant = uicontrol(UserData.plotPanelF1F2,'Style','pushbutton',...
     'String','Play',...
     'Units','Normalized','Position',[.8 0 .15 .05],... 
@@ -222,7 +235,8 @@ function changeLPC(src,evt)
     %set warning
     set(UserData.warnPanel,'HighlightColor','yellow')
     outstring = textwrap(UserData.warnText,{'Loading data...'});
-    set(UserData.warnText,'String',outstring); pause(0.001) % without pause, message won't appear
+    set(UserData.warnText,'String',outstring);
+    drawnow;
 
     % set UserData.nLPC
     UserData.nLPC = str2double(cell2mat(UserData.LPCdrop.String(UserData.LPCdrop.Value)));
@@ -260,6 +274,7 @@ function changeLPC(src,evt)
     
     set(UserData.warnText,'String',[])
     set(UserData.warnPanel,'HighlightColor',[1 1 1])
+    drawnow;
 
 end
 
@@ -453,6 +468,7 @@ function updatePlots(src)
             set(UserData.warnPanel,'HighlightColor','yellow');
             outstring = textwrap(UserData.warnText,sprintf("Missing OST trigger: trial %d of %s", trialInd, vow));
             set(UserData.warnText,'String',outstring, 'FontSize', 0.25, 'Position', [0.05 0.05 .9 .9]);
+            drawnow;
         end
         title(vow,'FontUnits','normalized','FontSize',0.1)
         
