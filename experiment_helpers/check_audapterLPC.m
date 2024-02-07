@@ -6,6 +6,8 @@ function expt = check_audapterLPC(dataPath, params)
 %   dataPath: path where data.mat and expt.mat are. Default is current
 %   directory
 
+% TODO change output argument to be selectedTrials.(vowel) = trialnum 
+
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
 if nargin < 2 || isempyt(params), params = struct; end
 
@@ -280,11 +282,8 @@ end
 
 function updateReferenceMarker(src, ~)
     UserData = guidata(src);
-    if strcmp(UserData.refPointCalcMethod, 'mean')
-        UserData.refPointCalcMethod = 'median';
-    else
-        UserData.refPointCalcMethod = 'mean';
-    end
+
+    UserData.refPointCalcMethod = cell2mat(UserData.refPointCalcCtr.String(UserData.refPointCalcCtr.Value));
 
     guidata(src,UserData)
     updatePlots(src)
