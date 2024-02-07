@@ -6,8 +6,6 @@ function expt = check_audapterLPC(dataPath, params)
 %   dataPath: path where data.mat and expt.mat are. Default is current
 %   directory
 
-% TODO change output argument to be selectedTrials.(vowel) = trialnum 
-
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
 if nargin < 2 || isempyt(params), params = struct; end
 
@@ -387,9 +385,18 @@ function updatePlots(src)
             [~, trialInd] = min(dists);
             plusSignObj = plot(currF1s(trialInd),currF2s(trialInd),...
                 '+','MarkerEdgeColor',plotColors(v,:));
+            
+            % save selected trial to expt
+            exptTrialInd = goodTrials(trialInd);
+            UserData.expt.selectedTrials.(vow) = exptTrialInd;
         else %assume mean
             plusSignObj = plot(mean(f1s(goodTrials), 'omitnan'),mean(f2s(goodTrials), 'omitnan'),...
                 '+','MarkerEdgeColor',plotColors(v,:));
+
+            % scrub selectedTrials (only used with median reference point)
+            if isfield(UserData.expt, 'selectedTrials')
+                UserData.expt = rmfield(UserData.expt, 'selectedTrials');
+            end
         end
         uistack(plusSignObj, "bottom")
     end
