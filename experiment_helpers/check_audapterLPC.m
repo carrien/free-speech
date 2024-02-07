@@ -7,7 +7,7 @@ function expt = check_audapterLPC(dataPath, params)
 %   directory
 
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
-if nargin < 2 || isempyt(params), params = struct; end
+if nargin < 2 || isempty(params), params = struct; end
 
 defaultParams.refPointCalcMethod = 'mean';
 defaultParams.defaultPointSelected = 'far';
