@@ -220,9 +220,9 @@ for cnd=1:length(conds)
                 
 %                 % pitch
                 f0dist_int = f0data.(fr).(c).(av).rawavg.f0 - f0data.(fr).(c).(av).med.f0;
-                if isfield(expt,'tones')
-                    f0dist_ext = f0data.(fr).(c).(av).rawavg.f0 - expt.tones(cnd);
-                end
+                % if isfield(expt,'tones')
+                %     f0dist_ext = f0data.(fr).(c).(av).rawavg.f0 - expt.tones(cnd);
+                % end
                 f0data.(fr).(c).(av).dist = abs(f0dist_int);
                 
                 f0data.(fr).(c).(av).meddist = nanmedian(f0data.(fr).(c).(av).dist);
