@@ -194,14 +194,31 @@ function errors = get_dataVals_errors(UserData,dataVals)
         %trials that are not just nans
         maxDiffs = zeros(1,UserData.nSigs);
         bNaNVals = all(isnan(dataVals(i).(UserData.sigs2plot{1})));
+        if strcmp(UserData.sigs2plot{s},'f0') %for f0 exclude first 40 ms of signal
+            tstep = diff(UserData.dataVals(1).pitch_taxis(1:2)); % get time step for each sample
+            onset = round(.04/tstep);
+        else
+            onset = 2; %exclude first sample from formant tracks when checking for NaNs
+        end
         if ~dataVals(i).bExcl && ~bNaNVals
             for s = 1:UserData.nSigs
-                maxDiffs(s) = max(abs(diff(dataVals(i).(UserData.sigs2plot{s}))));
+                if strcmp(UserData.sigs2plot{s},'f0') %for f0 exclude first 40 ms of signal
+                    onset = round(.04/tstep);
+                    if length(dataVals(i).(UserData.sigs2plot{s}))>onset
+                        maxDiffs(s) = max(abs(diff(dataVals(i).(UserData.sigs2plot{s})(onset:end))));
+                    else
+                        maxDiffs(s) = max(abs(diff(dataVals(i).(UserData.sigs2plot{s}))));
+                    end
+                else % for formants use whole track
+                    maxDiffs(s) = max(abs(diff(dataVals(i).(UserData.sigs2plot{s}))));
+                end
             end
         end
         
         if dataVals(i).bExcl
             badTrials = [badTrials dataVals(i).token]; %#ok<*AGROW>
+        elseif dataVals(i).ampl_taxis(1) < .01
+            earlyTrials = [earlyTrials dataVals(i).token];
         elseif dataVals(i).dur < UserData.errorParams.shortThresh %check for too short trials
             shortTrials = [shortTrials dataVals(i).token];
         elseif dataVals(i).dur > UserData.errorParams.longThresh %check for too long trials
@@ -212,13 +229,12 @@ function errors = get_dataVals_errors(UserData,dataVals)
                     jumpTrials.(UserData.sigs2plot{s}) = [jumpTrials.(UserData.sigs2plot{s}) dataVals(i).token];
                 end
             end
-        elseif find(isnan(dataVals(i).(UserData.sigs2plot{s})(2:end))) %check if there are NaN values in first signal, excepting 1st sample
+        elseif find(isnan(dataVals(i).(UserData.sigs2plot{s})(onset:end))) %check if there are NaN values in first signal, excepting 1st sample for formants, 40ms for f0
             nanFTrials = [nanFTrials dataVals(i).token];
         elseif any(dataVals(i).(UserData.sigs2plot{1}) < UserData.errorParams.fishyThresh(1)) || ...
                 any(dataVals(i).(UserData.sigs2plot{1}) > UserData.errorParams.fishyThresh(2)) %check if wrong formant is being tracked for first signal to plot (default F1)
             fishyTrials = [fishyTrials dataVals(i).token];
-        elseif dataVals(i).ampl_taxis(1) < .01
-            earlyTrials = [earlyTrials dataVals(i).token];
+
         elseif (isfield(UserData.expt, 'timing') && isfield(UserData.expt.timing, 'stimdur') && dataVals(i).ampl_taxis(end) > UserData.errorParams.lateThresh_ratio*UserData.expt.timing.stimdur) || ...
                 ~(isfield(UserData.expt, 'timing') && isfield(UserData.expt.timing, 'stimdur')) && dataVals(i).ampl_taxis(end) > UserData.errorParams.lateThresh_absolute
             % check vowel endpoint relative to stimdur if possible.
@@ -435,6 +451,12 @@ function update_plots(src,evt)
         set(UserData.warnText,'String',outstring)
         pause(0.0001)
         [UserData.htracks,UserData.hsub] = plot_rawAcoustTracks(UserData.dataVals,grouping,UserData.trialset,UserData.plotPanel,UserData.expt,UserData.sigs2plot);
+        if strcmp(UserData.sigs2plot{1},'f0') %plot line at 40 ms for f0 data
+            xTicks = get(gca,'XTick');
+            xTicks = sort([xTicks .04]);
+            set(gca,'XTick',xTicks)
+            vline(0.040,'k',':'); 
+        end
         set(UserData.warnText,'String',[])
         set(UserData.warnPanel,'HighlightColor',[1 1 1])
         for iPlot = 1:length(UserData.htracks)
