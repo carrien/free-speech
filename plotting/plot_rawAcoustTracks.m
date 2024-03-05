@@ -89,7 +89,7 @@ for g = 1:length(groups)
     end
     title(sprintf('%s %d%s',grouping,groupId,titlesuffix))
     xlabel('time (s)')
-    if strcmp(sigs2plot{s},'int') 
+    if strcmp(sigs2plot{g},'int') 
         ylabel('intensity (Hz)')
     else
         ylabel('frequency (Hz)')
