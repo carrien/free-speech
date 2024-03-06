@@ -89,11 +89,11 @@ for g = 1:length(groups)
     end
     title(sprintf('%s %d%s',grouping,groupId,titlesuffix))
     xlabel('time (s)')
-   % if strcmp(sigs2plot{g},'int') 
-       % ylabel('intensity (Hz)')
-    %else
+    if strcmp(sigs2plot{g},'int') 
+        ylabel('intensity (Hz)')
+    else
         ylabel('frequency (Hz)')
-    %end
+    end
     box off;
     
     makeFig4Screen([],[],0);    
