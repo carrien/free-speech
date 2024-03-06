@@ -459,7 +459,7 @@ function update_plots(src,evt)
         [UserData.htracks,UserData.hsub] = plot_rawAcoustTracks(UserData.dataVals,grouping,UserData.trialset,UserData.plotPanel,UserData.expt,UserData.sigs2plot);
         if strcmp(UserData.sigs2plot{1},'f0') %plot line at 40 ms for f0 data
             xTicks = get(gca,'XTick');
-            xTicks = sort([xTicks .04]);
+            xTicks = unique(sort([xTicks .04]));
             set(gca,'XTick',xTicks)
             vline(0.040,'k',':'); 
         end
