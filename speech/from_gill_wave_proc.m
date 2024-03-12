@@ -129,14 +129,13 @@ amplaxinfo.spec_marker_name.bgrect.color = 'same';
 %%
 %pitchaxinfo
 
-pitchlimits = sigproc_params.pitchlimits;
-[ypitch, pitch_taxis] = get_sig_pitch(y, fs, pitchlimits, [], [], [], sigproc_params);
+[ypitch, pitch_taxis] = get_sig_pitch(y, fs, sigproc_params, [], [], []);
 pitchaxinfo.rawypitch = ypitch;
 ampl4pitch = interp1(amplaxinfo.taxis,amplaxinfo.dat{1},pitch_taxis); %if pitch taxis and ampl taxis ever have different increments, then interpolate values such that the amplitude is in terms of pitchtaxis.
 ypitch(ampl4pitch < ampl_thresh4voicing) = NaN;
 
 pitchaxinfo.params.fs = fs;
-pitchaxinfo.params.pitchlimits = pitchlimits;
+pitchaxinfo.params.pitchlimits = sigproc_params.pitchlimits;
 
 pitchaxinfo.i = plot_params.iordersubplots(1,3);
 pitchaxinfo.type = 'pitch';
