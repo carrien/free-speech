@@ -384,14 +384,14 @@ function updatePlots(src)
             dists = sqrt((currF1s-medianF1s).^2+(currF2s-medianF2s).^2);
             [~, trialInd] = min(dists);
             plusSignObj = plot(currF1s(trialInd),currF2s(trialInd),...
-                '+','MarkerEdgeColor',plotColors(v,:));
+                '+','MarkerEdgeColor',plotColors(v,:),'MarkerSize', 15);
             
             % save selected trial to expt
             exptTrialInd = goodTrials(trialInd);
             UserData.expt.selectedTrials.(vow) = exptTrialInd;
         else %assume mean
             plusSignObj = plot(mean(f1s(goodTrials), 'omitnan'),mean(f2s(goodTrials), 'omitnan'),...
-                '+','MarkerEdgeColor',plotColors(v,:));
+                '+','MarkerEdgeColor',plotColors(v,:),'MarkerSize', 15);
 
             % scrub selectedTrials (only used with median reference point)
             if isfield(UserData.expt, 'selectedTrials')
