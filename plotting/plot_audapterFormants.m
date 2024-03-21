@@ -1,4 +1,4 @@
-function [h] = plot_audapterFormants(data, p, bInterpret)
+function [h,subh] = plot_audapterFormants(data, p, bInterpret)
 % Provides a quick plot of the waveform, spectrogram, and signalIn formants
 %   (fmts) and signalOut formants (sfmts) for trial data. Used for
 %   spot-checking a couple trials.
@@ -53,9 +53,9 @@ else
 end
 ncols = length(data);
 h = figure('Position',p.figpos);
-
+subh = gobjects(1,ncols);
 for nax = 1:ncols
-    subplot(nrows,ncols,nax)
+    subh(nax) = subplot(nrows,ncols,nax);
     hold on;
     
     if p.bWave
