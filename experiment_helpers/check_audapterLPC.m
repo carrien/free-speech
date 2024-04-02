@@ -1,12 +1,17 @@
-function expt = check_audapterLPC(dataPath)
-% DATA = CHECK_AUDIO(dataPath,trialinds)
+function expt = check_audapterLPC(dataPath, params)
+% EXPT = CHECK_AUDAPTERLPC(dataPath)
 %Check that the LPC order used by Audapter is correctly tracking formants.
-%Update order if needed. 
+%Update LPC order if needed. 
 %Inputs:
 %   dataPath: path where data.mat and expt.mat are. Default is current
 %   directory
 
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
+if nargin < 2 || isempty(params), params = struct; end
+
+defaultParams.refPointCalcMethod = 'mean';
+defaultParams.defaultPointSelected = 'far';
+params = set_missingFields(params, defaultParams, 0);
 
 %% create GUI
 f = figure('Visible','off','Units','Normalized','Position',[.05 .1 .9 .8]);
@@ -15,6 +20,12 @@ set(f,'Tag', 'check_LPC','HandleVisibility','on');
 UserData = guihandles(f);
 
 UserData.f =f;
+
+% global settings
+UserData.refPointCalcMethod = params.refPointCalcMethod;
+UserData.defaultPointSelected = params.defaultPointSelected;
+UserData.formantTrackVisibility = 'on';
+UserData.vowelBoundsVisibility = 'on';
 
 % load data
 UserData.dataPath = dataPath;
@@ -71,11 +82,10 @@ for i = 1:UserData.nVowels
 end
 
 %create panel for LPC info
-
 plotPanelXPos = 0.8+plotMargin;
 plotPanelXSpan = UserData.xPosMax-plotMargin/2-plotPanelXPos;
-plotPanelYSpan = 0.2 + plotMargin/2;
-plotPanelYPos = 0.75 - plotMargin/2 - plotPanelYSpan; 
+plotPanelYSpan = 0.15 + plotMargin/2;
+plotPanelYPos = 0.78 - plotMargin/2 - plotPanelYSpan; 
 
 plotPanelPos = [plotPanelXPos plotPanelYPos plotPanelXSpan plotPanelYSpan];
 UserData.lpcPanel = uipanel(UserData.f,'Units','Normalized','Position',...
@@ -88,8 +98,8 @@ UserData.nLPC = data(1).params.nLPC;
 
 xPos = 0.05;
 xSpan = 0.95 - xPos;
-yPos = 0.3;
-ySpan = 0.2;
+yPos = 0.25;
+ySpan = 0.25;
 LPCoptions = {'10','11','12','13','14','15','16','17','18','19','20'};
 UserData.LPCdrop = uicontrol(UserData.lpcPanel,...
     'Style','popupmenu',...
@@ -100,7 +110,7 @@ UserData.LPCdrop = uicontrol(UserData.lpcPanel,...
     'FontUnits','Normalized','FontSize',0.75,...
     'Callback',@changeLPC);
 
-yPos = 0.8;
+yPos = 0.65;
 UserData.LPCtext = uicontrol(UserData.lpcPanel,...
     'Style','text',...
     'Units','Normalized',...
@@ -121,6 +131,30 @@ UserData.warnText = uicontrol(UserData.warnPanel,'style','text',...
             'String',[],...
             'Units','Normalized','Position',[.1 .1 .8 .8],...
             'FontUnits','Normalized','FontSize',.3);
+
+%create panel for displaying reference point (mean vs median)
+xPos = 0.8+plotMargin;
+xSpan = UserData.xPosMax-plotMargin/2-xPos;
+yPos = 0.4;
+ySpan = 0.15;
+UserData.refPointPanel = uipanel(UserData.f,'Units','Normalized','Position',...
+            [xPos,yPos,xSpan,ySpan],...
+            'Tag','refPointPanel','Visible','on');
+
+UserData.refPointTextCtr = uicontrol(UserData.refPointPanel,'style','text',...
+            'String','Reference point',...
+            'Units','Normalized','Position',[.1 .65 .8 .25],...
+            'FontUnits','Normalized','FontSize',.75);
+
+refPointOptions = {'mean' 'median'};
+UserData.refPointCalcCtr = uicontrol(UserData.refPointPanel,...
+    'Style','popupmenu',...
+    'Units','Normalized',...
+    'Position',[.1, .25, .8, .30],...
+    'String',refPointOptions,...
+    'Value',find(strcmp(refPointOptions,UserData.refPointCalcMethod)),...
+    'FontUnits','Normalized','FontSize',0.75,...
+    'Callback',@updateReferenceMarker);
         
         
 %create OK button
@@ -136,8 +170,8 @@ UserData.hOK = uicontrol(UserData.f,'Style','pushbutton','String','OK',...
 %create change OSTs button (launches audapter_viewer)
 %yPos = 0.2+plotMargin/2;   
 %ySpan = 0.25 - plotMargin/2-yPos;
-yPos = 0.375 + plotMargin/2;
-ySpan = 0.475 - plotMargin/2 - yPos;
+yPos = 0.250 + plotMargin/2;
+ySpan = 0.350 - plotMargin/2 - yPos;
 UserData.toggle_formant = uicontrol(UserData.f,'Style','pushbutton',...
     'String','change OSTs',...
     'Units','Normalized','Position',[xPos,yPos,xSpan,ySpan],... 
@@ -151,7 +185,7 @@ UserData.toggle_formant = uicontrol(UserData.plotPanelTracks,'Style','pushbutton
     'FontUnits','Normalized','FontSize',0.5,...
     'Callback',@toggleFormants);
 
-%create toggle formants button
+%create toggle vowel bounds button
 UserData.toggle_formant = uicontrol(UserData.plotPanelTracks,'Style','pushbutton',...
     'String','toggle vowel bounds',...
     'Units','Normalized','Position',[.525 0 .425 .05],...
@@ -161,9 +195,16 @@ UserData.toggle_formant = uicontrol(UserData.plotPanelTracks,'Style','pushbutton
 %create exclude data button
 UserData.toggle_formant = uicontrol(UserData.plotPanelF1F2,'Style','pushbutton',...
     'String','exclude/include trial',...
-    'Units','Normalized','Position',[.2 0 .6 .05],...
+    'Units','Normalized','Position',[0.25 0 .5 .05],...
     'FontUnits','Normalized','FontSize',0.5,...
     'Callback',@toggleIncludeData);
+
+%create play audio button
+UserData.toggle_formant = uicontrol(UserData.plotPanelF1F2,'Style','pushbutton',...
+    'String','Play',...
+    'Units','Normalized','Position',[.8 0 .15 .05],... 
+    'FontUnits','Normalized','FontSize',0.35,...
+    'Callback',@playSelectedTrial);
 
 
 guidata(f,UserData)
@@ -194,7 +235,8 @@ function changeLPC(src,evt)
     %set warning
     set(UserData.warnPanel,'HighlightColor','yellow')
     outstring = textwrap(UserData.warnText,{'Loading data...'});
-    set(UserData.warnText,'String',outstring); pause(0.001) % without pause, message won't appear
+    set(UserData.warnText,'String',outstring);
+    drawnow;
 
     % set UserData.nLPC
     UserData.nLPC = str2double(cell2mat(UserData.LPCdrop.String(UserData.LPCdrop.Value)));
@@ -232,7 +274,32 @@ function changeLPC(src,evt)
     
     set(UserData.warnText,'String',[])
     set(UserData.warnPanel,'HighlightColor',[1 1 1])
+    drawnow;
 
+end
+
+function updateReferenceMarker(src, ~)
+    UserData = guidata(src);
+
+    UserData.refPointCalcMethod = cell2mat(UserData.refPointCalcCtr.String(UserData.refPointCalcCtr.Value));
+
+    guidata(src,UserData)
+    updatePlots(src)
+end
+
+function playSelectedTrial(src, ~)
+    UserData = guidata(src);
+    if isfield(UserData, 'selTrial')
+        vowels = fields(UserData.expt.inds.vowels);
+        vow = vowels{UserData.selTrial.vow};
+        iTrial = UserData.expt.inds.vowels.(vow)(UserData.selTrial.trial);
+        
+        y = UserData.data(iTrial).signalIn;
+        fs = UserData.data(iTrial).params.sRate;
+        sound(y, fs);
+    else
+        warndlg('Please select a trial')
+    end
 end
 
 function updatePlots(src)
@@ -309,8 +376,29 @@ function updatePlots(src)
             set(UserData.scatterPlot.(vow)(i),'ButtonDownFcn',{@pickTrial,vow,i,v})
         end
         goodTrials = vowTrials(~UserData.expt.bExcl(vowTrials));
-        plot(mean(f1s(goodTrials), 'omitnan'),mean(f2s(goodTrials), 'omitnan'),...
-            '+','MarkerEdgeColor',plotColors(v,:));
+        if strcmp(UserData.refPointCalcMethod, 'median')
+            currF1s = f1s(goodTrials);
+            currF2s = f2s(goodTrials);
+            medianF1s = median(currF1s, 'omitnan');
+            medianF2s = median(currF2s, 'omitnan');
+            dists = sqrt((currF1s-medianF1s).^2+(currF2s-medianF2s).^2);
+            [~, trialInd] = min(dists);
+            plusSignObj = plot(currF1s(trialInd),currF2s(trialInd),...
+                '+','MarkerEdgeColor',plotColors(v,:),'MarkerSize', 15);
+            
+            % save selected trial to expt
+            exptTrialInd = goodTrials(trialInd);
+            UserData.expt.selectedTrials.(vow) = exptTrialInd;
+        else %assume mean
+            plusSignObj = plot(mean(f1s(goodTrials), 'omitnan'),mean(f2s(goodTrials), 'omitnan'),...
+                '+','MarkerEdgeColor',plotColors(v,:),'MarkerSize', 15);
+
+            % scrub selectedTrials (only used with median reference point)
+            if isfield(UserData.expt, 'selectedTrials')
+                UserData.expt = rmfield(UserData.expt, 'selectedTrials');
+            end
+        end
+        uistack(plusSignObj, "bottom")
     end
     hold off
     set(UserData.plotPanelF1F2,'FontUnits','normalized','FontSize',.025)
@@ -327,10 +415,19 @@ function updatePlots(src)
         else
             currF1s = f1s(vowTrials);
             currF2s = f2s(vowTrials);
-            meanF1 = mean(currF1s, 'omitnan');
-            meanF2s = mean(currF2s, 'omitnan');
-            dists = sqrt((currF1s-meanF1).^2+(currF2s-meanF2s).^2);
-            [~,trialInd] = max(dists);
+            if strcmp(UserData.refPointCalcMethod, 'median')
+                referenceF1s = median(currF1s, 'omitnan');
+                referenceF2s = median(currF2s, 'omitnan');
+            else
+                referenceF1s = mean(currF1s, 'omitnan');
+                referenceF2s = mean(currF2s, 'omitnan');
+            end
+            dists = sqrt((currF1s-referenceF1s).^2+(currF2s-referenceF2s).^2);
+            if strcmp(UserData.defaultPointSelected, 'far')
+                [~,trialInd] = max(dists);
+            else % assume 'near'
+                [~,trialInd] = min(dists);
+            end
             UserData.trial2plot.(vow) = trialInd;
         end
         trial2plot = vowTrials(trialInd);
@@ -348,6 +445,7 @@ function updatePlots(src)
             color2plot = plotColors(v,:);
         end
         UserData.formantTracks.(vow) = plot(tAxis/UserData.data(trial2plot).params.sr,UserData.data(trial2plot).fmts(:,1:2), 'Color',color2plot,'LineWidth',3);
+        set(UserData.formantTracks.(vow),'Visible',UserData.formantTrackVisibility);
         
         %plot ost
         framedur = 1 / UserData.data(trial2plot).params.sr*UserData.data(trial2plot).params.frameLen; %get frame duration
@@ -371,10 +469,12 @@ function updatePlots(src)
             UserData.vowelBounds.(vow)(4) = vline(vowMidOffs*framedur,'c');
             set(UserData.vowelBounds.(vow)(3),'LineWidth',2)
             set(UserData.vowelBounds.(vow)(4),'LineWidth',2)
+            set(UserData.vowelBounds.(vow),'Visible',UserData.vowelBoundsVisibility);
         else    
             set(UserData.warnPanel,'HighlightColor','yellow');
             outstring = textwrap(UserData.warnText,sprintf("Missing OST trigger: trial %d of %s", trialInd, vow));
             set(UserData.warnText,'String',outstring, 'FontSize', 0.25, 'Position', [0.05 0.05 .9 .9]);
+            drawnow;
         end
         title(vow,'FontUnits','normalized','FontSize',0.1)
         
@@ -404,8 +504,10 @@ function toggleFormants(src,evt)
         for j = 1:length(UserData.formantTracks.(vow))
             if strcmp(UserData.formantTracks.(vow)(j).Visible,'on')
                 set(UserData.formantTracks.(vow)(j),'Visible','off')
+                UserData.formantTrackVisibility = 'off';
             else
                 set(UserData.formantTracks.(vow)(j),'Visible','on')
+                UserData.formantTrackVisibility = 'on';
             end
         end
     end
@@ -420,8 +522,10 @@ function toggleVowelBounds(src,evt)
         for j = 1:length(UserData.vowelBounds.(vow))
             if strcmp(UserData.vowelBounds.(vow)(j).Visible,'on')
                 set(UserData.vowelBounds.(vow)(j),'Visible','off')
+                UserData.vowelBoundsVisibility = 'off';
             else
                 set(UserData.vowelBounds.(vow)(j),'Visible','on')
+                UserData.vowelBoundsVisibility = 'on';
             end
         end
     end
