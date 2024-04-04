@@ -527,7 +527,7 @@ function TB_all(src,evt)
         for s = 1:UserData.nSigs
             handleName = strcat(UserData.sigs2plot{s},'Ends');
             set(UserData.htracks(i).(UserData.sigs2plot{s})(:),'Color',plotcolor{s},'LineWidth',1)
-            set(UserData.htracks(i).handleNames(:),'MarkerEdgeColor',plotcolor{s},'MarkerFaceColor',get_lightcolor(plotcolor{s},1.2))
+            set(UserData.htracks(i).(handleName)(:),'MarkerEdgeColor',plotcolor{s},'MarkerFaceColor',get_lightcolor(plotcolor{s},1.2))
         end
     end
     errorField = UserData.errorPanel.SelectedObject.String{1};
