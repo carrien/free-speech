@@ -2,8 +2,6 @@ function [] =  forcedAlignment(dataPath,exptfield, trialNums)%, language)
 
 %% LANGUAGE FLAG IN PROGRESS; don't use the French dictionary. 'oe' - 'neuf'
 
-%% If this file is moved or re-named, you will need to fix free-speech/experiment helpers/get_gitPath.m
-
 
 % % FORCEDALIGNMENT Use the montreal forced aligner on experiment data
 % %   FORCEDALIGNMENT(DATAPATH,EXPTFIELD)
