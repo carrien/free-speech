@@ -8,7 +8,7 @@ switch reponame
     case 'free-speech'
         mfilename = 'get_gitPath.m'; % representative function from free-speech
     case 'current-studies'
-        mfilename = 'forcedAlignment.m'; % representative function from current-studies
+        mfilename = 'dummy_current-studies_file.m'; % representative function from current-studies
     case 'cerebellar-battery'
         mfilename = 'run_cerebTimeAdapt_expt.m'; % Representative function from cerebellar-battery 
     otherwise
