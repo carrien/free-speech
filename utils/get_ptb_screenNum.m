@@ -39,10 +39,10 @@ while ~bGoodScreen
     win = Screen('OpenWindow', screenNumber);
 
     % display text
-    Screen('FillRect', win, [0 0 0]);
+    Screen('FillRect', win, [255 255 255]);
     Screen('TextFont', win, 'Arial');
     Screen('TextSize', win, 50);
-    DrawFormattedText(win, sprintf('This is a test. Screen will close momentarily.'), 'center', 'center', [255 255 255]);
+    DrawFormattedText(win, sprintf('This is a test. Screen will close momentarily.'), 'center', 'center', [0 0 0]);
     Screen('Flip', win);
     WaitSecs(2.5);
     Screen('Flip', win);
