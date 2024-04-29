@@ -11,7 +11,7 @@ Screen('Preference', 'SkipSyncTests', 1);
 screens=Screen('Screens');
 
 % if user already knows which screen to use, skip test
-knowScreenResp = input('Input Psychtoolbox screen #, or press Enter to test: ', 's');
+knowScreenResp = input('\n\nInput Psychtoolbox screen #, or press Enter to test: ', 's');
 if ~isempty(knowScreenResp) && isnumeric(str2double(knowScreenResp)) && ~isnan(str2double(knowScreenResp))
     screenNumber = str2double(knowScreenResp);
     if screenNumber > max(screens) || screenNumber < 0
