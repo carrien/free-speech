@@ -21,8 +21,8 @@ function errors = check_dataVals(dataPath,bCalc,buffertype,dataVals, folderSuffi
 %                       will use 'trials_transfer' folder.
 %                   errorParams: a struct of parameters used when
 %                       determining if a trial has any errors to be flagged.
-%                   sigs2plot: 'formants', 'f0', or 'int'. formants plots f1
-%                       and f2
+%                   sigs2plot: cell array of up to 2 strings. Defines what
+%                   is plotted. Can contain 'f1', 'f2', 'f0', and 'int'
 %
 % rewritten to include GUI JAN 2019
 
