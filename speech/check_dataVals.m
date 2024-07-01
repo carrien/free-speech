@@ -208,20 +208,22 @@ function errors = get_dataVals_errors(UserData,dataVals)
         end
         if ~dataVals(i).bExcl && ~bNaNVals
             for s = 1:UserData.nSigs
-                if strcmp(UserData.sigs2plot{s},'f0') %for f0 exclude first 40 ms of signal
+                sig2plot = UserData.sigs2plot{s};
+                sigData = dataVals(i).(sig2plot);
+                if strcmp(sig2plot,'f0') %for f0 exclude first 40 ms of signal
                     onset = round(.04/tstep);
-                    if length(dataVals(i).(UserData.sigs2plot{s}))>onset+1
-                        maxDiffs(s) = max(abs(diff(dataVals(i).(UserData.sigs2plot{s})(onset:end))));
-                    elseif length(dataVals(i).(UserData.sigs2plot{s})) == 1 %can't diff only one sample
+                    if length(sigData)>onset+1
+                        maxDiffs(s) = max(abs(diff(sigData(onset:end))));
+                    elseif length(sigData) == 1 %can't diff only one sample
                         maxDiffs(s) = NaN;
                     else
-                        maxDiffs(s) = max(abs(diff(dataVals(i).(UserData.sigs2plot{s}))));
+                        maxDiffs(s) = max(abs(diff(sigData)));
                     end
                 else % for formants use whole track
-                    if length(dataVals(i).(UserData.sigs2plot{s})) == 1 %can't diff only one sample
+                    if length(sigData) == 1 %can't diff only one sample
                         maxDiffs(s) = NaN;
                     else
-                        maxDiffs(s) = max(abs(diff(dataVals(i).(UserData.sigs2plot{s}))));
+                        maxDiffs(s) = max(abs(diff(sigData)));
                     end
                 end
             end
