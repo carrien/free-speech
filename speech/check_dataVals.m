@@ -33,7 +33,11 @@ if nargin < 5, folderSuffix = []; end
 if nargin < 6, errorParams = []; end
 if nargin < 7, sigs2plot = {'f1','f2'}; end
 if ~iscell(sigs2plot)
-    error('sigs2plot must be a cell array. if you input a string, try adding braces.')
+    if ischar(sigs2plot)
+        sigs2plot = {sigs2plot};
+    else
+        error('sigs2plot must be a cell array (e.g. {''f1'', ''f2''}) or a single character array (e.g. ''f1'').')
+    end
 end
 
 % config errorParams
@@ -231,7 +235,7 @@ function errors = get_dataVals_errors(UserData,dataVals)
         
         if dataVals(i).bExcl
             badTrials = [badTrials dataVals(i).token]; %#ok<*AGROW>
-        elseif dataVals(i).ampl_taxis(1) < .01
+        elseif dataVals(i).ampl_taxis(1) < .01 % check for speech starting too early--within 10 ms of start of recording
             earlyTrials = [earlyTrials dataVals(i).token];
         elseif dataVals(i).dur < UserData.errorParams.shortThresh %check for too short trials
             shortTrials = [shortTrials dataVals(i).token];
@@ -243,7 +247,7 @@ function errors = get_dataVals_errors(UserData,dataVals)
                     jumpTrials.(UserData.sigs2plot{s}) = [jumpTrials.(UserData.sigs2plot{s}) dataVals(i).token];
                 end
             end
-        elseif find(isnan(dataVals(i).(UserData.sigs2plot{s})(onset:end))) %check if there are NaN values in first signal, excepting 1st sample for formants, 40ms for f0
+        elseif find(isnan(dataVals(i).(UserData.sigs2plot{1})(onset:end))) %check if there are NaN values in first signal, excepting 1st sample for formants, 40ms for f0
             nanFTrials = [nanFTrials dataVals(i).token];
         elseif any(dataVals(i).(UserData.sigs2plot{1}) < UserData.errorParams.fishyThresh(1)) || ...
                 any(dataVals(i).(UserData.sigs2plot{1}) > UserData.errorParams.fishyThresh(2)) %check if wrong formant is being tracked for first signal to plot (default F1)

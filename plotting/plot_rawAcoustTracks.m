@@ -53,23 +53,24 @@ for g = 1:length(groups)
         if (~isfield(dataVals,'bExcl') || ~dataVals(i).bExcl) && dataVals(i).(grouping) == groupId
             %plot tracks
             for s = 1:nSigs
-                if strcmp(sigs2plot{s},'f1') || strcmp(sigs2plot{s},'f2')
+                sigtype = sigs2plot{s};
+                if strcmp(sigtype,'f1') || strcmp(sigtype,'f2')
                     taxis = dataVals(i).ftrack_taxis - dataVals(i).ftrack_taxis(1);
-                elseif strcmp(sigs2plot{s},'f0') 
+                elseif strcmp(sigtype,'f0') 
                     taxis = dataVals(i).pitch_taxis - dataVals(i).pitch_taxis(1);
-                elseif strcmp(sigs2plot{s},'int') 
+                elseif strcmp(sigtype,'int') 
                     taxis = dataVals(i).ampl_taxis - dataVals(i).ampl_taxis(1);
                 else
                     error("Signal type not supported. Must be 'f1', 'f2', 'f0', or 'int'.")
                 end
-                htracks(g).(sigs2plot{s})(ihandle) = plot(taxis,dataVals(i).(sigs2plot{s}),'Color',plotcolor{s});
-                set(htracks(g).(sigs2plot{s})(ihandle),'Tag',num2str(dataVals(i).token),'YdataSource',sigs2plot{s})
+                htracks(g).(sigtype)(ihandle) = plot(taxis,dataVals(i).(sigtype),'Color',plotcolor{s});
+                set(htracks(g).(sigtype)(ihandle),'Tag',num2str(dataVals(i).token),'YdataSource',sigtype)
                 hold on;
             
                 %plot ends
                 x = taxis(end);
-                handleName = strcat(sigs2plot{s},'Ends');
-                htracks(g).(handleName)(ihandle) = plot(x,dataVals(i).(sigs2plot{s})(end),'o','MarkerEdgeColor',plotcolor{s},'MarkerFaceColor',get_lightcolor(plotcolor{s},1.2),'MarkerSize',5);
+                handleName = strcat(sigtype,'Ends');
+                htracks(g).(handleName)(ihandle) = plot(x,dataVals(i).(sigtype)(end),'o','MarkerEdgeColor',plotcolor{s},'MarkerFaceColor',get_lightcolor(plotcolor{s},1.2),'MarkerSize',5);
             end
             
             ihandle = ihandle+1;
