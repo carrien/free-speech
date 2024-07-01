@@ -192,6 +192,14 @@ function errors = get_dataVals_errors(UserData,dataVals)
     lateTrials = [];
     goodTrials = [];
 
+    % get timestep from a trial with >1 sample
+    for j = 1:length(UserData.dataVals)
+        if length(UserData.dataVals(j).pitch_taxis) > 1
+            tstep = diff(UserData.dataVals(j).pitch_taxis(1:2)); % get time step for each sample
+            break;
+        end
+    end
+
     %% put trials into error categories
     for i = 1:length(dataVals)
         %create vector of maximum differences, only for good trials and
@@ -199,13 +207,6 @@ function errors = get_dataVals_errors(UserData,dataVals)
         maxDiffs = zeros(1,UserData.nSigs);
         bNaNVals = all(isnan(dataVals(i).(UserData.sigs2plot{1})));
         if strcmp(UserData.sigs2plot{s},'f0') %for f0 exclude first 40 ms of signal
-            %find trial with >1 sample
-            for j = 1:length(UserData.dataVals)
-                if length(UserData.dataVals(j).pitch_taxis) > 1
-                    tstep = diff(UserData.dataVals(j).pitch_taxis(1:2)); % get time step for each sample
-                    break;
-                end
-            end
             onset = round(.04/tstep);
         else
             onset = 2; %exclude first sample from formant tracks when checking for NaNs
