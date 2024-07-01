@@ -36,11 +36,7 @@ end
 groups = unique([dataVals.(grouping)]);
 
 % RPK for non-compressed display with fewer words 
-if length(groups) < 4
-    nCols = length(groups); 
-else
-    nCols = 4;
-end
+nCols = min(length(groups),4); 
 for g = 1:length(groups)
     groupId = groups(g); 
     hsub(g) = subplot(ceil(length(groups)/nCols), nCols, g, 'Parent', parent);
