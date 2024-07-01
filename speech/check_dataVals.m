@@ -489,6 +489,7 @@ function pick_line(src,evt,iLine,iPlot)
     unselectedColor = [0.7 0.7 0.7];
     plotcolor{1} = [0 0 1]; % blue
     plotcolor{2} = [1 0 0]; % red
+    plotcolor{3} = [0 1 0]; % green
     UserData.TB_select_trial.Value = 1;
     
     outstring = textwrap(UserData.warnText,{'Selected trial: ', src.Tag});
@@ -523,6 +524,7 @@ function TB_all(src,evt)
     UserData = guidata(src);
     plotcolor{1} = [0 0 1]; % blue
     plotcolor{2} = [1 0 0]; % red
+    plotcolor{3} = [0 1 0]; % green
     for i = 1:length(UserData.htracks)
         for s = 1:UserData.nSigs
             handleName = strcat(UserData.sigs2plot{s},'Ends');
