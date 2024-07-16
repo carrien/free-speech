@@ -26,14 +26,17 @@ else
 end
 
 %% test screen #
+
+% determine possible screen numbers to show to user
+for i = 1:length(screens)
+    screenNumOptions{i} = num2str(screens(i));
+end
+
+% find good screen number
 while ~bGoodScreen
     % user input for screen # to test
-    screenNumber = askNChoiceQuestion('Enter screen # to try:', {'0' '1' '2' '3' '4'});
+    screenNumber = askNChoiceQuestion('Enter screen # to try:', screenNumOptions);
     screenNumber = str2double(screenNumber);
-    if screenNumber > max(screens)
-        fprintf('Error! Max screen number is %d\n', max(screens));
-        continue;
-    end
 
     % open screen
     win = Screen('OpenWindow', screenNumber);
