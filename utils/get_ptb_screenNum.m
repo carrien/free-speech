@@ -1,5 +1,7 @@
 function [screenNumber, expt] = get_ptb_screenNum(expt)
-% TODO header
+% Allows user to test which Psychtoolbox screen number corresponds to a
+% physical screen. Returns the number of the chosen Psychtoolbox screen.
+% Can be used mid-experiment to populate expt.win with correct value.
 
 if nargin < 1 || isempty(expt) || ~isfield(expt, 'win')
     expt.win = [];
