@@ -1,9 +1,13 @@
 function expPath = restart_expt(expt)
 %RESTART_EXPT  Restart experiment after a crash.
+%
+% To use this script with your experiment, you may prefer to duplicate the
+% code here and make changes to your copy. For example, if your study uses
+% particular input arguments to a function, or sets certain fields in expt.
 
 if nargin < 1, expt = []; end
 
-if ~isfield(expt,'name'), expt.name = input('enter experiment name: ','s'); end
+if ~isfield(expt,'name'), expt.name = strip(input('Enter experiment name: ','s')); end
 if ~isfield(expt,'snum'), expt.snum = get_snum; end
 
 expFun = get_experiment_function(expt.name);
@@ -23,16 +27,14 @@ for d = 1:length(tempdirs)
     trialnums = get_sortedTrials(tempdirs{d});
     lastTrial = trialnums(end);
     
-    %check to see if experiment completed. only prompt to rerun if
-    %incomplete.
+    %check to see if experiment completed. prompt to rerun if incomplete.
     dataPath = fileparts(strip(tempdirs{d},'right',filesep));
     load(fullfile(dataPath,'expt.mat'), 'expt') % get expt file 
     if lastTrial ~= expt.ntrials
         startName = regexp(dataPath,expt.snum);
         expName = dataPath(startName:end);
-        q = sprintf('Restart experiment "%s" at trial %d? [y/n] ', expName, lastTrial+1);
-        q = strrep(q,'\','\\'); %add extra \ to string to display correctly in "input" command
-        response = input(q, 's');
+        question = sprintf('Restart experiment "%s" at trial %d?', expName, lastTrial+1);
+        response = askNChoiceQuestion(question, {'y' 'n'});
         if strcmp(response,'y')
             % setup expt
             expt.startTrial = lastTrial+1;      % set starting trial
@@ -44,15 +46,16 @@ for d = 1:length(tempdirs)
             % run experiment
             expFun(dataPath,expt)
             
-            dataPath = fileparts(strip(tempdirs{d},'right',filesep))
-            expPath = fileparts(strip(dataPath,'right',filesep))
+            dataPath = fileparts(strip(tempdirs{d},'right',filesep));
+            expPath = fileparts(strip(dataPath,'right',filesep));
             break;
+        else
+            fprintf('Restart canceled.\n');
         end
+    else
+        fprintf('Based on the temp_trials directory, all trials have been run already.\ntemp_trials dir: %s', tempdirs{d});
+        expPath = [];
     end
-    expPath = [];
 end
 
-
-
-end
-
+end %EOF
