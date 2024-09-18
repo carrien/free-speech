@@ -1,4 +1,7 @@
 function check_audioLevels(what2check)
+% Turns on Audapter in feedback mode 3 (speech + noise). Useful for testing
+% the amplitude of noise, and confirming that the mic and headphones work.
+
 if nargin < 1
     what2check = 'a';
 end
