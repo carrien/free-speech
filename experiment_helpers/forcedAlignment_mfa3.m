@@ -1,6 +1,6 @@
 function [] =  forcedAlignment_mfa3(dataPath,exptfield,genfilesOrAlign,language,dictionary)
-% FORCEDALIGNMENT_MFA3.0 Use the montreal forced aligner (v3.0+) on experiment data
-%   FORCEDALIGNMENT_MFA3.0(DATAPATH,EXPTFIELD,ALIGNONLY, LANGUAGE)
+% FORCEDALIGNMENT_MFA3 Use the montreal forced aligner (v3.0+) on experiment data
+%   FORCEDALIGNMENT_MFA3(DATAPATH,EXPTFIELD,GENFILESORALIGN, LANGUAGE, DICTIONARY)
 %
 %   Generates WAV and LAB files for each data value in the DATAPATH directory's data.mat file, then runs the aligner on those
 %   files.
@@ -25,10 +25,6 @@ function [] =  forcedAlignment_mfa3(dataPath,exptfield,genfilesOrAlign,language,
 %   Outputs: 
 %       - files in PostAlignment folder in dataPath with alignments
 % 
-% Note: this is written for NeSST Lab setup, which may differ from SMNG. 
-%   - Python version is 3.11. There were some irreconcilable errors with 3.12 (was the most recent Python version at the
-%   time, 4/9/2024). 
-%   - MFA version is 3.0.2
 %   
 
 %% 
@@ -47,9 +43,8 @@ end
 
 %  Determine whether or not the script is being run on a Mac or PC,
 %  set the correct expected location of the montreal forced aligner files.
-% I don't know if this is actually necessary? 
 if ismac
-    alignerLocation = '/Applications/montreal-forced-aligner'; % THIS IS NOT UPDATED. I HAVE NO MACS
+    alignerLocation = '/Applications/montreal-forced-aligner';
 elseif ispc
     alignerLocation = 'C:\Users\Public\Documents\software\.conda\envs\aligner';
 end
@@ -83,31 +78,22 @@ if ~exist(outputLocation, 'dir')
     mkdir(outputLocation)
 end
 
-%% Create a WAV and TXT file for each data value
+%% Align data (PreAlignment)
+% Create a WAV and TXT file for each data value
 if ~strcmp(genfilesOrAlign, 'align')
     fprintf('Loading data... \n');
-    % % load data
+    % load data
     load(fullfile(dataPath,'data.mat'), 'data');
     fprintf('Finished loading data.\n')
     
-    % Depending on the experiment, the parameter for the sample rate may be
-    % named differently, check for that here and provide a warning if it
-    % is lower than 16000. NOTE: this may not have an effect on the quality of
-    % the alignment, but sample rates below 16000 were not compatible with the
-    % old aligner so it might be worth noting.
+    % get sampling rate
     if isfield(data(1).params,'sr')
         sampleRate = data(1).params.sr;
     else
         sampleRate = data(1).params.fs;
     end
     
-    % NOTE: this should not cause issues in MFA 2.0+, but I am not
-    % sure how a low sampling rate influences the alignment quality
-    % yet.
-    if sampleRate < 16000
-        warning('FYI, the sample rate of this data is less than 16000');
-    end
-    
+    % create AudioData files
     for i=1:length(data)
         word = upper(string(wordlist(i)));
         signalData = data(i).signalIn;
@@ -124,9 +110,8 @@ if ~strcmp(genfilesOrAlign, 'align')
     end
 end
 
-%%
+%% Generate PostAlignment files
 % Set up and run python mfa align command
-% NOTE THIS IS A REALLY JANKY WAY TO DO THIS BUT I DO NOT KNOW HOW TO DO IT BETTER
 if ~strcmp(genfilesOrAlign, 'gen')
     fprintf('Calling conda to run MFA... \n');
     
@@ -141,9 +126,9 @@ if ~strcmp(genfilesOrAlign, 'gen')
     clipboard('copy', mfaCommand); 
     warning(sprintf(['The alignment command has been copied to your clipboard. \n' ...
         'When the CMD interface appears in the MATLAB Command Window, paste the command into the command window and hit enter.\n'...
-        'When alignment is complete, type exit, and hit enter'])); 
+        'When alignment is complete, type exit, and hit enter'])); %#ok<SPWRN> 
     fprintf('\n\n')
-    ack = askNChoiceQuestion('Enter Y to acknowledge:', {'y' 'Y'}, 0); 
+    askNChoiceQuestion('Enter Y to acknowledge:', {'y' 'Y'}, 0); 
     
     % Run system command
     systemCommand = sprintf('%s %s %s %s', cmdLocation, '"/K"', activater, alignerLocation); 
