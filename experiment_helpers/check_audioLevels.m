@@ -13,7 +13,7 @@ get_figinds_audapter; % names figs: stim = 1, ctrl = 2, dup = 3;
 % close ctrl screen and enlarge experimenter's duplicated screen
 close(h_fig(ctrl)); 
 dup_position = [0 0.08 0.8 0.9]; %experimenter screen position
-set(h_fig(3),'OuterPosition',dup_position);
+set(h_fig(dup),'OuterPosition',dup_position);
 
 
 %% initialize Audapter 
@@ -55,7 +55,7 @@ switch what2check
         Audapter('stop');
 
     case 'b'
-        %% test headphone level
+        %% test headphone and mic levels
         Audapter('reset'); 
         Audapter('start'); 
         get_figinds_audapter;
@@ -63,7 +63,7 @@ switch what2check
         h_ready_dup = text(-0.4, 0.5, sprintf(['Testing mic amplitude.\n\n' ...
             'Set SPL meter to:\n\t\tNo max or min\n\t\tA mode\n\t\tSlow\n\t\tLevel 50-100 db\n\n' ...
             'Place SPL meter in headphones without foam cover.\n' ...
-            'Noise level should be ~80db while pp says "head".\n' ...
+            'Noise level should be ~80dB while pp says "head".\n' ...
             'If not, adjust microphone gain ("experiment mic").\n\n' ...
             'Press any key to stop.']), 'Color','white','FontSize',35);
         figure(h_fig(stim));
