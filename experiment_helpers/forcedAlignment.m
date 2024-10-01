@@ -11,11 +11,6 @@ defaultParams.activatePath = fullfile('C:\ProgramData\miniconda3\Scripts\activat
 defaultParams.exptfield = 'listWords';
 defaultParams.wordlist = [];
 defaultParams.genfilesOrAlign = 'both';
-if ismac
-    defaultParams.alignerLocation = '/Applications/montreal-forced-aligner';
-elseif ispc
-    defaultParams.alignerLocation = 'C:\Users\Public\Documents\software\montreal-forced-aligner';
-end
 if nargin < 1, params = []; end
 params = set_missingFields(params, defaultParams, 0);
 
@@ -36,11 +31,13 @@ end
 defaultParams.trialNums = 1:length(data);
 switch params.version
     case 1
-        defaultParams.dictionary = 'english_us_arpa';
-        defaultParams.language = 'english_us_arpa';
-    case 3
         defaultParams.dictionary = 'librispeech-lexicon.txt';
         defaultParams.language = 'english';
+        defaultParams.alignerLocation = 'C:\Users\Public\Documents\software\montreal-forced-aligner';
+    case 3
+        defaultParams.dictionary = 'english_us_arpa';
+        defaultParams.language = 'english_us_arpa';
+        defaultParams.alignerLocation = 'C:\Users\Public\Documents\software\.conda\envs\aligner';
 end
 params = set_missingFields(params, defaultParams, 0);
 
@@ -70,7 +67,7 @@ switch params.version
         %% MFA version 1
         % check for files
         if ~exist(params.alignerLocation, 'dir')
-            disp("The montreal-forced-aligner folder has not been placed in the proper directory on this machine, the script will now exit");
+            fprintf('Ending script early. No montreal-forced-aligner folder at %s\n', params.alignerLocation);
             return
         else
             dictionaryPath = fullfile(params.alignerLocation,params.dictionary);
@@ -80,8 +77,10 @@ switch params.version
             end
         end
 
-        % make AudioData files
+        % generate AudioData files
+        fprintf('Generating AudioData files... ')
         makeAudioData
+        fprintf('done.\n')
 
         % run forced aligner
         executableLocation = fullfile(params.alignerLocation,'bin','mfa_align');
@@ -89,7 +88,7 @@ switch params.version
         system(command)
 
         % user message
-        fprintf('Generated TextGrid files')
+        fprintf('Generated TextGrid files.\n')
 
     case 2
         %% MFA version 2
@@ -97,7 +96,7 @@ switch params.version
         return
     case 3
         %% MFA version 3
-
+        % check for aligner install location
         activateDir = fileparts(params.activatePath);
         if ~exist(activateDir, 'dir')
             prompt = sprintf('The aligner environment does not appear to be configured correctly in %s. Try to align anyway?', activateDir);
@@ -108,8 +107,10 @@ switch params.version
             end
         end
 
-        % make AudioData files
+        % generate AudioData files
+        fprintf('Generating AudioData files... ')
         makeAudioData
+        fprintf('done.\n')
 
         % run forced aligner
         fprintf('Calling conda to run MFA... \n');
@@ -147,22 +148,22 @@ end
     function [] = makeAudioData()
         % iTrial and i are identical except when trialNums was passed in.
         % Then, i is the loop position. iTrial is the trial number.
-        for i = 1:length(trialNums)
+        for i = 1:length(params.trialNums)
             % make lab file
-            iTrial = trialNums(i);
+            iTrial = params.trialNums(i);
 
             word = upper(string(params.wordlist(i)));
-            modifiedTxtName = fullfile(filename,sprintf('%s%d%s','AudioData_',iTrial,'.lab'));
+            modifiedTxtName = fullfile(prealignFolder,sprintf('%s%d%s','AudioData_',iTrial,'.lab'));
             fid = fopen(modifiedTxtName,'wt');
             fprintf(fid,'%s',word);
             fclose(fid);
 
             %make wav file
-            modifiedWavName = fullfile(prealignFolder,sprintf('%s%d%s','AudioData_',i,'.wav'));
+            modifiedWavName = fullfile(prealignFolder,sprintf('%s%d%s','AudioData_',iTrial,'.wav'));
+            signalData = data(iTrial).signalIn;
             audiowrite(modifiedWavName,signalData,sampleRate);
         end
     end
 
 
 end %EOF
-
