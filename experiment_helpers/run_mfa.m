@@ -1,6 +1,6 @@
-function [] =  forcedAlignment(params)
-% FORCEDALIGNMENT Runs the Montreal Forced Aligner on speech data
-%   FORCEDALIGNMENT(params)
+function [] =  run_mfa(params)
+% RUN_MFA Runs the Montreal Forced Aligner on speech data
+%   RUN_MFA(params)
 %
 %   Generates .wav and .lab files for trials in a folder, then runs the
 %   aligner on those files. Speech data must be in data.mat format.
