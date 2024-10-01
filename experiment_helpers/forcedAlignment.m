@@ -1,7 +1,38 @@
 function [] =  forcedAlignment(params)
-% TODO header
+% FORCEDALIGNMENT Runs the Montreal Forced Aligner on speech data
+%   FORCEDALIGNMENT(params)
+%
+%   Generates .wav and .lab files for trials in a folder, then runs the
+%   aligner on those files. Speech data must be in data.mat format.
+%
+%   By default this function runs MFA version 3. It also supports version 1
+%
+%   INPUT ARGUMENTS: `params` should be a struct. Default values are
+%       in the `defaultParams` variable. These are the supported fields:
+%   * version. MFA version number
+%   * wordlist. A cell array of strings. The word which MFA will attempt to
+%       align to on each trial. If empty, see exptfield param.
+%   * exptfield. If wordlist is empty, this supplies the wordlist in the
+%       format expt.(exptfield)
+%   * trialNums. Which trial numbers to process.
+%   * dataPath. The directory with data.mat and expt.mat speech
+%       data. Output files will becomes subfolders in this folder.
+%   * genfilesOrAlign. Can be 'gen', 'align', or 'both'. If 'gen', function
+%       will generate AudioData TextGrid files only. If 'align', function
+%       will only run MFA on existing TextGrid files. If 'both', function
+%       will generate TextGrid files and run MFA on them.
+%
+%   These fields relate to the install location of MFA on your computer:
+%   * cmdLocation. Filepath to cmd.exe
+%   * activatePath. Filepath to Python's activate.bat
+%   * alignerLocation. The filepath to the aligner
+%
+%   These fields relate to running MFA on other languages or dictionaries:
+%   * dictionary. The name of the MFA dictionary to use.
+%   * language. The name of the MFA language to use.
 
-% 2024-10 CWN compiled into one function
+% 2024-10 Chris Naber compiled into one function. Previous programming by
+%   Nick Comeau, Sarah Bakst, Robin Karlin, Lana Hantzsch and Chris Naber
 
 %% set parameters
 defaultParams.version = 3;
