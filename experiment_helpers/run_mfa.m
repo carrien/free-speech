@@ -38,28 +38,14 @@ function [] =  run_mfa(params)
 defaultParams.version = 3;
 defaultParams.dataPath = pwd;
 defaultParams.cmdLocation = '%windir%\System32\cmd.exe';
-defaultParams.activatePath = fullfile('C:\ProgramData\miniconda3\Scripts\activate.bat');
+defaultParams.activatePath = 'C:\ProgramData\miniconda3\Scripts\activate.bat';
 defaultParams.exptfield = 'listWords';
 defaultParams.wordlist = [];
 defaultParams.genfilesOrAlign = 'both';
 if nargin < 1, params = []; end
 params = set_missingFields(params, defaultParams, 0);
 
-% load data
-fprintf('Loading data... ');
-load(fullfile(params.dataPath,'data.mat'), 'data');
-load(fullfile(params.dataPath,'expt.mat'), 'expt');
-fprintf('done.\n');
-
-% set wordlist
-if isempty(params.wordlist)
-    params.wordlist = expt.(params.exptfield);
-else
-    % You specified `wordlist` already. It should be a cell array of strings
-end
-
-% finish setting params
-defaultParams.trialNums = 1:length(data);
+% set other params now that we know the version number
 switch params.version
     case 1
         defaultParams.dictionary = 'librispeech-lexicon.txt';
@@ -70,17 +56,48 @@ switch params.version
         defaultParams.language = 'english_us_arpa';
         defaultParams.alignerLocation = 'C:\Users\Public\Documents\software\.conda\envs\aligner';
 end
+
+% set params.wordlist based on params.exptfield, if it wasn't set explicitly
+load(fullfile(params.dataPath,'expt.mat'), 'expt');
+if isempty(params.wordlist)
+    params.wordlist = expt.(params.exptfield);
+end
+
+% set trialNums
+fprintf('Loading data... ');
+load(fullfile(params.dataPath,'data.mat'), 'data');
+fprintf('done.\n');
+defaultParams.trialNums = 1:length(data);
+
+% final set of params
 params = set_missingFields(params, defaultParams, 0);
 
 %% make folders
 prealignFolder = fullfile(params.dataPath,'PreAlignment');
-if ~exist(prealignFolder, 'dir')
-    mkdir(prealignFolder)
+if exist(prealignFolder, 'dir')
+    q = sprintf('A PreAlignment folder already exists at \n\n%s \n\nContinue anyway and overwrite existing PreAlignment data?', prealignFolder);
+    response = questdlg(q, 'Overwrite PreAlign folder', 'Overwrite', 'Cancel', 'Cancel');
+    if strcmp(response, 'Cancel')
+        fprintf('Okay, ending script.\n');
+        return;
+    else
+        rmdir(prealignFolder, 's')
+    end
 end
+mkdir(prealignFolder);
+
 postalignFolder = fullfile(params.dataPath,'PostAlignment');
-if ~exist(postalignFolder, 'dir')
-    mkdir(postalignFolder)
+if exist(postalignFolder, 'dir')
+    q = sprintf('A PostAlignment folder already exists at \n\n%s \n\nContinue anyway and overwrite existing PostAlignment data?', postalignFolder);
+    response = questdlg(q, 'Overwrite PostAlign folder', 'Overwrite', 'Cancel', 'Cancel');
+    if strcmp(response, 'Cancel')
+        fprintf('Okay, ending script.\n');
+        return;
+    else
+        rmdir(postalignFolder, 's');
+    end
 end
+mkdir(postalignFolder);
 
 %% get sampling rate
 if isfield(data(1).params,'sr')
