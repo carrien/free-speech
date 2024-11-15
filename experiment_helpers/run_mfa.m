@@ -170,7 +170,7 @@ switch params.version
         cd(params.dataPath);
 
         % Create the mfa command and then copy it to the clipboard so the user can paste it in
-        mfaCommand = sprintf('%s ./%s %s %s ./%s', 'mfa align --clean', 'PreAlignment', params.language, params.dictionary, 'PostAlignment');
+        mfaCommand = sprintf('%s ./%s %s %s ./%s', 'mfa align --clean', 'PreAlignment', params.dictionary, params.language, 'PostAlignment');
         clipboard('copy', mfaCommand);
         warning(sprintf(['The alignment command has been copied to your clipboard. \n' ...
             'When the CMD interface appears in the MATLAB Command Window, paste the command into the command window and hit enter.\n'...
