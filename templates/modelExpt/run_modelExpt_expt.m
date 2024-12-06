@@ -296,7 +296,11 @@ expt.shiftAngles = zeros(1,nBaseline+nRamp+nHold+nWashout);
         %}
 
 %% Run pre-experiment phase to set LPC order
-%[ TODO describe this section
+%[ For most experiments, we run a pre-experiment phase with a few vowels
+% to set a good LPC Order in Audapter for the participant. The function
+% run_checkLPC handles most of this, then sets the LPC value in
+% expt.audapterParams. You can configure exptPre to change the pretest 
+% phase, for example, changing the stimulus words or number of trials.
 if ~expt.bTestMode
     bRunLPCcheck = 1;
 else

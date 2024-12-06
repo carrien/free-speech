@@ -102,8 +102,8 @@ delete_exptText(h_fig,h_ready)
 
 pause(1)
 
-    %[ This is the big `for` loop where the experiment "actually"
-    %happens: stimuli are presented and responses are recorded.
+    %[ This is the big `for` loop where the experiment "actually" happens:
+    %stimuli are presented and the participant's speech is recorded.
 for itrial = firstTrial:lastTrial
     bGoodTrial = 0;
         %[ We use `bGoodTrial` to see if the participant responded to the
