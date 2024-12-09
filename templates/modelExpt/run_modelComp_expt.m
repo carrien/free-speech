@@ -1,6 +1,7 @@
 function expt = run_modelComp_expt(expt,bTestMode)
 % RUN_MODELCOMP_EXPT - A simple AAF compensation experiment where F1 is
-% shifted up on 20% of trials, F1 shifted down on 20%, and no shift 60%.
+% shifted up on 20% of trials, F1 shifted down on 20% of trials, and
+% no shift on 60% of trials.
 %
 % Set bTestMode input argument to 1 to run a shortened version.
 
@@ -13,6 +14,7 @@ if nargin < 2 || isempty(bTestMode), bTestMode = 0; end
 
 %% Set up general experiment parameters
 expt.name = 'modelComp';
+expt.bTestMode = bTestMode;
 if ~isfield(expt,'snum'), expt.snum = get_snum; end
 expt.dataPath = get_acoustSavePath(expt.name,expt.snum);
 if ~exist(expt.dataPath,'dir')
@@ -21,14 +23,17 @@ end
 
 if ~isfield(expt,'gender'), expt.gender = get_height; end       % vocal tract length or gender correlate for LPC Order
 
-% In other experiments, instead of assuming LPC, we collect some
-%   speech samples and allow the experimenter to evaluate different LPCs on
-%   that dataset. For simplicity here, LPC is just set arbitrarily.
-if strcmp(expt.gender, 'male')
-    expt.audapterParams.nLPC = 17;
+%% Set LPC order in pre-experiment speaking phase
+if ~expt.bTestMode
+    bRunLPCcheck = 1;
 else
-    expt.audapterParams.nLPC = 15;
+    bRunLPCcheck = askNChoiceQuestion('[Test mode only] Run LPC check pretest phase (1), or skip it (0)? ', [1 0]);
 end
+if bRunLPCcheck
+    [expt, ~] = run_checkLPC(expt, exptPre);
+end
+
+%% More expt settings
 expt.audapterParams.bShift = 1;
 expt.audapterParams.bRatioShift = 0;
 expt.audapterParams.bMelShift = 1;
@@ -49,19 +54,20 @@ expt.durcalc.offs_thresh = 0.4;     % percentage of maximum amplitude for determ
 
 %% Set up duration practice
 exptDur = expt;
-exptDur.session = 'dur'; 
+exptDur.session = 'dur';
 exptDur.dataPath = fullfile(expt.dataPath,exptDur.session);
 if ~exist(exptDur.dataPath, 'dir')
     mkdir(exptDur.dataPath)
 end
-exptDur.ntrials = 6;
+
+exptDur.words = {'head' 'dead' 'Ted'};
+nwords = length(exptDur.words);
+exptDur.ntrials = nwords * 4; % arbitrary
+exptDur.allWords = randomize_wordOrder(length(exptDur.words), exptDur.ntrials);
+exptDur.listWords = exptDur.words(exptDur.allWords);
 
 exptDur.shiftMags   = zeros(1,exptDur.ntrials);
 exptDur.shiftAngles = zeros(1,exptDur.ntrials);
-
-exptDur.words = {'head' 'dead' 'Ted'};
-exptDur.allWords = randomize_wordOrder(length(exptDur.words), exptDur.ntrials);
-exptDur.listWords = exptDur.words(exptDur.allWords);
 
 exptDur.conds = {'noShift'};
 exptDur.allConds = ones(1, exptDur.ntrials);
@@ -99,17 +105,15 @@ else
 end
 
 % Pseudorandomize stimuli like this: In each 15-trial block, each word gets
-% an equal number of trials. Within a word, there are 2 perturbation
-% trials, and 3 unperturbed trials. Within a word's 2 perturbation trials,
-% there's 1 UP and 1 DOWN perturbation. No perturbation trials are adjacent, even across blocks.
+% an equal number of trials (5): 1 is shifted up, 1 is shifted down, and
+% 3 are unshifted. No perturbation trials are adjacent, even across blocks.
 nTrialsPerPert = 1;
 uniquePerts = 2; % shiftUp, shiftDown
 nTrialsPerNonpert = 3;
 expt.ntrials_per_block = nwords*(nTrialsPerPert*uniquePerts + nTrialsPerNonpert); %aka 15 trials per block.
-expt = randomize_stimuli(expt,nTrialsPerPert,nTrialsPerNonpert);
-
-% Set up ntrials, coherence, and direction
 expt.ntrials = expt.nblocks * expt.ntrials_per_block;
+% Set expt.allWords, expt.listWords, expt.allConds, expt.listConds
+expt = randomize_stimuli(expt,nTrialsPerPert,nTrialsPerNonpert); 
 
 % Set up breaks
 expt.breakFrequency = expt.ntrials_per_block * 2; %pp breaks every 2 blocks
@@ -124,6 +128,10 @@ expt.listShiftDirs = [expt.shiftDirs{expt.allConds}];
 expt.allShiftNames = expt.allConds;   %in this experiment, shiftNames and conds are identical
 expt.listShiftNames = expt.listConds;
 
+% This is where individual trial-level shift magnitude and direction gets set.
+% shiftMag (singular) is a single value of positive 125.
+% expt.listShiftDirs is a vector of 0, 1, and -1 for each trial,
+% so shiftMags (plural) becomes a vector of values 0, 125, or -125
 expt.shiftMags = expt.shiftMag*expt.listShiftDirs;
 
 % set missing expt fields to defaults
@@ -139,19 +147,18 @@ end
 
 %% run experiment
 %% run duration training
-duration_response = askNChoiceQuestion('Run duration practice?', {'run' 'skip'});
-if strcmp(duration_response,'skip')
-    bRunTraining = 0;
+if expt.bTestMode
+    runOrSkip = askNChoiceQuestion('Run duration practice?', {'run' 'skip'});
 else
-    bRunTraining = 1;
+    runOrSkip = 'run'; % always run it outside of test mode
 end
 
-while bRunTraining
+while strcmp(runOrSkip, 'run')
     exptDur.success = zeros(1,exptDur.ntrials);
     exptDur = run_modelComp_audapter(exptDur);
     rerun_response = askNChoiceQuestion(sprintf('Participant was successful on: %d/%d trials. Redo training?',sum(exptDur.success),length(exptDur.success)), {'redo' 'move on'});
     if strcmp(rerun_response,'move on')
-        bRunTraining = 0;
+        runOrSkip = 'skip';
     end
 end
 
