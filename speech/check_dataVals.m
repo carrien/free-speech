@@ -236,6 +236,8 @@ function errors = get_dataVals_errors(UserData,dataVals)
         
         if dataVals(i).bExcl
             badTrials = [badTrials dataVals(i).token]; %#ok<*AGROW>
+        elseif bNaNVals % all values are NaNs 
+            nanFTrials = [nanFTrials dataVals(i).token];
         elseif dataVals(i).ampl_taxis(1) < .01 % check for speech starting too early--within 10 ms of start of recording
             earlyTrials = [earlyTrials dataVals(i).token];
         elseif dataVals(i).dur < UserData.errorParams.shortThresh %check for too short trials
@@ -486,7 +488,7 @@ function update_plots(src,evt)
             end
         end
     end
-    outstring = textwrap(UserData.warnText,{strcat(num2str(length(UserData.trialset)),' trials selected')});
+    outstring = textwrap(UserData.warnText,{strcat(num2str(length(UserData.trialset)),' trial(s) selected')});
     set(UserData.warnText,'String',outstring)
     guidata(src,UserData);
 end
