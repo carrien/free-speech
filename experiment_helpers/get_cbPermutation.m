@@ -1,4 +1,4 @@
-function [permIx,conditions] = get_cbPermutation(exptName, permsPath, population, permIx)
+function [permIx,conditions] = get_cbPermutation(exptName, permPath, population, permIx)
 % Gets the index of the row you want to use for your participant for counterbalancing purposes and the
 % conditions (in order) that that row has. 
 % 
@@ -15,20 +15,19 @@ function [permIx,conditions] = get_cbPermutation(exptName, permsPath, population
 % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
-if nargin < 2 || isempty(permsPath), permsPath = get_exptLoadPath(exptName); end  
-if nargin < 3 || isempty(population), population = ''; end
-
-if isempty(population)
-    permsFile = ['cbPermutation_' exptName '.mat']; 
+if nargin < 2 || isempty(permPath), permPath = get_exptLoadPath(exptName); end  
+if nargin < 3 || isempty(population)
+    populationStr = '';
 else
-    permsFile = ['cbPermutation_' exptName '_' population '.mat']; 
+    populationStr = strcat('_', population); %prepend underscore
+end
+permFile = strcat('cbPermutation_', exptName, populationStr, '.mat');
+
+if ~exist(fullfile(permPath, permFile),'file')
+    error('No counterbalancing file in this directory (%s)', permPath); 
 end
 
-if ~exist(fullfile(permsPath, permsFile),'file')
-    error('No counterbalancing file in this directory (%s)', permsPath); 
-end
-
-perms = load(fullfile(permsPath, permsFile)); 
+perms = load(fullfile(permPath, permFile)); 
 varField = fieldnames(perms); 
 cbPermutation = perms.(char(varField));
 

@@ -8,48 +8,57 @@ function [] = gen_cbPermutation(dataPath, exptName, conds, population)
 %conds: what conditions are being counterbalanced
     %this could include words (e.g. {'bead', 'bad', 'bed'})
     %or group assignment order (e.g. {'control', 'shifted'})
+    
+    % if conds is a cell array with multiple rows,
+    % e.g. {'a' 'a'; 'a' 'b'; 'a' 'c'; 'a' 'd'}
+    % then `conds` is considered to be the complete set of permutations
 %population: name of separate populations (e.g. 'control' or 'clinical')
     %or you can use this field if you want separate tracking for groups (i.e. 'control' or 'perturbed') in the study
 %%
 if nargin <1 || isempty(dataPath)
-    dataPath = ['\\wcs-cifs\wc\smng\experiments\' exptName];
+    dataPath = fullfile(get_exptLoadPath, exptName);
 end
-if nargin < 4 || isempty(population)
-    bPopulation = 0;
+
+[nRowsConds, ~] = size(conds);
+if nRowsConds > 1
+    bCompleteSetofConds = 1;
 else
-    bPopulation = 1;
+    bCompleteSetofConds = 0;
+end
+
+if nargin < 4 || isempty(population)
+    populationStr = '';
+else
+    populationStr = strcat('_', population); %prepend underscore
 end
 
 %% check if permutation file already exists
-if bPopulation
-    permsFile = fullfile(dataPath, ['cbPermutation_' exptName '_' population '.mat']); 
-else
-    permsFile = fullfile(dataPath, ['cbPermutation_' exptName '.mat']); 
-end
+filename = strcat('cbPermutation_', exptName, populationStr, '.mat');
+permFile = fullfile(dataPath, filename); 
 
-if isfile(permsFile) 
-    bGenerate = input('Are you sure you want to generate this permutation file? This will overwrite an existing file! (y/n): ', 's'); 
+if isfile(permFile) 
+    bGenerate = askNChoiceQuestion('Are you sure you want to generate this permutation file? This will overwrite an existing file!'); 
 else 
     bGenerate = 'y';
 end
 
 %% create perms table
 if strcmp(bGenerate, 'y')
-    %set up word permutation
-    permTable = perms(conds);
-    nperms = length(permTable);
-    %set count column
-    countList = num2cell(zeros(nperms, 1)); %needs to be converted before concatinated
+    % make full set of permutation conditions, one condition per row
+    if bCompleteSetofConds
+        permTable = conds;
+    else
+        permTable = perms(conds);
+    end
+
+    % make column that will count the number of times a row is used
+    [nRows, ~] = size(permTable);
+    countList = num2cell(zeros(nRows, 1));
 
     %create table
-    permsFile = horzcat(permTable, countList);
-    if bPopulation
-        save(fullfile(dataPath, ['cbPermutation_' exptName '_' population '.mat']), 'permsFile')
-    else
-        save(fullfile(dataPath, ['cbPermutation_' exptName '.mat']), 'permsFile')
-    end
+    permFile = horzcat(permTable, countList);
+    cbPermutation = permFile; %rename variable for saving
+    save(fullfile(dataPath, strcat('cbPermutation_', exptName, populationStr, '.mat')), 'cbPermutation');
 end
 
-end
-        
-    
+end %EOF
