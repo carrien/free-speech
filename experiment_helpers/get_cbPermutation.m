@@ -1,4 +1,4 @@
-function [permIx,conditions] = get_cbPermutation(exptName, permPath, population, permIx)
+function [permIx, permList, permPath] = get_cbPermutation(exptName, permPath, population, permIx, allPermConds)
 % Gets the index of the row you want to use for your participant for counterbalancing purposes and the
 % conditions (in order) that that row has. 
 % 
@@ -15,6 +15,12 @@ function [permIx,conditions] = get_cbPermutation(exptName, permPath, population,
 % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
+% TODO update header
+
+%% input arg handling
+if nargin < 1 || isempty(exptName)
+    error('Need exptName in input argument 1 for this function to run.')
+end
 if nargin < 2 || isempty(permPath), permPath = get_exptLoadPath(exptName); end  
 if nargin < 3 || isempty(population)
     populationStr = '';
@@ -22,11 +28,28 @@ else
     populationStr = strcat('_', population); %prepend underscore
 end
 permFile = strcat('cbPermutation_', exptName, populationStr, '.mat');
-
-if ~exist(fullfile(permPath, permFile),'file')
-    error('No counterbalancing file in this directory (%s)', permPath); 
+if nargin < 5
+    allPermConds = [];
 end
 
+%% confirm filepath
+% if specified permPath isn't accessible (eg server offline), change
+% permPath to local default
+if ~exist(permPath, 'dir')
+    permPath = get_exptLocalPath(exptName);
+end
+
+% if permFile doesn't exist at permPath, try to make it
+if ~exist(fullfile(permPath, permFile), 'file')
+    if ~isempty(allPermConds)
+        gen_cbPermutation(permPath, exptName, allPermConds, population);
+    else
+        error(sprintf(['No file named %s exists at %s. Tried to generate that file, ' ...
+            'but allPermConds input arg was not set.'], permFile, permPath)) %#ok<SPERR> 
+    end
+end
+
+%% retrieve info from cbPerm file
 perms = load(fullfile(permPath, permFile)); 
 varField = fieldnames(perms); 
 cbPermutation = perms.(char(varField));
@@ -38,9 +61,9 @@ rng('shuffle')
 if nargin < 4 || isempty(permIx)
     permInds = find([cbPermutation{:,countCol}] == min([cbPermutation{:,countCol}])); % Find rows with min use
     permIx = permInds(randperm(length(permInds), 1));   %get random index among rows with min use
-    conditions = cbPermutation(permIx, 1:lastCondCol); 
+    permList = cbPermutation(permIx, 1:lastCondCol); 
 else 
-    conditions = cbPermutation(permIx, 1:lastCondCol); 
+    permList = cbPermutation(permIx, 1:lastCondCol); 
 end
 
-end
+end %EOF
