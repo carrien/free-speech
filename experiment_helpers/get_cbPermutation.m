@@ -78,6 +78,13 @@ perms = load(permFilePath);
 varField = fieldnames(perms); 
 cbPermutation = perms.(char(varField));
 
+% verify that the cbPerm file we're updating has the conditions we expect, based on allPermConds
+if ~isempty(allPermConds) && ~isequal(cbPermutation(:, 1:end-1), allPermConds)
+    error(['allPermConds in input argument does not match the conds in %s. ' ...
+        'If the conds at that filepath are correct, run this function again without the allPermConds argument. '...
+        'If the allPermConds input argument is correct, move/delete/change the cbPerm file at %s.'], permFilePath, permFilePath);
+end
+
 [~,countCol] = size(cbPermutation); % Find the column that counts the number of uses
 lastCondCol = countCol-1; 
 
