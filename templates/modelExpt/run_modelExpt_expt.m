@@ -57,11 +57,12 @@ is good too.
 
 %% Handle input arguments
 
-    %CONV Input arg defaults should be the settings for running the
-    %experiment with real participants.
+    %CONV The default value of input arguments should assume that you're
+    % running a real participant. When piloting/testing, you can always
+    % override them.
     
-    %[The expt variable holds settings specific to this participant, as
-    %well as settings used by modelExpt for all participants.
+    %[The expt variable holds metadata about modelExpt (how many trials
+    % to run), AND information specific to our participant (LPC Order).
 if nargin < 1, expt = []; end 
     %[When bTestMode is 1, we'll change various settings throughout the
     %experiment to make it faster to complete
@@ -69,8 +70,7 @@ if nargin < 2 || isempty(bTestMode), bTestMode = 0; end
 
 %% Experiment setup
 expt.name = 'modelExpt';
-expt.trackingFileLoc = 'experiment_helpers'; % Where the OST/PCF files are kept (for audapter_viewer)
-expt.trackingFileName = 'measureFormants'; % What the files are called
+expt.bTestMode = bTestMode;
 if ~isfield(expt,'snum'), expt.snum = get_snum; end     %eg, sp247
 expt.dataPath = get_acoustSavePath(expt.name, expt.snum);
     %CONV Your expt file should be saved to:
@@ -87,8 +87,6 @@ end
 
 % other expt.mat setup
 if ~isfield(expt,'gender'), expt.gender = get_height; end
-expt.words = {'bed', 'dead', 'head'};
-
 
 % counterbalancing word lists
 
@@ -103,13 +101,12 @@ expt.words = {'bed', 'dead', 'head'};
     % 
 groups = {'normal', 'perturbed'};
 if ~isfield(expt,'group')
-    if bTestMode
+    if expt.bTestMode
             %CONV: For text response options like the `input` command
             %below, you can put letters or numbers in parentheses to show
             %the person running your code what their response options are.
-            %This `askNChoiceQuestion` function (which Robin wrote) also
-            %doesn't let you move on until you give an approved response --
-            %in this case, a 1 or a 2.
+            % `askNChoiceQuestion` doesn't let you move on until you give
+            % an approved response -- in this case, "1" or "2".
         expt.groupnum = askNChoiceQuestion('Which group? (1) Normal or (2) perturbed?', [1 2]);
         expt.group = groups{expt.groupnum};
     else %if real participant, assign group randomly
@@ -124,14 +121,14 @@ expt.dataPath = fullfile(expt.dataPath, expt.group);
 
 % timing
     %[[JITTER]]
-expt.timing.stimdur = 2.5;          % time stim is on screen, in seconds
-expt.timing.interstimdur = 1.25;    % minimum time between stims, in seconds
-expt.timing.interstimjitter = .75;  % maximum extra time between stims (jitter)
+expt.timing.stimdur = 1.8;          % time stim is on screen, in seconds
+expt.timing.interstimdur = 0.75;    % minimum time between stims, in seconds
+expt.timing.interstimjitter = 0.75; % maximum extra time between stims (jitter)
 
 
 %% Stimuli setup
 
-refreshWorkingCopy(expt.trackingFileLoc, expt.trackingFileName);
+expt.words = {'bed', 'dead', 'head'};
 % set up [[CONDITIONS]] and number of trials
 expt.conds = {'baseline' 'ramp' 'hold' 'washout'};
 
@@ -140,7 +137,7 @@ expt.conds = {'baseline' 'ramp' 'hold' 'washout'};
     %the bug in our code. Since nwords's value exists in relation to
     %expt.words, we should *define* nwords using that relationship.
 nwords = length(expt.words);
-if bTestMode
+if expt.bTestMode
     testModeReps = 1;
     nBaseline =           testModeReps * nwords;
     nRamp =               testModeReps * nwords;
@@ -166,41 +163,51 @@ expt.allConds = [1*ones(1,nBaseline) 2*ones(1,nRamp) 3*ones(1,nHold) 4*ones(1,nW
 
 
 % set word order
-    %[ We want to end up with an array of words, one for each trial, such
-    %that expt.listWords(n) is the stimulus word that should be presented
-    %on the n'th trial.
+    %[ We want to make a vector of words X units long, where X is the
+    %number of trials in our experiment, and the Yth element is the
+    %stimulus word on trial Y. This vector is called expt.listWords. It
+    %looks something like {'bed', 'head', 'dead', 'head', 'bed', ...}
     %
-    % This is automatically done by set_exptDefaults if you do not define
-    % the order yourself. In set_exptDefaults, the experiment is diveded
-    % into "blocks" of words; each block has 1 instance of each stimulus
-    % word. The order of the words is randomized within each block. This
-    % makes sure the words are evenly distributed throughought the
-    % experiment.
+    % We also want to make another vector X units long, but instead of
+    % containing the actual word, it contains an index to the word. It
+    % looks something like [1, 3, 2, 3, 1 ...]. This is expt.allWords. The
+    % value in expt.allWords is an index into expt.words. So since the
+    % second element of expt.allWords is 3, that corresponds to
+    % expt.words{3}, ie, 'head'
     %
-    % You may need to change this default for your experiment though. To do
-    % so, specify a word order here, before calling set_exptDefaults. You
-    % need only to set the order of the indexes into the words
-    % (expt.allWords), not the order of the actual words themselves
-    % (expt.listWords). expt.listWords will be created automatically by
-    % set_exptDefaults.
-    %
-    %[ Here's an example of setting expt.allWords. It
-    % [[RANDOMIZES]] the order of words within each condition, aka "block".
-    % This code is slightly complicated because our blocks aren't all the
-    % same size. In the end though, each block displays each word an equal
-    % number of times. You probably don't want to randomize words this way,
-    % but it gives you an example of what this might look like.
-rng('shuffle');
-for blockIx = 1:length(expt.conds)
-    ntrialsInBlock = length(find(expt.allConds == blockIx));
-    wordIx = ceil(randperm(ntrialsInBlock) / (ntrialsInBlock/length(expt.words)));
+    % More info about the words, allWords, listWords convention is on our
+    % website -- https://kb.wisc.edu/smng/117641
     
-    firstInBlock = find(expt.allConds == blockIx, 1, 'first');
-    lastInBlock = find(expt.allConds == blockIx, 1, 'last');
-    for itrial = firstInBlock:lastInBlock
-        expt.allWords(itrial) = wordIx(1 + itrial-firstInBlock);
-    end
+    %[ randomize_wordOrder, well, [[RANDOMIZES]] the word order. It also 
+    % ensures that the same word isn't presented on consecutive trials.
+rng('shuffle');
+expt.allWords = randomize_wordOrder(nwords, expt.ntrials / nwords);
+expt.listWords = expt.words(expt.allWords);
+
+%% Perturbation setup
+
+%[ In this experiment, we use Audapter's method for perturbing formants
+%which sets the directionality and proportion of F1 vs F2 shifts with a phi
+%value (shiftAngles), and the amount of shift with an amplitude value
+%(shiftMags). By setting the shiftMag to 0 in the 'normal' group, there's
+%no shift.
+
+% set max shift amount based on group
+switch expt.group
+    case 'normal'
+        expt.shiftMag = 0;
+    case 'perturbed'
+        expt.shiftMag = 125;
 end
+
+% assign shift amount for each phase
+expt.shiftMags = [zeros(1,nBaseline), ...        % baseline
+    sort(linspace(0, expt.shiftMag, nRamp)), ... % ramp
+    ones(1, nHold) .* expt.shiftMag, ...         % hold
+    zeros(1, nWashout)];                         % washout
+
+%[ A phi value of zero means F1 up, F2 unchanged. See Audapter manual.
+expt.shiftAngles = zeros(1,nBaseline+nRamp+nHold+nWashout);
 
 %% Set other expt values
 %There are a lot of other parameters you can set that control how the
@@ -211,7 +218,7 @@ end
         %{
         subject params:
             expt.snum:      participant ID
-            expt.gender:    participant gender
+            expt.gender:    participant gender. Sets default Audapter LPC
             expt.dataPath:  path on local machine where data is stored
         environment params (we want these to be set automatically):
             expt.date: date the experiment was run
@@ -280,10 +287,38 @@ end
             expt.bUseTrigs: use triggers (for MRI experiments)
             expt.bManualMode: manual mode (requires keypress to advance trials)
         restart params for keeping track of crashes-- startTrial, isRestart, crashTrials
-        trial indices: for example, a list of all trials with a certain 
-            vowel. we wantthese to be set automatically. these are used
-            primarily for data analysis
+        trial indices:
+            expt.inds. (...)
+            For example, expt.inds.words lists all trials with a certain 
+            word, and expt.inds.conds lists all trials for a given
+            condition. This is set automatically for any fields
+            in expt which use the format X, allX, listX.
         %}
+
+%% Run pre-experiment phase to set LPC order
+%[ For most experiments, we run a pre-experiment phase with a few vowels
+% to set a good LPC Order in Audapter for the participant. The function
+% run_checkLPC handles most of this, then sets the LPC value in
+% expt.audapterParams. You can configure exptPre to change the pretest 
+% phase, for example, changing the stimulus words or number of trials.
+if ~expt.bTestMode
+    bRunLPCcheck = 1;
+else
+    bRunLPCcheck = askNChoiceQuestion('[Test mode only] Run LPC check pretest phase (1), or skip it (0)? ', [1 0]);
+end
+if bRunLPCcheck
+    exptPre.words = {'bid' 'bat' 'bed'};
+    if expt.bTestMode
+        exptPre.ntrials = length(exptPre.words) * 2;
+    else
+        exptPre.ntrials = length(exptPre.words) * 10;
+    end
+    [expt, ~] = run_checkLPC(expt, exptPre);
+
+    %[ This line is a cue to the person running the experiment to refer to
+    %written instructions (normally in the KB) before continuing the code.
+    input('Read instructions, then press ENTER to go to main phase', 's');
+end
 
 %% save experiment file
     %[Makes a folder if one's not there already.
@@ -317,12 +352,11 @@ end
 
     % [[SISTER FUNCTIONS]]
     
-    %[ Some experiments will call their sister function multiple times. See
-    %the very bottom of `run_varModOut_expt` for example, where it calls
-    %`run_varMod_audapter` multiple times. That functionality isn't needed
-    %for modelExpt, but I've written it so that if you *did* want to use
-    %multiple sister function calls, you could. Note that you can run other
-    %code in-between sister function calls if desired.
+    %[ Some experiments run a few conditions of the experiment, do
+    %something else (like wait for 10 minutes), then run the remaining
+    %conditions of the experiment. The below code shows how to do that.
+    %  If you just want to run all conditions back to back, just
+    %set conds2run to all conditions, then only call run_xx_audapter once.
     
 
 % run baseline
@@ -338,4 +372,4 @@ conds2run = {'ramp' 'hold' 'washout'};
 expt = run_modelExpt_audapter(expt, conds2run);
 
 
-end
+end %EOF
