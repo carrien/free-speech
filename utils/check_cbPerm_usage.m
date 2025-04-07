@@ -8,12 +8,22 @@ if nargin < 2 || isempty(IDList)
 end
 
 folderPath = get_exptLoadPath(exptName, 'acousticdata');
-
+permIx_val = [];
+cd (folderPath)
 % make a loop that will load in each folder's expt.mat file
-
+for id = IDList
+    cd (id)
+    load expt.mat
 % within the loop, save the value of expt.permIx to a vector
+    permIx_val(end+1,1) = expt.permIx;
+    cd ..
 % end loop
-
+end
 % Report on the number of times each permIx was used. For example,
 % The permIx 2 was used 8 times, using a function like fprintf
+[counts,inds] = groupcounts(permIx_val);
+times_used = "";
+for i=1:length(inds)
+   times_used = times_used + fprintf("The permIx "+inds(i)+ " was used "+counts(i)+" times. ");
+end
 
