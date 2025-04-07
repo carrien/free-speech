@@ -9,13 +9,16 @@ end
 
 folderPath = get_exptLoadPath(exptName, 'acousticdata');
 permIx_val = [];
+
+% TODO rather than actually cd'ing to the folder path, just load in the
+% expt file without cd'ing. This almost means you don't need cd .. later
 cd (folderPath)
 % make a loop that will load in each folder's expt.mat file
 for id = IDList
     cd (id)
-    load expt.mat
+    load expt.mat % TODO address matlab warning. something like load('expt.mat', 'expt')
 % within the loop, save the value of expt.permIx to a vector
-    permIx_val(end+1,1) = expt.permIx;
+permIx_val(end+1,1) = expt.permIx; %#ok<AGROW> 
     cd ..
 % end loop
 end
@@ -24,6 +27,7 @@ end
 [counts,inds] = groupcounts(permIx_val);
 times_used = "";
 for i=1:length(inds)
+    % TODO add newlines (via /n ) to fprintf
    times_used = times_used + fprintf("The permIx "+inds(i)+ " was used "+counts(i)+" times. ");
 end
 
