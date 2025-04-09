@@ -16,7 +16,7 @@ cd (folderPath)
 % make a loop that will load in each folder's expt.mat file
 for id = IDList
     cd (id)
-    load expt.mat % TODO address matlab warning. something like load('expt.mat', 'expt')
+    load ('expt.mat','expt') % TODO address matlab warning. something like load('expt.mat', 'expt')
 % within the loop, save the value of expt.permIx to a vector
 permIx_val(end+1,1) = expt.permIx; %#ok<AGROW> 
     cd ..
@@ -28,6 +28,6 @@ end
 times_used = "";
 for i=1:length(inds)
     % TODO add newlines (via /n ) to fprintf
-   times_used = times_used + fprintf("The permIx "+inds(i)+ " was used "+counts(i)+" times. ");
+   times_used = times_used + fprintf("The permIx "+inds(i)+ " was used "+counts(i)+" times. \n");
 end
 
