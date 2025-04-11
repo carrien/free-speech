@@ -1,10 +1,19 @@
 function check_cbPerm_usage(exptName, IDList)
 
 % if there are fewer than 2 input arguments or IDList is empty...
-if nargin < 2 || isempty(IDList)
+ if nargin < 2 || isempty(IDList)
     %% grab all of the participant IDs from the experiment data folder
     % do this by getting the names of all the folders
     % exclude any folders that don't start with 'sp'
+    folderList = dir(get_exptLoadPath(exptName, 'acousticdata')).name
+    count = 1;
+    for f = folderList
+        if extractBefore(f, 3) == "sp"
+           IDList(1,count) = f;
+           count = count + 1;
+        end
+    end
+
 end
 
 folderPath = get_exptLoadPath(exptName, 'acousticdata');
@@ -12,14 +21,11 @@ permIx_val = [];
 
 % TODO rather than actually cd'ing to the folder path, just load in the
 % expt file without cd'ing. This almost means you don't need cd .. later
-cd (folderPath)
 % make a loop that will load in each folder's expt.mat file
 for id = IDList
-    cd (id)
-    load ('expt.mat','expt') % TODO address matlab warning. something like load('expt.mat', 'expt')
+    load (fullfile(folderPath,id,'expt.mat'),'expt') % TODO address matlab warning. something like load('expt.mat', 'expt')
 % within the loop, save the value of expt.permIx to a vector
-permIx_val(end+1,1) = expt.permIx; %#ok<AGROW> 
-    cd ..
+    permIx_val(end+1,1) = expt.permIx; %#ok<AGROW> 
 % end loop
 end
 % Report on the number of times each permIx was used. For example,
