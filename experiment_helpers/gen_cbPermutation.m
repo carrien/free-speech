@@ -1,9 +1,9 @@
-function [] = gen_cbPermutation(dataPath, exptName, conds, population)
+function [] = gen_cbPermutation(permSavePath, exptName, conds, population)
 %Generates a counterbalance tracking sheet for permutation combinations of
 %given conditions
 
-%dataPath: dataPath where counter balance tracking table will be saved
-    %Lab convention is to save this in SMNG/experiments/(exp_name)
+%permSavePath: directory path where counterbalance tracking table will be saved
+    %Lab convention is to save this in SMNG/experiments/(expt_name)
 %exptName: name of experiment
 %conds: what conditions are being counterbalanced
     %this could include words (e.g. {'bead', 'bad', 'bed'})
@@ -15,8 +15,8 @@ function [] = gen_cbPermutation(dataPath, exptName, conds, population)
 %population: name of separate populations (e.g. 'control' or 'clinical')
     %or you can use this field if you want separate tracking for groups (i.e. 'control' or 'perturbed') in the study
 %%
-if nargin <1 || isempty(dataPath)
-    dataPath = fullfile(get_exptLoadPath, exptName);
+if nargin <1 || isempty(permSavePath)
+    permSavePath = get_exptLoadPath(exptName);
 end
 
 [nRowsConds, ~] = size(conds);
@@ -33,10 +33,10 @@ else
 end
 
 %% check if permutation file already exists
-filename = strcat('cbPermutation_', exptName, populationStr, '.mat');
-permFile = fullfile(dataPath, filename); 
+permFileName = strcat('cbPermutation_', exptName, populationStr, '.mat');
+permFilePath = fullfile(permSavePath, permFileName);
 
-if isfile(permFile) 
+if isfile(permFilePath)
     bGenerate = askNChoiceQuestion('Are you sure you want to generate this permutation file? This will overwrite an existing file!'); 
 else 
     bGenerate = 'y';
@@ -51,14 +51,13 @@ if strcmp(bGenerate, 'y')
         permTable = perms(conds);
     end
 
-    % make column that will count the number of times a row is used
+    % add final column that will count the number of times a row is used
     [nRows, ~] = size(permTable);
     countList = num2cell(zeros(nRows, 1));
 
     %create table
-    permFile = horzcat(permTable, countList);
-    cbPermutation = permFile; %rename variable for saving
-    save(fullfile(dataPath, strcat('cbPermutation_', exptName, populationStr, '.mat')), 'cbPermutation');
+    cbPermutation = horzcat(permTable, countList);
+    save(permFilePath, 'cbPermutation');
 end
 
 end %EOF

@@ -1,12 +1,12 @@
-function [permIx, permList, permLoadPath, permFileName] = get_cbPermutation(exptName, permLoadPath, population, permIx, allPermConds)
+function [permIx, permList, permSavePath, permFileName] = get_cbPermutation(exptName, permSavePath, population, permIx, allPermConds)
 % Gets counterbalancing permutation info for a participant. Also creates
 % the cbPermutation file if it doesn't exist yet.
 %
 % INPUT ARGUMENTS:
 % exptName: Normally the value in expt.name. simonTone, vsaRetention. Used
 %   to set permPath.
-% permLoadPath: The path of the folder from which you want to load the
-%   cbPermutation file.
+% permSavePath: The path to the folder which contains the cbPermutation
+%   file you want to use.
 % population: For studies where 'control' and 'patient', e.g., are tracked
 %   separately. The value of `population` should exactly match what's in
 %   the file name. So for "cbPermutation_patient.mat" the population is
@@ -23,7 +23,7 @@ function [permIx, permList, permLoadPath, permFileName] = get_cbPermutation(expt
 % OUTPUT ARGUMENTS:
 % permIx: Row number of cbPermutation used.
 % permList: Full set of conditions for that permutation.
-% permLoadPath: The path of the folder from which the cbPermutation
+% permSavePath: The path of the folder from which the cbPermutation
 %   file was loaded.
 % permFileName: The full name of the cbPermutation file loaded in.
 
@@ -35,7 +35,7 @@ function [permIx, permList, permLoadPath, permFileName] = get_cbPermutation(expt
 if nargin < 1 || isempty(exptName)
     error('Need exptName in input argument 1 for this function to run.')
 end
-if nargin < 2 || isempty(permLoadPath), permLoadPath = get_exptLoadPath(exptName); end  
+if nargin < 2 || isempty(permSavePath), permSavePath = get_exptLoadPath(exptName); end  
 if nargin < 3 || isempty(population)
     populationStr = '';
 else
@@ -50,32 +50,32 @@ end
 %% confirm filepath
 % if specified permPath isn't accessible (eg server offline), change
 % permPath to local default
-if ~exist(permLoadPath, 'dir')
+if ~exist(permSavePath, 'dir')
     permLoadPath_backup = get_exptLocalPath(exptName);
     if exist(permLoadPath_backup, 'dir')
-        warning('Couldn''t access cbPermutation loadPath at %s. Switching to this path instead: %s.', permLoadPath, permLoadPath_backup);
+        warning('Couldn''t access cbPermutation loadPath at %s. Switching to this path instead: %s.', permSavePath, permLoadPath_backup);
     else
-        error('Couldn''t access cbPermutation loadPath at %s. Backup load path at %s also did not exist.', permLoadPath, permLoadPath_backup);
+        error('Couldn''t access cbPermutation loadPath at %s. Backup load path at %s also did not exist.', permSavePath, permLoadPath_backup);
     end
-    permLoadPath = permLoadPath_backup;
+    permSavePath = permLoadPath_backup;
 end
 
-permFilePath = fullfile(permLoadPath, permFileName);
+permFilePath = fullfile(permSavePath, permFileName);
 
 % if permFile doesn't exist at permPath, try to make it
 if ~exist(permFilePath, 'file')
     if ~isempty(allPermConds)
-        warning('Since file %s was not found at %s, one was generated based on allPermConds.', permFileName, permLoadPath);
-        gen_cbPermutation(permLoadPath, exptName, allPermConds, population);
+        warning('Since file %s was not found at %s, one was generated based on allPermConds.', permFileName, permSavePath);
+        gen_cbPermutation(permSavePath, exptName, allPermConds, population);
     else
         error(['No file named %s exists at %s. Tried to generate that file, ' ...
-            'but allPermConds input arg was not set.'], permFileName, permLoadPath);
+            'but allPermConds input arg was not set.'], permFileName, permSavePath);
     end
 end
 
 %% retrieve info from cbPerm file
-perms = load(permFilePath); 
-varField = fieldnames(perms); 
+perms = load(permFilePath);
+varField = fieldnames(perms);
 cbPermutation = perms.(char(varField));
 
 % verify that the cbPerm file we're updating has the conditions we expect, based on allPermConds

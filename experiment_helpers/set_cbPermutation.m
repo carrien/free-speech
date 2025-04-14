@@ -1,4 +1,4 @@
-function cbPermutation = set_cbPermutation(exptName, setRow, permPath, population, bSubtract)
+function cbPermutation = set_cbPermutation(exptName, setRow, permSavePath, population, bSubtract)
 % Increments the count column of a given row by one. Should be called after get_cbPermutation
 % It is possible to make this more flexible (see, for example, set_cbPermutation_timeAdapt) but for a standard
 % call in experiments there should be no reason to increase the count by more or less than one. 
@@ -7,12 +7,16 @@ function cbPermutation = set_cbPermutation(exptName, setRow, permPath, populatio
 % 
 % setRow: the index of the row you want to change. (This will be the output number from get_cbPermutation)
 % 
-% permPath: should be the same as your experiment path (top level) 
+% permSavePath: The folder which contains the cbPermutation file. Typically
+%               the same as your top level experiment path, i.e.,
+%               /smng/experiment/(expt_name)/
 % population: e.g. clinical, control. Use this if you have multiple populations and you're planning to counterbalance within
 % population rather than across the whole experiment
+%
+% bSubtract: Set to 1 to DEcrement a row of the cbPermutation file.
 % 
 
-if nargin < 3 || isempty(permPath), permPath = cd; end
+if nargin < 3 || isempty(permSavePath), permSavePath = cd; end
 if nargin < 4 || isempty(population)
     populationStr = '';
 else
@@ -20,13 +24,14 @@ else
 end
 if nargin < 5, bSubtract = 0; end
 
-permFile = strcat('cbPermutation_', exptName, populationStr, '.mat');
+permFileName = strcat('cbPermutation_', exptName, populationStr, '.mat');
+permFilePath = fullfile(permSavePath, permFileName);
 
-if ~exist(fullfile(permPath, permFile),'file')
-    error('Did not find a file called %s in directory %s\n', permFile, permPath); 
+if ~exist(permFilePath,'file')
+    error('Did not find a file called %s in directory %s\n', permFileName, permSavePath); 
 end
 
-perms = load(fullfile(permPath, permFile)); 
+perms = load(permFilePath); 
 varField = fieldnames(perms); 
 cbPermutation = perms.(char(varField));
 
@@ -39,6 +44,6 @@ elseif bSubtract == 1
 end
 cbPermutation{setRow,countCol} = newCount; 
 
-save(fullfile(permPath, permFile),'cbPermutation')
+save(permFilePath,'cbPermutation')
 
 end
