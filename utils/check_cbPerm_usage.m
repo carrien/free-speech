@@ -5,11 +5,21 @@ function check_cbPerm_usage(exptName, IDList)
     %% grab all of the participant IDs from the experiment data folder
     % do this by getting the names of all the folders
     % exclude any folders that don't start with 'sp'
-    folderList = dir(get_exptLoadPath(exptName, 'acousticdata')).name
+
+    folderList = dir(get_exptLoadPath(exptName, 'acousticdata'));
     count = 1;
-    for f = folderList
-        if extractBefore(f, 3) == "sp"
-           IDList(1,count) = f;
+    for f = 1: length(folderList)
+        folderCell = struct2cell(folderList(f));
+        folderName = cell2mat(folderCell(1,:));
+        if length(folderName) < 3
+            fprintf(" a ")
+            continue
+        end
+        fString = convertCharsToStrings(folderName);
+        if extractBefore(fString, 3) == "sp"
+           fprintf(" b ")
+           fprintf(" "+count)
+           IDList(:,count) = folderName;
            count = count + 1;
         end
     end
