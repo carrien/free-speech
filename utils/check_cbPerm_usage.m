@@ -5,21 +5,17 @@ function check_cbPerm_usage(exptName, IDList)
     %% grab all of the participant IDs from the experiment data folder
     % do this by getting the names of all the folders
     % exclude any folders that don't start with 'sp'
-
     folderList = dir(get_exptLoadPath(exptName, 'acousticdata'));
     count = 1;
     for f = 1: length(folderList)
         folderCell = struct2cell(folderList(f));
         folderName = cell2mat(folderCell(1,:));
         if length(folderName) < 3
-            fprintf(" a ")
             continue
         end
-        fString = convertCharsToStrings(folderName);
+        fString = string(folderName);
         if extractBefore(fString, 3) == "sp"
-           fprintf(" b ")
-           fprintf(" "+count)
-           IDList(:,count) = folderName;
+           IDList(1,count) = fString;
            count = count + 1;
         end
     end
@@ -34,6 +30,8 @@ permIx_val = [];
 % make a loop that will load in each folder's expt.mat file
 for id = IDList
     load (fullfile(folderPath,id,'expt.mat'),'expt') % TODO address matlab warning. something like load('expt.mat', 'expt')
+% TODO check if permIx exists in expt and if not print a warning
+% and skip to the next participant
 % within the loop, save the value of expt.permIx to a vector
     permIx_val(end+1,1) = expt.permIx; %#ok<AGROW> 
 % end loop
@@ -46,4 +44,6 @@ for i=1:length(inds)
     % TODO add newlines (via /n ) to fprintf
    times_used = times_used + fprintf("The permIx "+inds(i)+ " was used "+counts(i)+" times. \n");
 end
+%% TODO load in the cbPermutation file and see if the counts in the cbPermutation file match up to the counts obtained from check_cbPerm_usage
+
 
