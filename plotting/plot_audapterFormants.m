@@ -1,4 +1,4 @@
-function [h,subh] = plot_audapterFormants(data, p, bInterpret)
+function [h_layout,subh_layout] = plot_audapterFormants(data, p, bInterpret, parent_handle, p_layout)
 % Provides a quick plot of the waveform, spectrogram, and signalIn formants
 %   (fmts) and signalOut formants (sfmts) for trial data. Used for
 %   spot-checking a couple trials.
@@ -13,6 +13,8 @@ function [h,subh] = plot_audapterFormants(data, p, bInterpret)
 %
 % Other validation functions at: https://kb.wisc.edu/smng/109809
 
+% TODO make it respect the figpos input argument again
+% TODO update header
 
 if nargin < 2, p = struct; end
 if nargin < 3 || isempty(bInterpret), bInterpret = 1; end
@@ -44,7 +46,7 @@ p = set_missingField(p,'fmtCenLineStyle','--',0);
 fs = data(1).params.sr;
 frameLen = data(1).params.frameLen;
 
-%% plot
+%% plotting setup
 
 if p.bWave
     nrows = 3;
@@ -52,28 +54,49 @@ else
     nrows = 1;
 end
 ncols = length(data);
-h = figure('Position',p.figpos);
-subh = gobjects(1,ncols);
-for nax = 1:ncols
-    subh(nax) = subplot(nrows,ncols,nax);
+
+% preallocate handles for tiles in layout
+subh_layout = gobjects(1,ncols); 
+
+% create tiled layout, either from scratch or as a child of a parent TiledChartLayout
+if nargin < 4 || isempty(parent_handle)
+    figure;
+    h_layout = tiledlayout(nrows, ncols);
+else
+    h_layout = tiledlayout(parent_handle, nrows, ncols);
+end
+
+% apply each parameter in p_layout to the new layout
+if nargin < 5 || ~isempty(p_layout)
+    layout_properties = fields(p_layout);
+    for i = 1:length(layout_properties)
+        h_layout.Layout.(layout_properties{i}) = p_layout.(layout_properties{i});
+    end
+end
+
+%% plot
+for trial_ix = 1:ncols
+    subh_layout(trial_ix) = nexttile(h_layout, [1 1]);
     hold on;
     
     if p.bWave
         % plot waveform
-        plot(data(nax).signalIn, 'Color','k');
+        plot(data(trial_ix).signalIn, 'Color','k');
         ymax = .25; %max(abs(data(nax).signalIn));
         axis tight;
         set(gca,'YLim',[-ymax ymax]);
         set(gca,'XColor','none');
         set(gca,'YColor','none');
-        
-        subplot(nrows,ncols,[nax+ncols:ncols:nrows*ncols])
+
+        % set current axis to be a span of the bottom two rows of the
+        % current column. (Current column num = tile_ix)
+        nexttile(trial_ix + ncols, [2, 1])
         hold on;
     end
     
     % plot spectrogram
     if p.bSpec        
-        y = my_preemph(data(nax).signalIn,0.95);
+        y = my_preemph(data(trial_ix).signalIn,0.95);
         nsamp_window = round(p.ms_frame*fs/1000);
         nsamp_frame_advance = round(p.ms_frame_advance*fs/1000);
         nsamp_overlap = nsamp_window - nsamp_frame_advance;
@@ -97,24 +120,24 @@ for nax = 1:ncols
     end
     
     % plot formants
-    zs = ~data(nax).fmts(:,1);
-    data(nax).fmts(zs,:) = NaN;
-    data(nax).sfmts(zs,:) = NaN;
-    tAxis = 0 : frameLen : frameLen * (size(data(nax).fmts, 1) - 1);
+    zs = ~data(trial_ix).fmts(:,1);
+    data(trial_ix).fmts(zs,:) = NaN;
+    data(trial_ix).sfmts(zs,:) = NaN;
+    tAxis = 0 : frameLen : frameLen * (size(data(trial_ix).fmts, 1) - 1);
     if isfield(p,'fmtCen')
         plot(tAxis/fs,repmat(p.fmtCen,length(tAxis),1),'LineStyle',p.fmtCenLineStyle,'Color',p.fmtCenColor,'LineWidth',p.fmtCenLineWidth)
     end
     if p.bOutline
-        plot(tAxis/fs,data(nax).fmts(:, 1 : 2), 'Color','w','LineWidth',p.fmtsLineWidth+.5);
-        plot(tAxis/fs,data(nax).sfmts(:, 1 : 2), 'Color','w','LineWidth',p.sfmtsLineWidth+.5);
+        plot(tAxis/fs,data(trial_ix).fmts(:, 1 : 2), 'Color','w','LineWidth',p.fmtsLineWidth+.5);
+        plot(tAxis/fs,data(trial_ix).sfmts(:, 1 : 2), 'Color','w','LineWidth',p.sfmtsLineWidth+.5);
     end
-    plot(tAxis/fs,data(nax).fmts(:, 1 : 2), 'Color',p.fmtsColor,'LineWidth',p.fmtsLineWidth);
-    plot(tAxis/fs,data(nax).sfmts(:, 1 : 2), 'Color',p.sfmtsColor,'LineWidth',p.sfmtsLineWidth);
+    plot(tAxis/fs,data(trial_ix).fmts(:, 1 : 2), 'Color',p.fmtsColor,'LineWidth',p.fmtsLineWidth);
+    plot(tAxis/fs,data(trial_ix).sfmts(:, 1 : 2), 'Color',p.sfmtsColor,'LineWidth',p.sfmtsLineWidth);
     
 
     
     xlabel('time (s)')    
-    if nax==1
+    if trial_ix==1
         ylabel('frequency (Hz)')
     else
         set(gca, 'YTickLabel', '');
