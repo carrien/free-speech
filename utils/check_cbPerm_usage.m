@@ -5,18 +5,29 @@ function check_cbPerm_usage(exptName, IDList)
     %% grab all of the participant IDs from the experiment data folder
     % do this by getting the names of all the folders
     % exclude any folders that don't start with 'sp'
+
+    % get list of names of folders in experiment data folder
     folderList = dir(get_exptLoadPath(exptName, 'acousticdata'));
-    count = 1;
+    % initialize an index variable that has the index for the next value in
+    % the ID list
+    index = 1;
+    % loop through list of names 
     for f = 1: length(folderList)
         folderCell = struct2cell(folderList(f));
         folderName = cell2mat(folderCell(1,:));
+        % skip to next folder name if the length of the folder name is less
+        % than three characters
         if length(folderName) < 3
             continue
         end
-        fString = string(folderName);
-        if extractBefore(fString, 3) == "sp"
-           IDList(1,count) = fString;
-           count = count + 1;
+        stringName = string(folderName);
+        % check if the first two characters are sp and if so add it to the
+        % ID list
+        if extractBefore(stringName, 3) == "sp"
+           if(isnumeric(extractBetween(stringName, strlength(stringName)-2, strlength(stringName),"Boundaries","inclusive")))
+               IDList(1,index) = stringName;
+               index = index + 1;
+           end
         end
     end
 
@@ -32,6 +43,10 @@ for id = IDList
     load (fullfile(folderPath,id,'expt.mat'),'expt') % TODO address matlab warning. something like load('expt.mat', 'expt')
 % TODO check if permIx exists in expt and if not print a warning
 % and skip to the next participant
+if ~(isfield(expt, 'permIx'))
+    fprintf("There is no permIx for "+id+".")
+    continue
+end
 % within the loop, save the value of expt.permIx to a vector
     permIx_val(end+1,1) = expt.permIx; %#ok<AGROW> 
 % end loop
@@ -45,5 +60,13 @@ for i=1:length(inds)
    times_used = times_used + fprintf("The permIx "+inds(i)+ " was used "+counts(i)+" times. \n");
 end
 %% TODO load in the cbPermutation file and see if the counts in the cbPermutation file match up to the counts obtained from check_cbPerm_usage
-
+% load cbPermutation file
+load(fullfile(get_exptLoadPath(exptName), 'cbPermutation_'+exptName+'.mat'),'cbPermutation')
+% loop through the rows of cbPermutation to compare with counts variable
+% from check_cbPerm_Usage()
+for r = 1:size(cbPermutation, 1)
+    if ~(cbPermutation{r, 3}==counts(r))
+        fprintf("The counts in the cbPermutation file do not match up to the counts from check_cbPerm_usage for permIx "+inds(r)+".")
+    end
+end
 
