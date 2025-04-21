@@ -24,7 +24,8 @@ function check_cbPerm_usage(exptName, IDList)
         % check if the first two characters are sp and if so add it to the
         % ID list
         if extractBefore(stringName, 3) == "sp"
-           if(isnumeric(extractBetween(stringName, strlength(stringName)-2, strlength(stringName),"Boundaries","inclusive")))
+            endNum = str2double(extractBetween(stringName, strlength(stringName)-2, strlength(stringName),"Boundaries","inclusive"));
+            if ~(isnan(endNum))
                IDList(1,index) = stringName;
                index = index + 1;
            end
