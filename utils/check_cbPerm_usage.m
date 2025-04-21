@@ -80,15 +80,39 @@ end
 % Use the function AskNChoiceQuestion to properly handle user text
 % entry for defined options.
 
+exptFolders = dir(get_exptLoadPath(exptName));
+cbPermFiles = [];
+i = 1;
+for e = exptFolders
+   exptCell = struct2cell(e);
+   exptFile = cell2mat(exptCell(1,:));
+   exptFileString = string(exptFile);
+   if extractBefore(exptFileString,14) == "cbPermutation"
+       cbPermFiles(1, i) = exptFileString;
+       i = i+1;
+   end
+end
+if isempty(cbPermFiles)
+    fprintf("There are 0 files which start with cbPermutation within "+get_exptLoadPath(exptName) +". Therefore, I cannot compare usage counts between expt files and a cbPermutation file.")
+else
+    if length(cbPermFiles) == 1
+        stringResponse = cbPermFiles(1,1);
+    else
+        fprintf("There is/are "+length(cbPermFiles)+" file(s) which start with cbPermutation within "+get_exptLoadPath(exptName)+".")
+        response = askNChoiceQuestion("Which of these choices should be used?",cbPermFiles);
+        stringResponse = string(response);
+    end
 
-% load cbPermutation file
-load(fullfile(get_exptLoadPath(exptName), 'cbPermutation_'+exptName+'.mat'),'cbPermutation')
 
-% loop through the rows of cbPermutation to compare with counts variable
-% from check_cbPerm_Usage()
-for r = 1:size(cbPermutation, 1)
-    if ~(cbPermutation{r, 3}==counts(r))
-        fprintf("The counts in the cbPermutation file do not match up to the counts from check_cbPerm_usage for permIx "+inds(r)+".")
+    % load cbPermutation file
+    load(fullfile(get_exptLoadPath(exptName), stringResponse),'cbPermutation')
+
+    % loop through the rows of cbPermutation to compare with counts variable
+    % from check_cbPerm_Usage()
+    for r = 1:size(cbPermutation, 1)
+        if ~(cbPermutation{r, 3}==counts(r))
+            fprintf("The counts in the cbPermutation file do not match up to the counts from check_cbPerm_usage for permIx "+inds(r)+".")
+        end
     end
 end
 
