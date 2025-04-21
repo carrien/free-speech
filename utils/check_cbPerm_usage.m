@@ -40,26 +40,23 @@ permIx_val = [];
 % expt file without cd'ing. This almost means you don't need cd .. later
 % make a loop that will load in each folder's expt.mat file
 for id = IDList
-    load (fullfile(folderPath,id,'expt.mat'),'expt') % TODO address matlab warning. something like load('expt.mat', 'expt')
-% TODO check if permIx exists in expt and if not print a warning
-% and skip to the next participant
-if ~(isfield(expt, 'permIx'))
-    fprintf("There is no permIx for "+id+".")
-    continue
-end
-% within the loop, save the value of expt.permIx to a vector
+    load (fullfile(folderPath,id,'expt.mat'),'expt')
+    if ~(isfield(expt, 'permIx'))
+        fprintf("There is no permIx for "+id+". Skipping to next participant.\n")
+        continue
+    end
     permIx_val(end+1,1) = expt.permIx; %#ok<AGROW> 
-% end loop
 end
+
 % Report on the number of times each permIx was used. For example,
 % The permIx 2 was used 8 times, using a function like fprintf
 [counts,inds] = groupcounts(permIx_val);
 times_used = "";
 for i=1:length(inds)
-    % TODO add newlines (via /n ) to fprintf
-   times_used = times_used + fprintf("The permIx "+inds(i)+ " was used "+counts(i)+" times. \n");
+    times_used = times_used + fprintf("The permIx "+inds(i)+ " was used "+counts(i)+" times. \n");
 end
-%% TODO load in the cbPermutation file and see if the counts in the cbPermutation file match up to the counts obtained from check_cbPerm_usage
+
+%% compare usage counts in cbPermutation.mat vs expt files
 % load cbPermutation file
 load(fullfile(get_exptLoadPath(exptName), 'cbPermutation_'+exptName+'.mat'),'cbPermutation')
 % loop through the rows of cbPermutation to compare with counts variable
