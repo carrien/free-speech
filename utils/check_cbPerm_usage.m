@@ -57,8 +57,32 @@ for i=1:length(inds)
 end
 
 %% compare usage counts in cbPermutation.mat vs expt files
+
+% TODO make this work for experiments where the cbPermutation file name is
+% different. See for example, vsaPD, where there are files called
+% 'cbPermutation_vsaPD_clinical.mat' and 'cbPermutation_vsaPD_control.mat'.
+% It would be nice if this script could present the user a list of all the
+% files whose name starts with 'cbPermutation', and the user picks the
+% right file. Something like:
+%
+%   There is/are [2] file(s) which start with 'cbPermutation' within [filepath]
+%   Which of these files should be used?
+%       cbPermutation_vsaPD_clinical
+%       cbPermutation_vsaPD_control
+% >> cbPermutation_vsaPD_control
+%
+% OR
+%
+%   There is/are [0] file(s) which start with 'cbPermutation' within [filepath]
+%   Therefore, I cannot compare usage counts between expt files and a cbPermutation file.
+%
+% Use the function AskNChoiceQuestion to properly handle user text
+% entry for defined options.
+
+
 % load cbPermutation file
 load(fullfile(get_exptLoadPath(exptName), 'cbPermutation_'+exptName+'.mat'),'cbPermutation')
+
 % loop through the rows of cbPermutation to compare with counts variable
 % from check_cbPerm_Usage()
 for r = 1:size(cbPermutation, 1)
