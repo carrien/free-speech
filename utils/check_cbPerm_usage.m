@@ -80,26 +80,30 @@ end
 % Use the function AskNChoiceQuestion to properly handle user text
 % entry for defined options.
 
-exptFolders = dir(get_exptLoadPath(exptName));
 cbPermFiles = [];
+exptPath = get_exptLoadPath(exptName);
+exptFolders = dir(exptPath);
 i = 1;
-for e = exptFolders
-   exptCell = struct2cell(e);
+for e = 1:length(exptFolders)
+   exptCell = struct2cell(exptFolders(e));
    exptFile = cell2mat(exptCell(1,:));
    exptFileString = string(exptFile);
+   if length(exptFile) < 14
+       continue
+   end
    if extractBefore(exptFileString,14) == "cbPermutation"
        cbPermFiles(1, i) = exptFileString;
        i = i+1;
    end
 end
 if isempty(cbPermFiles)
-    fprintf("There are 0 files which start with cbPermutation within "+get_exptLoadPath(exptName) +". Therefore, I cannot compare usage counts between expt files and a cbPermutation file.")
+    fprintf("There are 0 files which start with cbPermutation within "+exptPath+". Therefore, I cannot compare usage counts between expt files and a cbPermutation file.")
 else
     if length(cbPermFiles) == 1
         stringResponse = cbPermFiles(1,1);
     else
-        fprintf("There is/are "+length(cbPermFiles)+" file(s) which start with cbPermutation within "+get_exptLoadPath(exptName)+".")
-        response = askNChoiceQuestion("Which of these choices should be used?",cbPermFiles);
+        fprintf("There is/are "+length(cbPermFiles)+" file(s) which start with cbPermutation within "+exptPath+".")
+        response = askNChoiceQuestion('Which of these choices should be used?',cbPermFiles);
         stringResponse = string(response);
     end
 
