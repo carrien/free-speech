@@ -23,6 +23,9 @@ function check_cbPerm_usage(exptName, IDList)
         stringName = string(folderName);
         % check if the first two characters are sp and if so add it to the
         % ID list
+
+        % TODO make this work if the start of the participant ID is any of
+        % 'sp', 'pd' (example experiment: vsaPD), or 'ca' (example experiment: cerebAAF)
         if extractBefore(stringName, 3) == "sp"
             endNum = str2double(extractBetween(stringName, strlength(stringName)-2, strlength(stringName),"Boundaries","inclusive"));
             if ~(isnan(endNum))
@@ -80,7 +83,7 @@ end
 % Use the function AskNChoiceQuestion to properly handle user text
 % entry for defined options.
 
-cbPermFiles = [];
+cbPermFiles = {};
 exptPath = get_exptLoadPath(exptName);
 exptFolders = dir(exptPath);
 i = 1;
@@ -92,7 +95,7 @@ for e = 1:length(exptFolders)
        continue
    end
    if extractBefore(exptFileString,14) == "cbPermutation"
-       cbPermFiles(1, i) = exptFileString;
+       cbPermFiles{i} = char(exptFileString); %#ok<AGROW> 
        i = i+1;
    end
 end
@@ -100,7 +103,8 @@ if isempty(cbPermFiles)
     fprintf("There are 0 files which start with cbPermutation within "+exptPath+". Therefore, I cannot compare usage counts between expt files and a cbPermutation file.")
 else
     if length(cbPermFiles) == 1
-        stringResponse = cbPermFiles(1,1);
+        % TODO announce to user which cbPerm file is being used
+        stringResponse = cbPermFiles{1};
     else
         fprintf("There is/are "+length(cbPermFiles)+" file(s) which start with cbPermutation within "+exptPath+".")
         response = askNChoiceQuestion('Which of these choices should be used?',cbPermFiles);
@@ -113,9 +117,13 @@ else
 
     % loop through the rows of cbPermutation to compare with counts variable
     % from check_cbPerm_Usage()
+
+    % TODO if the counts don't match, report the counts of each.
     for r = 1:size(cbPermutation, 1)
         if ~(cbPermutation{r, 3}==counts(r))
             fprintf("The counts in the cbPermutation file do not match up to the counts from check_cbPerm_usage for permIx "+inds(r)+".")
+        else
+            % TODO if the counts DO match, report that as well.
         end
     end
 end
