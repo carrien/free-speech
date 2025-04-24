@@ -118,7 +118,7 @@ for trial_ix = 1:ncols
         [s, f, t]=spectrogram(y, nsamp_window, nsamp_overlap, p.nfft, fs);
         %[s, f, t]=spectrogram(y, 128, 96, 1024, fs);
         %[s, f, t]=spectrogram(y, 256, 192, 1024, fs);
-        imagesc(t, f, 10 * log10(abs(s))); hold on;
+        imagesc(t, f, 10 * log10(abs(s)+1)); hold on;
         axis xy;
         if isfield(p,'ylim')
             set(gca, 'YLim', [0, p.ylim]);
