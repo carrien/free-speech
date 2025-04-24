@@ -1,4 +1,4 @@
-function [h,subh] = plot_audapterFormants(data, p, bInterpret)
+function [h_layout,subh_layout] = plot_audapterFormants(data, p, bInterpret, parent_handle, p_layout)
 % Provides a quick plot of the waveform, spectrogram, and signalIn formants
 %   (fmts) and signalOut formants (sfmts) for trial data. Used for
 %   spot-checking a couple trials.
@@ -10,9 +10,24 @@ function [h,subh] = plot_audapterFormants(data, p, bInterpret)
 %   p: Struct of parameters to use when plotting. Default: [see code].
 %   bInterpret: A binary flag for whether or not to print information which
 %     may help you interpret your results. Default: 1.
+%   parent_handle: If supplied, axes created by this function will be
+%     children of the object parent_handle. Valid variable types for 
+%     parent_handle are TiledChartLayout, Figure, Panel, Tab, GridLayout.
+%     (See `tiledlayout` documentation for more info.)
+%   p_layout: Struct of tiled layout parameters to set in the new tiledlayout
+%     created by this function. Only used and only applicable if
+%     parent_handle is itself a tiled layout.
+%   
+%     Example use case: if parent_handle is a tiled layout with arrangement
+%     2x2, you can have this function plot waveform/spectrogram in
+%     the bottom left tile of the parent layout by setting:
+%       p_layout.Tile = 3;
+%     Alternatively, plot across both bottom panels of parent_handle with:
+%       p_layout.Tile = 3;
+%       p_layout.TileSpan = [2, 1];
+%     
 %
 % Other validation functions at: https://kb.wisc.edu/smng/109809
-
 
 if nargin < 2, p = struct; end
 if nargin < 3 || isempty(bInterpret), bInterpret = 1; end
@@ -44,7 +59,7 @@ p = set_missingField(p,'fmtCenLineStyle','--',0);
 fs = data(1).params.sr;
 frameLen = data(1).params.frameLen;
 
-%% plot
+%% plotting setup
 
 if p.bWave
     nrows = 3;
@@ -52,35 +67,58 @@ else
     nrows = 1;
 end
 ncols = length(data);
-h = figure('Position',p.figpos);
-subh = gobjects(1,ncols);
-for nax = 1:ncols
-    subh(nax) = subplot(nrows,ncols,nax);
+
+% preallocate handles for tiles in layout
+subh_layout = gobjects(1,ncols); 
+
+% either create tiled layout from scratch, or create tiled layout
+% as a child of a parent object. See header for possible parent objects
+if nargin < 4 || isempty(parent_handle)
+    figure('Position', p.figpos);
+    h_layout = tiledlayout(nrows, ncols);
+else
+    h_layout = tiledlayout(parent_handle, nrows, ncols);
+
+    % if parent handle is a tiled layout, apply tiled layout parameters in p_layout to the new layout
+    bParentIsLayout = strcmp(class(parent_handle), 'matlab.graphics.layout.TiledChartLayout'); %#ok<STISA> 
+    if bParentIsLayout && nargin >= 5 && ~isempty(p_layout)
+        layout_properties = fields(p_layout);
+        for i = 1:length(layout_properties)
+            h_layout.Layout.(layout_properties{i}) = p_layout.(layout_properties{i});
+        end
+    end
+end
+
+%% plot
+for trial_ix = 1:ncols
+    subh_layout(trial_ix) = nexttile(h_layout, [1 1]);
     hold on;
     
     if p.bWave
         % plot waveform
-        plot(data(nax).signalIn, 'Color','k');
+        plot(data(trial_ix).signalIn, 'Color','k');
         ymax = .25; %max(abs(data(nax).signalIn));
         axis tight;
         set(gca,'YLim',[-ymax ymax]);
         set(gca,'XColor','none');
         set(gca,'YColor','none');
-        
-        subplot(nrows,ncols,[nax+ncols:ncols:nrows*ncols])
+
+        % set current axis to be a span of the bottom two rows of the
+        % current column. (Current column num = tile_ix)
+        nexttile(trial_ix + ncols, [2, 1])
         hold on;
     end
     
     % plot spectrogram
     if p.bSpec        
-        y = my_preemph(data(nax).signalIn,0.95);
+        y = my_preemph(data(trial_ix).signalIn,0.95);
         nsamp_window = round(p.ms_frame*fs/1000);
         nsamp_frame_advance = round(p.ms_frame_advance*fs/1000);
         nsamp_overlap = nsamp_window - nsamp_frame_advance;
         [s, f, t]=spectrogram(y, nsamp_window, nsamp_overlap, p.nfft, fs);
         %[s, f, t]=spectrogram(y, 128, 96, 1024, fs);
         %[s, f, t]=spectrogram(y, 256, 192, 1024, fs);
-        imagesc(t, f, 10 * log10(abs(s))); hold on;
+        imagesc(t, f, 10 * log10(abs(s)+1)); hold on;
         axis xy;
         if isfield(p,'ylim')
             set(gca, 'YLim', [0, p.ylim]);
@@ -97,24 +135,24 @@ for nax = 1:ncols
     end
     
     % plot formants
-    zs = ~data(nax).fmts(:,1);
-    data(nax).fmts(zs,:) = NaN;
-    data(nax).sfmts(zs,:) = NaN;
-    tAxis = 0 : frameLen : frameLen * (size(data(nax).fmts, 1) - 1);
+    zs = ~data(trial_ix).fmts(:,1);
+    data(trial_ix).fmts(zs,:) = NaN;
+    data(trial_ix).sfmts(zs,:) = NaN;
+    tAxis = 0 : frameLen : frameLen * (size(data(trial_ix).fmts, 1) - 1);
     if isfield(p,'fmtCen')
         plot(tAxis/fs,repmat(p.fmtCen,length(tAxis),1),'LineStyle',p.fmtCenLineStyle,'Color',p.fmtCenColor,'LineWidth',p.fmtCenLineWidth)
     end
     if p.bOutline
-        plot(tAxis/fs,data(nax).fmts(:, 1 : 2), 'Color','w','LineWidth',p.fmtsLineWidth+.5);
-        plot(tAxis/fs,data(nax).sfmts(:, 1 : 2), 'Color','w','LineWidth',p.sfmtsLineWidth+.5);
+        plot(tAxis/fs,data(trial_ix).fmts(:, 1 : 2), 'Color','w','LineWidth',p.fmtsLineWidth+.5);
+        plot(tAxis/fs,data(trial_ix).sfmts(:, 1 : 2), 'Color','w','LineWidth',p.sfmtsLineWidth+.5);
     end
-    plot(tAxis/fs,data(nax).fmts(:, 1 : 2), 'Color',p.fmtsColor,'LineWidth',p.fmtsLineWidth);
-    plot(tAxis/fs,data(nax).sfmts(:, 1 : 2), 'Color',p.sfmtsColor,'LineWidth',p.sfmtsLineWidth);
+    plot(tAxis/fs,data(trial_ix).fmts(:, 1 : 2), 'Color',p.fmtsColor,'LineWidth',p.fmtsLineWidth);
+    plot(tAxis/fs,data(trial_ix).sfmts(:, 1 : 2), 'Color',p.sfmtsColor,'LineWidth',p.sfmtsLineWidth);
     
 
     
     xlabel('time (s)')    
-    if nax==1
+    if trial_ix==1
         ylabel('frequency (Hz)')
     else
         set(gca, 'YTickLabel', '');
@@ -131,4 +169,4 @@ if bInterpret
 end
 
 
-end
+end %EOF
