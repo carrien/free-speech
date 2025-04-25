@@ -21,12 +21,13 @@ function check_cbPerm_usage(exptName, IDList)
             continue
         end
         stringName = string(folderName);
-        % check if the first two characters are sp and if so add it to the
+        firstTwo = extractBefore(stringName, 3);
+        % check if the first two characters are sp and if so add it to the 
         % ID list
 
         % TODO make this work if the start of the participant ID is any of
         % 'sp', 'pd' (example experiment: vsaPD), or 'ca' (example experiment: cerebAAF)
-        if extractBefore(stringName, 3) == "sp"
+        if firstTwo == "sp" || firstTwo == "pd" || firstTwo == "ca"
             endNum = str2double(extractBetween(stringName, strlength(stringName)-2, strlength(stringName),"Boundaries","inclusive"));
             if ~(isnan(endNum))
                IDList(1,index) = stringName;
@@ -44,7 +45,12 @@ permIx_val = [];
 % expt file without cd'ing. This almost means you don't need cd .. later
 % make a loop that will load in each folder's expt.mat file
 for id = IDList
-    load (fullfile(folderPath,id,'expt.mat'),'expt')
+    filePath = fullfile(folderPath,id,'expt.mat');
+    if exist(filePath, 'file') == 0
+        fprintf("There is no expt.mat for "+id+". Skipping to next participant.\n")
+        continue
+    end
+    load (filePath, 'expt')
     if ~(isfield(expt, 'permIx'))
         fprintf("There is no permIx for "+id+". Skipping to next participant.\n")
         continue
@@ -87,6 +93,7 @@ cbPermFiles = {};
 exptPath = get_exptLoadPath(exptName);
 exptFolders = dir(exptPath);
 i = 1;
+
 for e = 1:length(exptFolders)
    exptCell = struct2cell(exptFolders(e));
    exptFile = cell2mat(exptCell(1,:));
@@ -99,14 +106,18 @@ for e = 1:length(exptFolders)
        i = i+1;
    end
 end
+
 if isempty(cbPermFiles)
-    fprintf("There are 0 files which start with cbPermutation within "+exptPath+". Therefore, I cannot compare usage counts between expt files and a cbPermutation file.")
+    fprintf("There are 0 files which start with cbPermutation within " ...
+        +"%s" ...
+        +". Therefore, I cannot compare usage counts between expt files and a cbPermutation file.", exptPath);
 else
     if length(cbPermFiles) == 1
         % TODO announce to user which cbPerm file is being used
+        fprintf("The cbPermFile used is "+cbPermFiles{1}+".")
         stringResponse = cbPermFiles{1};
     else
-        fprintf("There is/are "+length(cbPermFiles)+" file(s) which start with cbPermutation within "+exptPath+".")
+        fprintf("There is/are "+length(cbPermFiles)+" file(s) which start with cbPermutation within %s.\n", exptPath);
         response = askNChoiceQuestion('Which of these choices should be used?',cbPermFiles);
         stringResponse = string(response);
     end
@@ -120,10 +131,12 @@ else
 
     % TODO if the counts don't match, report the counts of each.
     for r = 1:size(cbPermutation, 1)
-        if ~(cbPermutation{r, 3}==counts(r))
-            fprintf("The counts in the cbPermutation file do not match up to the counts from check_cbPerm_usage for permIx "+inds(r)+".")
+        if ~(cbPermutation{r, size(cbPermutation, 2)}==counts(r))
+            fprintf("The counts in the cbPermutation file do not match up to the counts from check_cbPerm_usage for permIx "+inds(r) ...
+                +". The count in the cbPermutation file for permIx"+inds(r)+" is "+cbPermutation{r, size(cbPermutation, 2)}+" and the count from check_cbPerm_usage is "+counts(r)+".\n")
         else
             % TODO if the counts DO match, report that as well.
+            fprintf("\nThe counts in the cbPermutation file do match with the counts from check_cbPerm_usage for permIx "+inds(r)+". They are both "+counts(r)+".\n")
         end
     end
 end
