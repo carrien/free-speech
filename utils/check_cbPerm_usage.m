@@ -1,5 +1,4 @@
 function check_cbPerm_usage(exptName, IDList)
-
 % if there are fewer than 2 input arguments or IDList is empty...
  if nargin < 2 || isempty(IDList)
     %% grab all of the participant IDs from the experiment data folder
@@ -40,30 +39,35 @@ end
 
 folderPath = get_exptLoadPath(exptName, 'acousticdata');
 permIx_val = [];
-
-% TODO rather than actually cd'ing to the folder path, just load in the
-% expt file without cd'ing. This almost means you don't need cd .. later
-% make a loop that will load in each folder's expt.mat file
-for id = IDList
-    filePath = fullfile(folderPath,id,'expt.mat');
-    if exist(filePath, 'file') == 0
-        fprintf("There is no expt.mat for "+id+". Skipping to next participant.\n")
-        continue
+if exist(folderPath, 'dir') == 0
+    fprintf("There is no acoustic data folder for the experiment. check_cbPerm_usage cannot be used to get the usage counts.\n")
+elseif exist('IDList','var') == 0
+    fprintf("There are no participants for this experiment or no other IDs for some other reason.\n")
+else
+    % TODO rather than actually cd'ing to the folder path, just load in the
+    % expt file without cd'ing. This almost means you don't need cd .. later
+    % make a loop that will load in each folder's expt.mat file
+    for id = IDList
+        filePath = fullfile(folderPath,id,'expt.mat');
+        if exist(filePath, 'file') == 0
+            fprintf("There is no expt.mat for "+id+". Skipping to next participant.\n")
+            continue
+        end
+        load (filePath, 'expt')
+        if ~(isfield(expt, 'permIx'))
+            fprintf("There is no permIx for "+id+". Skipping to next participant.\n")
+            continue
+        end
+        permIx_val(end+1,1) = expt.permIx; %#ok<AGROW> 
     end
-    load (filePath, 'expt')
-    if ~(isfield(expt, 'permIx'))
-        fprintf("There is no permIx for "+id+". Skipping to next participant.\n")
-        continue
-    end
-    permIx_val(end+1,1) = expt.permIx; %#ok<AGROW> 
-end
 
-% Report on the number of times each permIx was used. For example,
-% The permIx 2 was used 8 times, using a function like fprintf
-[counts,inds] = groupcounts(permIx_val);
-times_used = "";
-for i=1:length(inds)
-    times_used = times_used + fprintf("The permIx "+inds(i)+ " was used "+counts(i)+" times. \n");
+    % Report on the number of times each permIx was used. For example,
+    % The permIx 2 was used 8 times, using a function like fprintf
+    [counts,inds] = groupcounts(permIx_val);
+    times_used = "";
+    for i=1:length(inds)
+        times_used = times_used + fprintf("The permIx "+inds(i)+ " was used "+counts(i)+" times. \n");
+    end
 end
 
 %% compare usage counts in cbPermutation.mat vs expt files
@@ -114,7 +118,7 @@ if isempty(cbPermFiles)
 else
     if length(cbPermFiles) == 1
         % TODO announce to user which cbPerm file is being used
-        fprintf("The cbPermFile used is "+cbPermFiles{1}+".")
+        fprintf("The cbPermFile used is "+cbPermFiles{1}+".\n")
         stringResponse = cbPermFiles{1};
     else
         fprintf("There is/are "+length(cbPermFiles)+" file(s) which start with cbPermutation within %s.\n", exptPath);
@@ -131,12 +135,20 @@ else
 
     % TODO if the counts don't match, report the counts of each.
     for r = 1:size(cbPermutation, 1)
-        if ~(cbPermutation{r, size(cbPermutation, 2)}==counts(r))
+        j=r;
+        if length(inds) < r || exist(folderPath,'dir') == 0  
+            fprintf("The counts for permIx "+r+" from cbPermutation is "+cbPermutation{r,size(cbPermutation, 2)}+". The counts from check_cbPerm_usage do not exist.\n")
+            continue
+        end
+        if r ~= inds(r)
+            j = find(inds == r);
+        end
+        if ~(cbPermutation{r, size(cbPermutation, 2)}==counts(j))
             fprintf("The counts in the cbPermutation file do not match up to the counts from check_cbPerm_usage for permIx "+inds(r) ...
-                +". The count in the cbPermutation file for permIx"+inds(r)+" is "+cbPermutation{r, size(cbPermutation, 2)}+" and the count from check_cbPerm_usage is "+counts(r)+".\n")
+                +". The count in the cbPermutation file for permIx "+j+" is "+cbPermutation{r, size(cbPermutation, 2)}+" and the count from check_cbPerm_usage is "+counts(r)+".\n")
         else
             % TODO if the counts DO match, report that as well.
-            fprintf("\nThe counts in the cbPermutation file do match with the counts from check_cbPerm_usage for permIx "+inds(r)+". They are both "+counts(r)+".\n")
+            fprintf("The counts in the cbPermutation file do match with the counts from check_cbPerm_usage for permIx "+inds(r)+". They are both "+counts(r)+".\n")
         end
     end
 end
