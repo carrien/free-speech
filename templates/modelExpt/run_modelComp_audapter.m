@@ -13,23 +13,17 @@ if ~exist(expt.dataPath,'dir')
     mkdir(expt.dataPath)
 end
 
-if isfield(expt,'dataPath')
-    outputdir = expt.dataPath;
-else
-    warning('Setting output directory to current directory: %s\n',pwd);
-    outputdir = pwd;
-end
-
 % assign folder for saving trial data
 % create output directory if it doesn't exist
 trialdirname = 'temp_trials';
-trialdir = fullfile(outputdir,trialdirname);
-if ~exist(trialdir,'dir')
-    mkdir(outputdir,trialdirname)
+outputdir = expt.dataPath;
+trialdir = fullfile(outputdir, trialdirname);
+if ~exist(trialdir, 'dir')
+    mkdir(trialdir)
 end
 
 %% set up stimuli
-stimtxtsize = 200;
+stimtxtsize = 150;
 
 firstTrial = expt.startTrial; % defaults to 1
 lastTrial = expt.ntrials;
@@ -61,7 +55,7 @@ AudapterIO('init', p);
 h_fig = setup_exptFigs;
 get_figinds_audapter; % names figs: stim = 1, ctrl = 2, dup = 3;
 h_sub = get_subfigs_audapter(h_fig(ctrl),1);
-add_adjustOstButton(h_fig, {'settings'});
+% add_adjustOstButton(h_fig, {'settings'});
 
 % give instructions and wait for keypress
 h_ready = draw_exptText(h_fig,.5,.5,expt.instruct.introtxt,expt.instruct.txtparams);
@@ -102,7 +96,6 @@ for itrial = firstTrial:lastTrial  % for each trial
 
         % run trial in Audapter
         Audapter('reset'); %reset Audapter
-        fprintf('starting trial %d\n',itrial)
         Audapter('start'); %start trial
         fprintf('Audapter started for trial %d\n',itrial)
 
@@ -121,8 +114,6 @@ for itrial = firstTrial:lastTrial  % for each trial
         % check if participant spoke loud enough for amplitude to cross required threshold
         bGoodTrial = check_rmsThresh(data, expt.amplcalc, h_sub(3));
         subplot(h_sub(3))
-        yyaxis right
-        hline(2, 'r', '-'); % reference line at 2, where the vowel starts
 
         if ~bGoodTrial %first check if amplitude crossed threshold
             h_text(2) = draw_exptText(h_fig,.5,.2,'Please speak a little louder','FontSize',40,'HorizontalAlignment','center','Color','y');
@@ -183,10 +174,15 @@ if itrial == expt.ntrials
     alldata = struct;
     fprintf('Processing data\n')
     for i = 1:expt.ntrials
-        load(fullfile(trialdir,sprintf('%d.mat',i)), 'data')
-        names = fieldnames(data);
-        for j = 1:length(names)
-            alldata(i).(names{j}) = data.(names{j});
+        trialfile = fullfile(trialdir,sprintf('%d.mat',i));
+        if exist(trialfile,'file')
+            load(trialfile,'data')
+            names = fieldnames(data);
+            for j = 1:length(names)
+                alldata(i).(names{j}) = data.(names{j});
+            end
+        else
+            warning('Trial %d not found.',i)
         end
     end
 
@@ -195,6 +191,11 @@ if itrial == expt.ntrials
     clear data
     data = alldata;
     save(fullfile(outputdir,'data.mat'), 'data')
+    fprintf('saved.\n')
+
+    % save expt
+    fprintf('Saving expt... ')
+    save(fullfile(outputdir,'expt.mat'), 'expt')
     fprintf('saved.\n')
 
     % remove temp trial directory
