@@ -136,7 +136,7 @@ else
     % TODO if the counts don't match, report the counts of each.
     for r = 1:size(cbPermutation, 1)
         j=r;
-        if length(inds) < r || exist(folderPath,'dir') == 0  
+        if isempty(find(inds==r)) || length(inds) < r || exist(folderPath,'dir') == 0  
             fprintf("The counts for permIx "+r+" from cbPermutation is "+cbPermutation{r,size(cbPermutation, 2)}+". The counts from check_cbPerm_usage do not exist.\n")
             continue
         end
