@@ -42,7 +42,7 @@ permIx_val = [];
 if exist(folderPath, 'dir') == 0
     fprintf("There is no acoustic data folder for the experiment. check_cbPerm_usage cannot be used to get the usage counts.\n")
 elseif exist('IDList','var') == 0
-    fprintf("There are no participants for this experiment or no other IDs for some other reason.\n")
+    fprintf("There are no participants for this experiment or no IDs for some other reason.\n")
 else
     % TODO rather than actually cd'ing to the folder path, just load in the
     % expt file without cd'ing. This almost means you don't need cd .. later
@@ -133,23 +133,30 @@ else
     % loop through the rows of cbPermutation to compare with counts variable
     % from check_cbPerm_Usage()
 
+    countTable = table(zeros(size(cbPermutation,1),1)); 
     % TODO if the counts don't match, report the counts of each.
     for r = 1:size(cbPermutation, 1)
         j=r;
-        if isempty(find(inds==r)) || length(inds) < r || exist(folderPath,'dir') == 0  
-            fprintf("The counts for permIx "+r+" from cbPermutation is "+cbPermutation{r,size(cbPermutation, 2)}+". The counts from check_cbPerm_usage do not exist.\n")
-            continue
+        if isempty(find(inds == r)) || exist(folderPath,'dir') == 0  
+           countTable{r, 1} = r;
+           countTable{r, 2} = cbPermutation{r, size(cbPermutation, 2)};
+           countTable{r, 3} = "N/A";
+           continue
         end
-        if r ~= inds(r)
+        if length(inds) < r || r ~= inds(r)
             j = find(inds == r);
         end
-        if ~(cbPermutation{r, size(cbPermutation, 2)}==counts(j))
-            fprintf("The counts in the cbPermutation file do not match up to the counts from check_cbPerm_usage for permIx "+inds(r) ...
-                +". The count in the cbPermutation file for permIx "+j+" is "+cbPermutation{r, size(cbPermutation, 2)}+" and the count from check_cbPerm_usage is "+counts(r)+".\n")
-        else
-            % TODO if the counts DO match, report that as well.
-            fprintf("The counts in the cbPermutation file do match with the counts from check_cbPerm_usage for permIx "+inds(r)+". They are both "+counts(r)+".\n")
+        if isempty(j)
+           countTable{r, 1} = r;
+           countTable{r, 2} = cbPermutation{r, size(cbPermutation, 2)};
+           countTable{r, 3} = "N/A";
+           continue
         end
+           countTable{r, 1} = r;
+           countTable{r, 2} = cbPermutation{r, size(cbPermutation, 2)};
+           countTable{r, 3} = string(counts(j));
     end
+   countTable.Properties.VariableNames = ["PermIx", "cbPermutation", "Participants' expt.mat files"];
+   countTable
 end
 
