@@ -44,11 +44,8 @@ if exist(folderPath, 'dir') == 0
 elseif exist('IDList','var') == 0
     fprintf("There are no participants for this experiment or no IDs for some other reason.\n")
 else
-    % TODO rather than actually cd'ing to the folder path, just load in the
-    % expt file without cd'ing. This almost means you don't need cd .. later
-    % make a loop that will load in each folder's expt.mat file
     for id = IDList
-        filePath = fullfile(folderPath,id,'expt.mat');
+        filePath = fullfile(folderPath,id, 'expt.mat');
         if exist(filePath, 'file') == 0
             fprintf("There is no expt.mat for "+id+". Skipping to next participant.\n")
             continue
@@ -64,34 +61,12 @@ else
     % Report on the number of times each permIx was used. For example,
     % The permIx 2 was used 8 times, using a function like fprintf
     [counts,inds] = groupcounts(permIx_val);
-    times_used = "";
     for i=1:length(inds)
-        times_used = times_used + fprintf("The permIx "+inds(i)+ " was used "+counts(i)+" times. \n");
+        fprintf("The permIx "+inds(i)+ " was used "+counts(i)+" times. \n");
     end
 end
 
 %% compare usage counts in cbPermutation.mat vs expt files
-
-% TODO make this work for experiments where the cbPermutation file name is
-% different. See for example, vsaPD, where there are files called
-% 'cbPermutation_vsaPD_clinical.mat' and 'cbPermutation_vsaPD_control.mat'.
-% It would be nice if this script could present the user a list of all the
-% files whose name starts with 'cbPermutation', and the user picks the
-% right file. Something like:
-%
-%   There is/are [2] file(s) which start with 'cbPermutation' within [filepath]
-%   Which of these files should be used?
-%       cbPermutation_vsaPD_clinical
-%       cbPermutation_vsaPD_control
-% >> cbPermutation_vsaPD_control
-%
-% OR
-%
-%   There is/are [0] file(s) which start with 'cbPermutation' within [filepath]
-%   Therefore, I cannot compare usage counts between expt files and a cbPermutation file.
-%
-% Use the function AskNChoiceQuestion to properly handle user text
-% entry for defined options.
 
 cbPermFiles = {};
 exptPath = get_exptLoadPath(exptName);
@@ -117,7 +92,6 @@ if isempty(cbPermFiles)
         +". Therefore, I cannot compare usage counts between expt files and a cbPermutation file.", exptPath);
 else
     if length(cbPermFiles) == 1
-        % TODO announce to user which cbPerm file is being used
         fprintf("The cbPermFile used is "+cbPermFiles{1}+".\n")
         stringResponse = cbPermFiles{1};
     else
