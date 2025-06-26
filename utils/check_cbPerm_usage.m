@@ -1,5 +1,11 @@
 function check_cbPerm_usage(dataFolder, cbPermPath, dataFolder_subfolder, IDList)
-% TODO add header
+% A utility for checking the accuracy of counterbalancing permutation
+% usage for an experiment. Each participant's expt.mat file keeps track of
+% which counterbalancing permutation instance they used, in expt.permIx.
+% (Note that this field doesn't exist for experiments without
+% counterbalancing.) The cbPermutation file also tracks how many times a
+% permutation was used. This utility compares the numbers to make sure they
+% align. 
 %
 % Input arguments:
 %   dataFolder: The path of the folder with the participant IDs. Typically
@@ -22,7 +28,6 @@ function check_cbPerm_usage(dataFolder, cbPermPath, dataFolder_subfolder, IDList
 %     whole experiment. If left blank, this script will try to collect all
 %     IDs programmatically.
 
-%TODO make sure this works
 if nargin < 2 || isempty(dataFolder) || isempty(cbPermPath)
     error('Input args 1 and 2 are mandatory. See header for details.');
 end
