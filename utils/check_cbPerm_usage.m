@@ -1,136 +1,123 @@
-function check_cbPerm_usage(exptName, IDList)
-% if there are fewer than 2 input arguments or IDList is empty...
- if nargin < 2 || isempty(IDList)
-    %% grab all of the participant IDs from the experiment data folder
-    % do this by getting the names of all the folders
-    % exclude any folders that don't start with 'sp'
+function check_cbPerm_usage(dataFolder, cbPermPath, dataFolder_subfolder, IDList)
+% TODO add header
+%
+% Input arguments:
+%   dataFolder: The path of the folder with the participant IDs. Typically
+%     something like:
+%     '\\wcs-cifs\wc\smng\experiments\[exptName]\acousticdata\'
+%   cbPermPath: The full file path of the counterbalancing file for
+%     comparison. Typically it will be something like:
+%     '\\wcs-cifs\wc\smng\experiments\[exptName]\cbPermutation.mat'
+%   dataFolder_subfolder: [OPTIONAL] For most experiments, this can be left
+%     blank. If within a participant's data folder, there is another
+%     subfolder(s) before you get to the actual expt.mat file, set this to
+%     the subfolder(s) between dataFolder and expt.mat. For example,
+%     if your experiment stores data like this:
+%         \experiments\[exptName]\acousticdata\sp123\Task1\Part1\expt.mat
+%     Then set dataFolder_subfolder to 'Task1\Part1'
+%   IDList: [OPTIONAL] A cell array of "good" participant IDs you want
+%     to count for counterbalancing purposes. This may not be all of the
+%     participants who completed the experiment if, eg, you know a certain
+%     particpiant will be excluded from data analysis, or didn't finish the
+%     whole experiment. If left blank, this script will try to collect all
+%     IDs programmatically.
 
-    % get list of names of folders in experiment data folder
-    folderList = dir(get_exptLoadPath(exptName, 'acousticdata'));
-    % initialize an index variable that has the index for the next value in
-    % the ID list
-    index = 1;
-    % loop through list of names 
-    for f = 1: length(folderList)
-        folderCell = struct2cell(folderList(f));
+%TODO make sure this works
+if nargin < 2 || isempty(dataFolder) || isempty(cbPermPath)
+    error('Input args 1 and 2 are mandatory. See header for details.');
+end
+if nargin < 3
+    dataFolder_subfolder = [];
+end
+if nargin < 4
+    IDList = {};
+end
+
+%% set IDList if not sent by user
+if nargin < 4 || isempty(IDList)
+    % get list of names of folders
+    folderList = dir(dataFolder);
+
+    % initialize an index variable for the next value in the ID list
+    i_ID = 1;
+
+    % loop through list of folder names
+    for i_folder = 1: length(folderList)
+        folderCell = struct2cell(folderList(i_folder));
         folderName = cell2mat(folderCell(1,:));
-        % skip to next folder name if the length of the folder name is less
-        % than three characters
+
+        % skip folder if name is less than 3 characters
         if length(folderName) < 3
             continue
         end
-        stringName = string(folderName);
-        firstTwo = extractBefore(stringName, 3);
-        % check if the first two characters are sp and if so add it to the 
-        % ID list
 
-        % TODO make this work if the start of the participant ID is any of
-        % 'sp', 'pd' (example experiment: vsaPD), or 'ca' (example experiment: cerebAAF)
-        if firstTwo == "sp" || firstTwo == "pd" || firstTwo == "ca"
-            endNum = str2double(extractBetween(stringName, strlength(stringName)-2, strlength(stringName),"Boundaries","inclusive"));
+        % if the first two characters match typical participant ID names, include it
+        ppID_startChars = {'sp', 'pd', 'ca'};
+        firstTwo = extractBefore(folderName, 3);
+        if contains(firstTwo, ppID_startChars)
+            endNum = str2double(extractBetween(folderName, strlength(folderName)-2, strlength(folderName),'Boundaries','inclusive'));
             if ~(isnan(endNum))
-               IDList(1,index) = stringName;
-               index = index + 1;
-           end
+                IDList(i_ID) = {folderName}; % save folderNames as cells in cell array
+                i_ID = i_ID + 1;
+            end
         end
     end
-
 end
 
-folderPath = get_exptLoadPath(exptName, 'acousticdata');
-permIx_val = [];
-if exist(folderPath, 'dir') == 0
-    fprintf("There is no acoustic data folder for the experiment. check_cbPerm_usage cannot be used to get the usage counts.\n")
-elseif exist('IDList','var') == 0
-    fprintf("There are no participants for this experiment or no IDs for some other reason.\n")
-else
-    for id = IDList
-        filePath = fullfile(folderPath,id, 'expt.mat');
-        if exist(filePath, 'file') == 0
-            fprintf("There is no expt.mat for "+id+". Skipping to next participant.\n")
-            continue
-        end
-        load (filePath, 'expt')
-        if ~(isfield(expt, 'permIx'))
-            fprintf("There is no permIx for "+id+". Skipping to next participant.\n")
-            continue
-        end
-        permIx_val(end+1,1) = expt.permIx; %#ok<AGROW> 
+if isempty(IDList)
+    error(['No participants could be identified for this experiment based on ' ...
+        'folder names in the dataFolder directory. Does this experiment use a ' ...
+        'different naming convention for participant IDs? Consider setting ' ...
+        'the IDList input argument manually.'])
+end
+
+%% Load expt.mat files and count permIx usages
+permIx_values = []; % initialize vector for counting permIx
+for id_ix = 1:length(IDList)
+    id = IDList{id_ix}; % convert back from cell to char array
+    exptFilePath = fullfile(dataFolder, id, dataFolder_subfolder, 'expt.mat');
+    if exist(exptFilePath, 'file') == 0
+        fprintf('There is no expt.mat for '+id+'. Skipping to next participant.\n')
+        continue
+    end
+    load(exptFilePath, 'expt')
+    if ~(isfield(expt, 'permIx'))
+        fprintf('There is no permIx for '+id+'. Skipping to next participant.\n')
+        continue
     end
 
-    % Report on the number of times each permIx was used. For example,
-    % The permIx 2 was used 8 times, using a function like fprintf
-    [counts,inds] = groupcounts(permIx_val);
-    for i=1:length(inds)
-        fprintf("The permIx "+inds(i)+ " was used "+counts(i)+" times. \n");
-    end
+    fprintf('For participant %s, permIx value %d\n', id, expt.permIx);
+    permIx_values(end+1,1) = expt.permIx; %#ok<AGROW>
+end
+
+% Report the number of times each permIx was used
+% TODO rename variables counts and inds
+[counts,inds] = groupcounts(permIx_values);
+for i=1:length(inds)
+    fprintf('The permIx %d was used %d times. \n', inds(i), counts(i));
 end
 
 %% compare usage counts in cbPermutation.mat vs expt files
 
-cbPermFiles = {};
-exptPath = get_exptLoadPath(exptName);
-exptFolders = dir(exptPath);
-i = 1;
-
-for e = 1:length(exptFolders)
-   exptCell = struct2cell(exptFolders(e));
-   exptFile = cell2mat(exptCell(1,:));
-   exptFileString = string(exptFile);
-   if length(exptFile) < 14
-       continue
-   end
-   if extractBefore(exptFileString,14) == "cbPermutation"
-       cbPermFiles{i} = char(exptFileString); %#ok<AGROW> 
-       i = i+1;
-   end
+% verify that the user-supplied cbPermutation file exists
+if exist(cbPermPath, 'file') == 0
+    error('Couldn''t load a file called %s. Check that you set the cbPermPath input argument correctly.', cbPermPath);
 end
 
-if isempty(cbPermFiles)
-    fprintf("There are 0 files which start with cbPermutation within " ...
-        +"%s" ...
-        +". Therefore, I cannot compare usage counts between expt files and a cbPermutation file.", exptPath);
-else
-    if length(cbPermFiles) == 1
-        fprintf("The cbPermFile used is "+cbPermFiles{1}+".\n")
-        stringResponse = cbPermFiles{1};
-    else
-        fprintf("There is/are "+length(cbPermFiles)+" file(s) which start with cbPermutation within %s.\n", exptPath);
-        response = askNChoiceQuestion('Which of these choices should be used?',cbPermFiles);
-        stringResponse = string(response);
-    end
+% load cbPermutation file
+load(cbPermPath, 'cbPermutation') % assumes that the variable loaded in is called cbPermutation
+
+% TODO split table columns out to separate variables for visibility
+
+% TODO add another table column that concatenates the first several columns
+% of cbPerm into one thing, showing what the cbPerm strings were
+countTable = table((1:size(cbPermutation, 1))', [cbPermutation{:, size(cbPermutation, 2)}]', counts);
+
+% TODO rename table column headers
+countTable.Properties.VariableNames = ["PermIx", "cbPermutation", "Participants' expt.mat files"];
+
+% display table to user
+countTable %#ok<NOPRT> 
 
 
-    % load cbPermutation file
-    load(fullfile(get_exptLoadPath(exptName), stringResponse),'cbPermutation')
-
-    % loop through the rows of cbPermutation to compare with counts variable
-    % from check_cbPerm_Usage()
-
-    countTable = table(zeros(size(cbPermutation,1),1)); 
-    % TODO if the counts don't match, report the counts of each.
-    for r = 1:size(cbPermutation, 1)
-        j=r;
-        if isempty(find(inds == r)) || exist(folderPath,'dir') == 0  
-           countTable{r, 1} = r;
-           countTable{r, 2} = cbPermutation{r, size(cbPermutation, 2)};
-           countTable{r, 3} = "N/A";
-           continue
-        end
-        if length(inds) < r || r ~= inds(r)
-            j = find(inds == r);
-        end
-        if isempty(j)
-           countTable{r, 1} = r;
-           countTable{r, 2} = cbPermutation{r, size(cbPermutation, 2)};
-           countTable{r, 3} = "N/A";
-           continue
-        end
-           countTable{r, 1} = r;
-           countTable{r, 2} = cbPermutation{r, size(cbPermutation, 2)};
-           countTable{r, 3} = string(counts(j));
-    end
-   countTable.Properties.VariableNames = ["PermIx", "cbPermutation", "Participants' expt.mat files"];
-   countTable
-end
-
+end %EOF
