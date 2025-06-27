@@ -82,12 +82,12 @@ for id_ix = 1:length(IDList)
     id = IDList{id_ix}; % convert back from cell to char array
     exptFilePath = fullfile(dataFolder, id, dataFolder_subfolder, 'expt.mat');
     if exist(exptFilePath, 'file') == 0
-        fprintf('There is no expt.mat for '+id+'. Skipping to next participant.\n')
+        fprintf('! No expt.mat file in %s. Skipping to next participant.\n', exptFilePath)
         continue
     end
     load(exptFilePath, 'expt')
     if ~(isfield(expt, 'permIx'))
-        fprintf('There is no permIx for '+id+'. Skipping to next participant.\n')
+        fprintf('! No permIx field in expt.mat for %s. Skipping to next participant.\n', id)
         continue
     end
 
@@ -96,9 +96,9 @@ for id_ix = 1:length(IDList)
 end
 
 % Report the number of times each permIx was used
-[t_numUsages_expt, groupCount_inds] = groupcounts(permIx_values);
-for i=1:length(groupCount_inds)
-    fprintf('permIx %d was used %d times. \n', groupCount_inds(i), t_numUsages_expt(i));
+[exptCount_numUsages, exptCount_inds] = groupcounts(permIx_values);
+for i=1:length(exptCount_inds)
+    fprintf('permIx %d was used %d times. \n', exptCount_inds(i), exptCount_numUsages(i));
 end
 
 %% compare usage counts in cbPermutation.mat vs expt files
@@ -131,6 +131,10 @@ end
 t_permIx_value = (1:size(cbPermutation, 1))';
 t_perm_names = permNames';
 t_numUsages_cbPerm = [cbPermutation{:, size(cbPermutation, 2)}]';
+t_numUsages_expt = zeros(cbPerm_nRows, 1);
+for i = 1:length(exptCount_inds)
+    t_numUsages_expt(exptCount_inds(i), 1) = exptCount_numUsages(i);
+end
 
 % make table
 countTable = table(t_permIx_value, t_perm_names, t_numUsages_cbPerm, t_numUsages_expt);
