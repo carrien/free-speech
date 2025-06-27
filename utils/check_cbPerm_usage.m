@@ -96,10 +96,9 @@ for id_ix = 1:length(IDList)
 end
 
 % Report the number of times each permIx was used
-% TODO rename variables counts and inds
-[counts,inds] = groupcounts(permIx_values);
-for i=1:length(inds)
-    fprintf('The permIx %d was used %d times. \n', inds(i), counts(i));
+[t_numUsages_expt, groupCount_inds] = groupcounts(permIx_values);
+for i=1:length(groupCount_inds)
+    fprintf('permIx %d was used %d times. \n', groupCount_inds(i), t_numUsages_expt(i));
 end
 
 %% compare usage counts in cbPermutation.mat vs expt files
@@ -112,14 +111,33 @@ end
 % load cbPermutation file
 load(cbPermPath, 'cbPermutation') % assumes that the variable loaded in is called cbPermutation
 
-% TODO split table columns out to separate variables for visibility
+cbPerm_nRows = size(cbPermutation, 1);
+cbPerm_nCols = size(cbPermutation, 2);
 
-% TODO add another table column that concatenates the first several columns
-% of cbPerm into one thing, showing what the cbPerm strings were
-countTable = table((1:size(cbPermutation, 1))', [cbPermutation{:, size(cbPermutation, 2)}]', counts);
+% concatenate the names/values from each row in the cbPerm file
+for i_permRow = 1:cbPerm_nRows
+    permNames{i_permRow} = ''; %#ok<AGROW> 
+    for i_permElement = 1:cbPerm_nCols-1
+        if isnumeric(cbPermutation{i_permRow, i_permElement})
+            permNames{i_permRow} = sprintf('%s%d, ', permNames{i_permRow}, cbPermutation{i_permRow, i_permElement});
+        else % assume string
+            permNames{i_permRow} = sprintf('%s%s, ', permNames{i_permRow}, cbPermutation{i_permRow, i_permElement});
+        end
+    end
+    permNames{i_permRow} = permNames{i_permRow}(1:end-2); %#ok<AGROW> % strip off last comma and space
+end
 
-% TODO rename table column headers
-countTable.Properties.VariableNames = ["PermIx", "cbPermutation", "Participants' expt.mat files"];
+% set up values that will populate table
+t_permIx_value = (1:size(cbPermutation, 1))';
+t_perm_names = permNames';
+t_numUsages_cbPerm = [cbPermutation{:, size(cbPermutation, 2)}]';
+
+% make table
+countTable = table(t_permIx_value, t_perm_names, t_numUsages_cbPerm, t_numUsages_expt);
+
+% set table column names
+countTable.Properties.VariableNames = ["PermIx value", "Perm names/values"...
+    "# of usages in cbPermutation", "# of usages in expt.mat files"];
 
 % display table to user
 countTable %#ok<NOPRT> 
