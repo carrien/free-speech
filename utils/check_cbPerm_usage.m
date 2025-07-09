@@ -57,6 +57,8 @@ if nargin < 4 || isempty(IDList)
         end
 
         % if the first two characters match typical participant ID names, include it
+        % TODO replace with function that defines what a participant ID
+        % should look like
         ppID_startChars = {'sp', 'pd', 'ca'};
         firstTwo = extractBefore(folderName, 3);
         if contains(firstTwo, ppID_startChars)
@@ -78,6 +80,7 @@ end
 
 %% Load expt.mat files and count permIx usages
 permIx_values = []; % initialize vector for counting permIx
+IDList_good = {};   % initialize cell array for good participant IDs
 for id_ix = 1:length(IDList)
     id = IDList{id_ix}; % convert back from cell to char array
     exptFilePath = fullfile(dataFolder, id, dataFolder_subfolder, 'expt.mat');
@@ -85,15 +88,21 @@ for id_ix = 1:length(IDList)
         fprintf('! No expt.mat file in %s. Skipping to next participant.\n', exptFilePath)
         continue
     end
+    % TODO skip pp if no data.mat file
     load(exptFilePath, 'expt')
     if ~(isfield(expt, 'permIx'))
         fprintf('! No permIx field in expt.mat for %s. Skipping to next participant.\n', id)
         continue
     end
 
-    fprintf('For participant %s, permIx value %d\n', id, expt.permIx);
-    permIx_values(end+1,1) = expt.permIx; %#ok<AGROW>
+    % Append values for later tabular display
+    permIx_values(end+1,1) = expt.permIx; %#ok<*AGROW>
+    IDList_good{end+1,1} = id;
 end
+
+% Create and display table after loop
+resultsTable = table(IDList_good, permIx_values, 'VariableNames', {'ParticipantID', 'permIx'});
+disp(resultsTable);
 
 % Report the number of times each permIx was used
 [exptCount_numUsages, exptCount_inds] = groupcounts(permIx_values);
@@ -116,7 +125,7 @@ cbPerm_nCols = size(cbPermutation, 2);
 
 % concatenate the names/values from each row in the cbPerm file
 for i_permRow = 1:cbPerm_nRows
-    permNames{i_permRow} = ''; %#ok<AGROW> 
+    permNames{i_permRow} = '';
     for i_permElement = 1:cbPerm_nCols-1
         if isnumeric(cbPermutation{i_permRow, i_permElement})
             permNames{i_permRow} = sprintf('%s%d, ', permNames{i_permRow}, cbPermutation{i_permRow, i_permElement});
@@ -124,7 +133,7 @@ for i_permRow = 1:cbPerm_nRows
             permNames{i_permRow} = sprintf('%s%s, ', permNames{i_permRow}, cbPermutation{i_permRow, i_permElement});
         end
     end
-    permNames{i_permRow} = permNames{i_permRow}(1:end-2); %#ok<AGROW> % strip off last comma and space
+    permNames{i_permRow} = permNames{i_permRow}(1:end-2); % strip off last comma and space
 end
 
 % set up values that will populate table
@@ -144,7 +153,7 @@ countTable.Properties.VariableNames = ["PermIx value", "Perm names/values"...
     "# of usages in cbPermutation", "# of usages in expt.mat files"];
 
 % display table to user
-countTable %#ok<NOPRT> 
+disp(countTable)
 
 
 end %EOF
