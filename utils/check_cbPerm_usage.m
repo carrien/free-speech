@@ -84,11 +84,17 @@ IDList_good = {};   % initialize cell array for good participant IDs
 for id_ix = 1:length(IDList)
     id = IDList{id_ix}; % convert back from cell to char array
     exptFilePath = fullfile(dataFolder, id, dataFolder_subfolder, 'expt.mat');
+    dataFilePath = fullfile(dataFolder, id, dataFolder_subfolder, 'data.mat');
     if exist(exptFilePath, 'file') == 0
         fprintf('! No expt.mat file in %s. Skipping to next participant.\n', exptFilePath)
         continue
     end
-    % TODO skip pp if no data.mat file
+    
+    if exist(dataFilePath, 'file') == 0
+        fprintf('! No data.mat file in %s. Skipping to next participant.\n', exptFilePath)
+        continue
+    end
+
     load(exptFilePath, 'expt')
     if ~(isfield(expt, 'permIx'))
         fprintf('! No permIx field in expt.mat for %s. Skipping to next participant.\n', id)
