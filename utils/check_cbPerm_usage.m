@@ -42,33 +42,10 @@ end
 if nargin < 4 || isempty(IDList)
     % get list of names of folders
     folderList = dir(dataFolder);
-
-    % initialize an index variable for the next value in the ID list
-    i_ID = 1;
-
-    % loop through list of folder names
-    for i_folder = 1: length(folderList)
-        folderCell = struct2cell(folderList(i_folder));
-        folderName = cell2mat(folderCell(1,:));
-
-        % skip folder if name is less than 3 characters
-        if length(folderName) < 3
-            continue
-        end
-
-        % if the first two characters match typical participant ID names, include it
-        % TODO replace with function that defines what a participant ID
-        % should look like
-        ppID_startChars = {'sp', 'pd', 'ca'};
-        firstTwo = extractBefore(folderName, 3);
-        if contains(firstTwo, ppID_startChars)
-            endNum = str2double(extractBetween(folderName, strlength(folderName)-2, strlength(folderName),'Boundaries','inclusive'));
-            if ~(isnan(endNum))
-                IDList(i_ID) = {folderName}; % save folderNames as cells in cell array
-                i_ID = i_ID + 1;
-            end
-        end
-    end
+    folderNames = {folderList.name};
+    
+    % narrow down folder names to only participant IDs
+    [~, IDList] = isParticipantID(folderNames);
 end
 
 if isempty(IDList)
@@ -86,12 +63,12 @@ for id_ix = 1:length(IDList)
     exptFilePath = fullfile(dataFolder, id, dataFolder_subfolder, 'expt.mat');
     dataFilePath = fullfile(dataFolder, id, dataFolder_subfolder, 'data.mat');
     if exist(exptFilePath, 'file') == 0
-        fprintf('! No expt.mat file in %s. Skipping to next participant.\n', exptFilePath)
+        fprintf('! No expt.mat file at %s. Skipping to next participant.\n', exptFilePath)
         continue
     end
     
     if exist(dataFilePath, 'file') == 0
-        fprintf('! No data.mat file in %s. Skipping to next participant.\n', exptFilePath)
+        fprintf('! No data.mat file at %s. Skipping to next participant.\n', dataFilePath)
         continue
     end
 
