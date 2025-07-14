@@ -54,8 +54,7 @@ expt.durcalc.offs_thresh = 0.4;     % percentage of maximum amplitude for determ
 
 %% Set up duration practice
 exptDur = expt;
-exptDur.session = 'dur';
-exptDur.dataPath = fullfile(expt.dataPath,exptDur.session);
+exptDur.dataPath = fullfile(expt.dataPath, 'dur'); % save duration practice data in a subfolder called 'dur'
 if ~exist(exptDur.dataPath, 'dir')
     mkdir(exptDur.dataPath)
 end
