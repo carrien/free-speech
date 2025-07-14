@@ -9,10 +9,12 @@ function [p,h_fig] = calc_pertField(shiftDir,fmtMeans,bMel,bPlot)
 %    p: struct array with the following fields:
 %           pertAmp: 257 x 257 matrix of perturbation amplitudes
 %           pertPhi: 257 x 257 matrix of perturbation angles
-%           f1Min: perturbation field minimum F1 
-%           f1Max: perturbation field maximum F1 
-%           f2Min: perturbation field minimum F2 
-%           f2Max: perturbation field maximum F2 
+%           pertF1: perturbation field vector of F1 values for indexing
+%           pertF2: perturbation field vector of F2 values for indexing
+%           F1Min: perturbation field minimum F1 
+%           F1Max: perturbation field maximum F1 
+%           F2Min: perturbation field minimum F2 
+%           F2Max: perturbation field maximum F2 
 %
 %Ben Parrell JAN 2019
 if nargin < 1 || isempty(shiftDir), shiftDir = 'in'; end
@@ -89,34 +91,34 @@ pertAmp = zeros(fieldDim,fieldDim);
 pertPhi = zeros(fieldDim,fieldDim);
 
 %F1 and F2 values of perturbation field
-pertf1 = floor(F1Min:(F1Max-F1Min)/(fieldDim-1):F1Max);
-pertf2 = floor(F2Min:(F2Max-F2Min)/(fieldDim-1):F2Max);
-[xPertField,yPertField] = meshgrid(pertf1,pertf2);  
+pertF1 = floor(F1Min:(F1Max-F1Min)/(fieldDim-1):F1Max);
+pertF2 = floor(F2Min:(F2Max-F2Min)/(fieldDim-1):F2Max);
+[xPertField,yPertField] = meshgrid(pertF1,pertF2);  
 
 %% create pert field
 %find pert field location of vowel space center and corner vowels
 if nVow ~= 1
     for v = 1:length(vowels)
         vow = vowels{v};
-        [~,inds.(vow)(1)] = min(abs(pertf1 - fmtMeans.(vow)(1)));
-        [~,inds.(vow)(2)] = min(abs(pertf2 - fmtMeans.(vow)(2)));
+        [~,inds.(vow)(1)] = min(abs(pertF1 - fmtMeans.(vow)(1)));
+        [~,inds.(vow)(2)] = min(abs(pertF2 - fmtMeans.(vow)(2)));
     end
     xVS = [inds.iy(1) inds.ae(1) inds.aa(1) inds.uw(1)];
     yVS = [inds.iy(2) inds.ae(2) inds.aa(2) inds.uw(2)];
 
     %find center of vowel area
-    [fCen(1),fCen(2)] = centroid(polyshape({pertf1(xVS)}, {pertf2(yVS)}));
+    [fCen(1),fCen(2)] = centroid(polyshape({pertF1(xVS)}, {pertF2(yVS)}));
 else
     fCen = fmtMeans.(vowels{1});
 end
-[~,iFCen(1)] = min(abs(pertf1 - fCen(1)));
-[~,iFCen(2)] = min(abs(pertf2 - fCen(2)));
+[~,iFCen(1)] = min(abs(pertF1 - fCen(1)));
+[~,iFCen(2)] = min(abs(pertF2 - fCen(2)));
 
 pertScaleFact = 1;
 for iF1 = 1:fieldDim
     for iF2 = 1:fieldDim
-        dF1 = pertf1(iFCen(1))-pertf1(iF1);
-        dF2 = pertf2(iFCen(2))-pertf2(iF2);
+        dF1 = pertF1(iFCen(1))-pertF1(iF1);
+        dF2 = pertF2(iFCen(2))-pertF2(iF2);
         switch shiftDir
             case 'in'
                 pertAmp(iF2,iF1) = sqrt(dF2.^2+dF1.^2).*pertScaleFact;
@@ -157,7 +159,7 @@ if bPlot
     
     if nVow ~= 1
         fillcolor = [.945 .945 .945];
-        fill(pertf1(xVS), pertf2(yVS),fillcolor)
+        fill(pertF1(xVS), pertF2(yVS),fillcolor)
     end
     arrowcolor = 'r';
     
@@ -167,7 +169,7 @@ if bPlot
     pertAmp2Plot(pertAmp>400) = 0; %for display only
     [u,v] = pol2cart(pertPhi,pertAmp2Plot);
     quiver(xPertField(plotInd,plotInd),yPertField(plotInd,plotInd),u(plotInd,plotInd),v(plotInd,plotInd),'Color',arrowcolor)
-    plot(pertf1(iFCen(1)),pertf2(iFCen(2)),'+k')
+    plot(pertF1(iFCen(1)),pertF2(iFCen(2)),'+k')
     for v = 1 :length(vowels)
         vow = vowels{v};
         textLoc = fmtMeans.(vow);
@@ -184,8 +186,8 @@ end
 p.bShift2D = 1;     % flag for 2D experiments
 p.pertAmp2D = pertAmp';     % convert to Audapter naming scheme w/ 2D
 p.pertPhi2D = pertPhi';     % convert to Audapter naming scheme w/ 2D
-p.pertf1 = pertf1;
-p.pertf2 = pertf2;
+p.pertF1 = pertF1;
+p.pertF2 = pertF2;
 p.F1Min = F1Min;
 p.F1Max = F1Max;
 p.F2Min = F2Min;
