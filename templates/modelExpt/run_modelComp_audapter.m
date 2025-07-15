@@ -55,6 +55,10 @@ AudapterIO('init', p);
 h_fig = setup_exptFigs;
 get_figinds_audapter; % names figs: stim = 1, ctrl = 2, dup = 3;
 h_sub = get_subfigs_audapter(h_fig(ctrl),1);
+
+% For experiments using Audapter's OST and PCF files to control
+% perturbations, un-comment the below line to add an "adjust OSTs" button
+% to the top of the experimenter's monitoring figure (Figure 2).
 % add_adjustOstButton(h_fig, {'settings'});
 
 % give instructions and wait for keypress
