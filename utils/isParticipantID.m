@@ -1,7 +1,7 @@
-function [validIndeces, validIDs] = isParticipantID(inputArray)
-% isParticipantID checks if strings match participant ID criteria.
-%   [validIndeces, validIDs] = isParticipantID(inputArray) returns:
-%       - validIndeces: a vector of indeces into inputArray of valid
+function [validIndices, validIDs] = isParticipantID(inputArray)
+% Checks if strings are valid format for participant ID, e.g., sp123
+%   [validIndices, validIDs] = isParticipantID(inputArray) returns:
+%       - validIndices: a vector of indices into inputArray of valid
 %       participant IDs
 %       - validIDs: a cell array of the valid participant IDs
 %   input cell array or string array:
@@ -17,7 +17,7 @@ elseif ischar(inputArray)
 end
 
 % Define acceptable prefixes
-goodPrefixes = {'sp', 'pd', 'ca'};
+goodPrefixes = {'sp', 'pd', 'ca', 'ap'};
 
 % Preallocate result array of boolean values
 ix = false(size(inputArray));
@@ -35,6 +35,6 @@ end
 
 % Extract valid IDs
 validIDs = inputArray(ix);
-validIndeces = find(ix == true);
+validIndices = find(ix == true);
 
 end %EOF
