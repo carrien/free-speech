@@ -148,6 +148,6 @@ countTable.Properties.VariableNames = ["PermIx value", "Perm names/values"...
 disp(countTable)
 
 % display message about changing cbPerm file
-disp('If you want to edit the counts in the cbPermutation file, consider using the functionset_cbPermutation.')
+disp('If you want to edit the counts in the cbPermutation file, consider using the function set_cbPermutation.')
 
 end %EOF
