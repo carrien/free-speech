@@ -24,7 +24,7 @@ function check_cbPerm_usage(dataFolder, cbPermPath, dataFolder_subfolder, IDList
 %   IDList: [OPTIONAL] A cell array of "good" participant IDs you want
 %     to count for counterbalancing purposes. This may not be all of the
 %     participants who completed the experiment if, eg, you know a certain
-%     particpiant will be excluded from data analysis, or didn't finish the
+%     participant will be excluded from data analysis, or didn't finish the
 %     whole experiment. If left blank, this script will try to collect all
 %     IDs programmatically.
 
@@ -72,14 +72,20 @@ for id_ix = 1:length(IDList)
         continue
     end
 
+    % old experiments use expt.permIx, newer experiments use expt.cbPerm.ix
     load(exptFilePath, 'expt')
-    if ~(isfield(expt, 'permIx'))
-        fprintf('! No permIx field in expt.mat for %s. Skipping to next participant.\n', id)
+    if ~(isfield(expt, 'permIx')) && ~(isfield(expt, 'cbPerm') && isfield(expt.cbPerm, 'ix'))
+        fprintf('! No expt.permIx field nor expt.cbPerm.ix field for %s. Skipping to next participant.\n', id)
         continue
     end
 
     % Append values for later tabular display
-    permIx_values(end+1,1) = expt.permIx; %#ok<*AGROW>
+    if isfield(expt, 'permIx')
+        permIx = expt.permIx;
+    elseif isfield(expt, 'cbPerm')
+        permIx = expt.cbPerm.ix;
+    end
+    permIx_values(end+1,1) = permIx; %#ok<*AGROW>
     IDList_good{end+1,1} = id;
 end
 
@@ -96,8 +102,11 @@ end
 %% compare usage counts in cbPermutation.mat vs expt files
 
 % verify that the user-supplied cbPermutation file exists
-if exist(cbPermPath, 'file') == 0
-    error('Couldn''t load a file called %s. Check that you set the cbPermPath input argument correctly.', cbPermPath);
+cbPermPath_exists = exist(cbPermPath, 'file');
+if cbPermPath_exists == 0 % doesn't exist
+    error('Couldn''t access the specified cbPermPath or it doesn''t exist: %s. Check that you set the cbPermPath input argument correctly.', cbPermPath);
+elseif cbPermPath_exists ~= 2 % not a file
+    error('You specified cbPermPath as %s but cbPermPath should be a file. Check that you set the cbPermPath input argument correctly.', cbPermPath);
 end
 
 % load cbPermutation file
@@ -138,5 +147,7 @@ countTable.Properties.VariableNames = ["PermIx value", "Perm names/values"...
 % display table to user
 disp(countTable)
 
+% display message about changing cbPerm file
+disp('If you want to edit the counts in the cbPermutation file, consider using the functionset_cbPermutation.')
 
 end %EOF
