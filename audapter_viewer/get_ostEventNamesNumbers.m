@@ -199,7 +199,11 @@ if ~exist('eventNames', 'var')
         eventNames{i} = ['ost' num2str(eventNos(i))];
     end
     triggerNo = get_pcf(trackingFileDir, trackingFileName, 'time', '1', 'ostStat_initial'); 
-    triggerName = eventNames{triggerNo == eventNos}; 
+    if ~isempty(triggerNo) % got a real trigger name from get_pcf
+        triggerName = eventNames{triggerNo == eventNos}; 
+    else % use backup event name
+        triggerName = eventNames{1};
+    end
 end
 
 
