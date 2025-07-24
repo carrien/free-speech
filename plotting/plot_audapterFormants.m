@@ -61,6 +61,7 @@ p = set_missingField(p,'fmtCenLineStyle','--',0);
 p = set_missingField(p,'tiledlayout_properties',struct,0);
 p = set_missingField(p,'parent_handle',[],0);
 p = set_missingField(p,'bInterpret',0,0);
+p = set_missingField(p,'spectrogram_boost',1,1);
 fs = data(1).params.sr;
 frameLen = data(1).params.frameLen;
 
@@ -123,7 +124,7 @@ for trial_ix = 1:ncols
         [s, f, t]=spectrogram(y, nsamp_window, nsamp_overlap, p.nfft, fs);
         %[s, f, t]=spectrogram(y, 128, 96, 1024, fs);
         %[s, f, t]=spectrogram(y, 256, 192, 1024, fs);
-        imagesc(t, f, 10 * log10(abs(s)+1)); hold on;
+        imagesc(t, f, 10 * log10(abs(s)+p.spectrogram_boost)); hold on;
         axis xy;
         if isfield(p,'ylim')
             set(gca, 'YLim', [0, p.ylim]);
