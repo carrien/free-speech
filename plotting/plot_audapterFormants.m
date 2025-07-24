@@ -1,4 +1,4 @@
-function [h_layout,subh_layout] = plot_audapterFormants(data, p, bInterpret)
+function [h_layout,subh_layout] = plot_audapterFormants(data, p)
 % Provides a quick plot of the waveform, spectrogram, and signalIn formants
 %   (fmts) and signalOut formants (sfmts) for trial data. Used for
 %   spot-checking a couple trials.
@@ -28,17 +28,11 @@ function [h_layout,subh_layout] = plot_audapterFormants(data, p, bInterpret)
 %       Alternatively, plot across both bottom panels of p.parent_handle with:
 %           p.tiledlayout_properties.Tile = 3;
 %           p.tiledlayout_properties.TileSpan = [2, 1];
-%
-%   bInterpret: A binary flag for whether or not to print information which
-%     may help you interpret your results. Default: 1.
 %     
 %
 % Other validation functions at: https://kb.wisc.edu/smng/109809
 
-% TODO see if bInterpret can be folded into `p` safely
-
 if nargin < 2, p = struct; end
-if nargin < 3 || isempty(bInterpret), bInterpret = 1; end
 
 if length(data) > 50
     error(['Data file too long. Choose a subset of fewer than 50 trials ' ...
@@ -66,6 +60,7 @@ p = set_missingField(p,'fmtCenLineWidth',1,0);
 p = set_missingField(p,'fmtCenLineStyle','--',0);
 p = set_missingField(p,'tiledlayout_properties',struct,0);
 p = set_missingField(p,'parent_handle',[],0);
+p = set_missingField(p,'bInterpret',0,0);
 fs = data(1).params.sr;
 frameLen = data(1).params.frameLen;
 
@@ -171,7 +166,7 @@ for trial_ix = 1:ncols
 end
 
 
-if bInterpret
+if p.bInterpret
     fprintf(['\nSimply displays the wave form (top), spectrogram (bottom), signalIn\n' ...
         ' formant track (bottom; cyan), and signalOut formant track (bottom; magenta).\n' ...
         ' This tool is useful for spot-checking formant tracks and basic duration info.\n\n']);
