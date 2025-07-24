@@ -1,4 +1,4 @@
-function [h_layout,subh_layout] = plot_audapterFormants(data, p, bInterpret, parent_handle, p_layout)
+function [h_layout,subh_layout] = plot_audapterFormants(data, p, bInterpret)
 % Provides a quick plot of the waveform, spectrogram, and signalIn formants
 %   (fmts) and signalOut formants (sfmts) for trial data. Used for
 %   spot-checking a couple trials.
@@ -7,27 +7,35 @@ function [h_layout,subh_layout] = plot_audapterFormants(data, p, bInterpret, par
 %   data: The data struct to view data from. Note that the output
 %     looks best when viewing 1-5 trials at a time. Consider passing in data
 %     as `data(1:4)`. Required.
+%
 %   p: Struct of parameters to use when plotting. Default: [see code].
+%     To use an existing tiled layout, set these fields in `p`:
+%
+%     p.parent_handle:
+%       If supplied, axes created by this function will be
+%       children of the object p.parent_handle. Valid variable types for 
+%       parent_handle are TiledChartLayout, Figure, Panel, Tab, GridLayout.
+%       (See `tiledlayout` documentation for more info.)
+%     p.tiledlayout_properties:    
+%       Struct of tiled layout parameters to set in the new tiledlayout
+%       created by this function. Only used and only applicable if
+%       p.parent_handle is itself a tiled layout.
+%   
+%       Example use case: if p.parent_handle is a tiled layout with arrangement
+%       2x2, you can have this function plot waveform/spectrogram in
+%       the bottom left tile of the parent layout by setting:
+%           p.tiledlayout_properties.Tile = 3;
+%       Alternatively, plot across both bottom panels of p.parent_handle with:
+%           p.tiledlayout_properties.Tile = 3;
+%           p.tiledlayout_properties.TileSpan = [2, 1];
+%
 %   bInterpret: A binary flag for whether or not to print information which
 %     may help you interpret your results. Default: 1.
-%   parent_handle: If supplied, axes created by this function will be
-%     children of the object parent_handle. Valid variable types for 
-%     parent_handle are TiledChartLayout, Figure, Panel, Tab, GridLayout.
-%     (See `tiledlayout` documentation for more info.)
-%   p_layout: Struct of tiled layout parameters to set in the new tiledlayout
-%     created by this function. Only used and only applicable if
-%     parent_handle is itself a tiled layout.
-%   
-%     Example use case: if parent_handle is a tiled layout with arrangement
-%     2x2, you can have this function plot waveform/spectrogram in
-%     the bottom left tile of the parent layout by setting:
-%       p_layout.Tile = 3;
-%     Alternatively, plot across both bottom panels of parent_handle with:
-%       p_layout.Tile = 3;
-%       p_layout.TileSpan = [2, 1];
 %     
 %
 % Other validation functions at: https://kb.wisc.edu/smng/109809
+
+% TODO see if bInterpret can be folded into `p` safely
 
 if nargin < 2, p = struct; end
 if nargin < 3 || isempty(bInterpret), bInterpret = 1; end
@@ -56,6 +64,8 @@ p = set_missingField(p,'figpos',[10 700 screenSize(3)-20 175],0);
 p = set_missingField(p,'fmtCenColor','y',0);
 p = set_missingField(p,'fmtCenLineWidth',1,0);
 p = set_missingField(p,'fmtCenLineStyle','--',0);
+p = set_missingField(p,'tiledlayout_properties',struct,0);
+p = set_missingField(p,'parent_handle',[],0);
 fs = data(1).params.sr;
 frameLen = data(1).params.frameLen;
 
@@ -71,20 +81,20 @@ ncols = length(data);
 % preallocate handles for tiles in layout
 subh_layout = gobjects(1,ncols); 
 
-% either create tiled layout from scratch, or create tiled layout
-% as a child of a parent object. See header for possible parent objects
-if nargin < 4 || isempty(parent_handle)
+% either create a tiled layout from scratch, or create a tiled layout 
+% as a child of a parent object. See p.parent_handle in header for possible parent objects
+if isempty(p.parent_handle)
     figure('Position', p.figpos);
     h_layout = tiledlayout(nrows, ncols);
 else
-    h_layout = tiledlayout(parent_handle, nrows, ncols);
+    h_layout = tiledlayout(p.parent_handle, nrows, ncols);
 
     % if parent handle is a tiled layout, apply tiled layout parameters in p_layout to the new layout
-    bParentIsLayout = strcmp(class(parent_handle), 'matlab.graphics.layout.TiledChartLayout'); %#ok<STISA> 
-    if bParentIsLayout && nargin >= 5 && ~isempty(p_layout)
-        layout_properties = fields(p_layout);
+    bParentIsLayout = strcmp(class(p.parent_handle), 'matlab.graphics.layout.TiledChartLayout'); %#ok<STISA> 
+    if bParentIsLayout && isstruct(p.tiledlayout_properties) && ~isempty(fields(p.tiledlayout_properties))
+        layout_properties = fields(p.tiledlayout_properties);
         for i = 1:length(layout_properties)
-            h_layout.Layout.(layout_properties{i}) = p_layout.(layout_properties{i});
+            h_layout.Layout.(layout_properties{i}) = p.tiledlayout_properties.(layout_properties{i});
         end
     end
 end
