@@ -171,7 +171,6 @@ if p.bInterpret
     fprintf(['\nSimply displays the wave form (top), spectrogram (bottom), signalIn\n' ...
         ' formant track (bottom; cyan), and signalOut formant track (bottom; magenta).\n' ...
         ' This tool is useful for spot-checking formant tracks and basic duration info.\n\n']);
-    fprintf('Set input argument bInterpret == 0 to stop seeing this message.\n\n');
 end
 
 
