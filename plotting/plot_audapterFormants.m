@@ -97,7 +97,7 @@ end
 
 %% plot
 for trial_ix = 1:ncols
-    subh_layout(trial_ix) = nexttile(h_layout, [1 1]);
+    subh_layout(trial_ix) = nexttile(h_layout);
     hold on;
     
     if p.bWave
