@@ -10,10 +10,18 @@ get_figinds_audapter;
 
 % check if 2nd monitor is to the right (pos. value) or left (neg. value) of main screen
 monitorPositions = get(0, 'MonitorPositions');
-if height(monitorPositions) > 1 && monitorPositions(2,1) < 0
-    pos{stim} = [-1 0 1 1];         % participant view on left screen
-else
-    pos{stim} = [1 0 1 1];         % participant view on right screen
+nMonitors = height(monitorPositions);
+if nMonitors > 1
+    monitor1_xCoordinate = monitorPositions(1,1);
+    monitor2_xCoordinate = monitorPositions(2,1);
+    mon2LeftOfMon1 = monitor2_xCoordinate < monitor1_xCoordinate;
+    if mon2LeftOfMon1
+        pos{stim} = [-1 0 1 1];         % participant view on left screen
+    else
+        pos{stim} = [1 0 1 1];         % participant view on right screen
+    end
+else %1 monitor setup
+    pos{stim} = [1 0 1 1];
 end
 
 pos{ctrl} = [0.6 0.2 0.4 0.8]; % experimenter view and formant tracking
