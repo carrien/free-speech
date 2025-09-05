@@ -367,7 +367,7 @@ end
 % end
 
 %% calculate near and far trials using projection on shiftvec
-if isfield(expt,'shifts1')
+if isfield(expt,'shifts') && isstruct(expt.shifts) % the old format of expt.shifts seems to be a struct
     shiftscales = fieldnames(expt.shifts);
     nshifts = length(expt.shifts.(shiftscales{1}));
     shiftnames = expt.conds(end-nshifts+1:end);
