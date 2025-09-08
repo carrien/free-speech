@@ -98,13 +98,21 @@ for c = 1:length(indShift) % for each condition to plot
         diff2d_mean.(conds{c}) = sqrt(diff1_mean.(conds{c}).^2 + diff2_mean.(conds{c}).^2);
         
          % normalize by 25-100 ms after vowel onset
-        onsetMeanf1 = nanmean(diff1.(conds{c})(floor(fs*0.025):ceil(fs*0.1),:),1);
-        normDiff1.(conds{c}) = diff1.(conds{c}) - onsetMeanf1;
-        normDiff1_mean.(conds{c}) = nanmean(normDiff1.(conds{c}),2);
-        onsetMeanf2 = nanmean(diff2.(conds{c})(floor(fs*0.025):ceil(fs*0.1),:),1);
-        normDiff2.(conds{c}) = diff2.(conds{c}) - onsetMeanf2;
-        normDiff2_mean.(conds{c}) = nanmean(normDiff2.(conds{c}),2);
-        
+        if ceil(fs*0.1) <= diff1.(conds{c})(end,:)
+            onsetMeanf1 = nanmean(diff1.(conds{c})(floor(fs*0.025):ceil(fs*0.1),:),1);
+            normDiff1.(conds{c}) = diff1.(conds{c}) - onsetMeanf1;
+            normDiff1_mean.(conds{c}) = nanmean(normDiff1.(conds{c}),2);
+            onsetMeanf2 = nanmean(diff2.(conds{c})(floor(fs*0.025):ceil(fs*0.1),:),1);
+            normDiff2.(conds{c}) = diff2.(conds{c}) - onsetMeanf2;
+            normDiff2_mean.(conds{c}) = nanmean(normDiff2.(conds{c}),2);
+       else
+            onsetMeanf1 = nanmean(diff1.(conds{c})(floor(fs*0.025):end,:),1);
+            normDiff1.(conds{c}) = diff1.(conds{c}) - onsetMeanf1;
+            normDiff1_mean.(conds{c}) = nanmean(normDiff1.(conds{c}),2);
+            onsetMeanf2 = nanmean(diff2.(conds{c})(floor(fs*0.025):end,:),1);
+            normDiff2.(conds{c}) = diff2.(conds{c}) - onsetMeanf2;
+            normDiff2_mean.(conds{c}) = nanmean(normDiff2.(conds{c}),2);
+        end
         % calculate trial ending points
         percNaN.(conds{c}) = get_percNaN(diff1.(conds{c}));
         
