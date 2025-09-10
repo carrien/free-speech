@@ -186,6 +186,8 @@ while ~strcmp(endstate.name, 'end')
     end
 end
 
+sprintf("The trial you ended on was trial %d.",trials2track(itrial-1))
+
 % save param file
 sigproc_params = endstate.sigproc_params;
 plot_params = endstate.plot_params;
