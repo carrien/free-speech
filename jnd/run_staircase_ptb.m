@@ -263,7 +263,7 @@ while nReversals < expt.maxReversals && itrial <= expt.maxTrials
     if itrial == 1 || bCatch % First trials and catch trials are not
         data(itrial).bReversal = 0;         
     else
-        data(itrial).bReversal = double(isequal(data(itrial).previousAnswer, data(itrial).currentAnswer)); 
+        data(itrial).bReversal = double(~isequal(data(itrial).previousAnswer, data(itrial).currentAnswer)); 
     end
     nReversals = nReversals + data(itrial).bReversal; 
     
