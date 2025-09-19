@@ -43,11 +43,11 @@ if nMonitors > 1
 
     % adjust each figure's position depending on which monitor it's
     % supposed to display on.
-    exptMon_relativePos = round(exptMon_xCoord-1 / exptMon_xLength);
+    exptMon_relativePos = round((exptMon_xCoord-1) / exptMon_xLength);
     pos{ctrl}(1) = pos{ctrl}(1) + exptMon_relativePos;
     pos{dup}(1)  = pos{dup}(1)  + exptMon_relativePos;
 
-    ppMon_relativePos = round(ppMon_xCoord-1 / ppMon_xLength);
+    ppMon_relativePos = round((ppMon_xCoord-1) / ppMon_xLength);
     pos{stim}(1) = pos{stim}(1) + ppMon_relativePos;
 end
     
