@@ -1,9 +1,9 @@
 function [h_fig] = setup_exptFigs()
 %SETUP_EXPTFIGS  Creates figures for experimenter and participant.
 %   SETUP_EXPTFIGS() creates and returns handles to figures for:
-%   (1) displaying stimuli to the participant (second-from-the-left monitor)
-%   (2) displaying status and formant tracks for experimenter (leftmost monitor)
-%   (3) displaying a copy of the participant's view for experimenter (leftmost monitor)
+%   (1) displaying stimuli to the participant (second-from-the-left screen in Windows display settings)
+%   (2) displaying status and formant tracks for experimenter (leftmost screen in Windows display settings)
+%   (3) displaying a copy of the participant's view for experimenter (leftmost screen in Windows display settings)
 
 % set figure positions
 get_figinds_audapter;
@@ -31,7 +31,7 @@ pos{dup} = [0 0.3 0.6 0.7];    % duplicate of 'stim' for monitoring. Displays on
 monitorPositions = get(0, 'MonitorPositions');
 nMonitors = height(monitorPositions);
 if nMonitors > 1
-    [~, sortedMonitorsIndices] = sort(monitorPositions);
+    [~, sortedMonitorsIndices] = sort(monitorPositions); % sorts rows from lowest to highest x coordinate value
 
     % get values for experimenter and participant monitors
     exptMon_ix = sortedMonitorsIndices(1);
