@@ -186,7 +186,7 @@ while ~strcmp(endstate.name, 'end')
     end
 end
 
-fprintf('Ended on trial %d\n',trials2track(itrial-1))
+fprintf('Ended on trial %d\n',trials2track(itrial-1)) % uses itrial-1 since itrial is incremented at the end of the loop
 
 % save param file
 sigproc_params = endstate.sigproc_params;
