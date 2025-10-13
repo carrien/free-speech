@@ -367,7 +367,17 @@ end
 % end
 
 %% calculate near and far trials using projection on shiftvec
-if isfield(expt,'shifts') && isstruct(expt.shifts) % the old format of expt.shifts seems to be a struct
+
+% determine if expt.shifts has shift values in the proper format for this
+% calculation. Some experiments ran in 2022~2024 used expt.shifts in a
+% different way, e.g., coAdapt, diphthongAdapt.
+if isfield(expt,'shifts') && isstruct(expt.shifts) && (isfield(expt.shifts, 'mels') || isfield(expt.shifts, 'hz'))
+    bShiftScalesExist = 1;
+else
+    bShiftScalesExist = 0;
+end
+
+if bShiftScalesExist
     shiftscales = fieldnames(expt.shifts);
     nshifts = length(expt.shifts.(shiftscales{1}));
     shiftnames = expt.conds(end-nshifts+1:end);
