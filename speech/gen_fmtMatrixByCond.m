@@ -97,21 +97,30 @@ for c = 1:length(indShift) % for each condition to plot
         diff2d.(conds{c}) = sqrt(diff1.(conds{c}).^2 + diff2.(conds{c}).^2);
         diff2d_mean.(conds{c}) = sqrt(diff1_mean.(conds{c}).^2 + diff2_mean.(conds{c}).^2);
         
-         % normalize by 25-100 ms after vowel onset
-        if ceil(fs*0.1) <= diff1.(conds{c})(end,:)
+         % normalize by 25-100 ms after vowel onset, if the vowel is at
+         % least 100 ms long. If vowel shorter than 100 ms, then get the
+         % range from 25ms to the end.
+        if height(diff1.(conds{c})) >= ceil(fs*0.1)
             onsetMeanf1 = nanmean(diff1.(conds{c})(floor(fs*0.025):ceil(fs*0.1),:),1);
             normDiff1.(conds{c}) = diff1.(conds{c}) - onsetMeanf1;
             normDiff1_mean.(conds{c}) = nanmean(normDiff1.(conds{c}),2);
             onsetMeanf2 = nanmean(diff2.(conds{c})(floor(fs*0.025):ceil(fs*0.1),:),1);
             normDiff2.(conds{c}) = diff2.(conds{c}) - onsetMeanf2;
             normDiff2_mean.(conds{c}) = nanmean(normDiff2.(conds{c}),2);
-       else
+        elseif height(diff1.(conds{c})) >= floor(fs*0.025)  % if the vowel is less than 100 ms long
+            warning('Trials in condition %s are shorter than 100 ms. normDiff1 and normDiff2 in fmtMtarix and fmtMeans may be unreliable.', conds{c});
             onsetMeanf1 = nanmean(diff1.(conds{c})(floor(fs*0.025):end,:),1);
             normDiff1.(conds{c}) = diff1.(conds{c}) - onsetMeanf1;
             normDiff1_mean.(conds{c}) = nanmean(normDiff1.(conds{c}),2);
             onsetMeanf2 = nanmean(diff2.(conds{c})(floor(fs*0.025):end,:),1);
             normDiff2.(conds{c}) = diff2.(conds{c}) - onsetMeanf2;
             normDiff2_mean.(conds{c}) = nanmean(normDiff2.(conds{c}),2);
+        else
+            warning('Trials in condition %s are shorter than 25 ms. Can''t compute normDiff1 and normDiff2 for fmtMatrix and fmtMeans.', conds{c});
+            normDiff1.(conds{c}) = NaN;
+            normDiff1_mean.(conds{c}) = NaN;
+            normDiff2.(conds{c}) = NaN;
+            normDiff2_mean.(conds{c}) = NaN;
         end
         % calculate trial ending points
         percNaN.(conds{c}) = get_percNaN(diff1.(conds{c}));
