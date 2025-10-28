@@ -1,4 +1,4 @@
-function [filename] = gen_fmtMatrixByCond(dataPath,indBase,indShift,dataValsStr,bMels,bFilt,bSaveCheck)
+function [filename] = gen_fmtMatrixByCond(dataPath,indBase,indShift,dataValsStr,bMels,bFilt,bSaveCheck,bNormDiff)
 %GEN_FMTMATRIXBYCOND  Generate a plottable formant matrix from a davaVals object.
 %   GEN_FMTMATRIXBYCOND(DATAPATH,INDBASE,INDSHIFT,DATAVALSSTR,BMELS,BFILT,BSAVECHECK)
 %   Generates a fmtMatrix suitable for plotting by, e.g., plot_fmtMatrix.
@@ -11,6 +11,7 @@ if nargin < 4 || isempty(dataValsStr), dataValsStr = 'dataVals.mat'; end
 if nargin < 5 || isempty(bMels), bMels = 1; end % binary variable: convert to mels or don't
 if nargin < 6 || isempty(bFilt), bFilt = 1; end % binary variable: filt on or off
 if nargin < 7 || isempty(bSaveCheck), bSaveCheck = 1; end
+if nargin < 8 || isempty(bNormDiff), bNormDiff = 0; end
 
 % match baselines to number of conditions
 conds = {indShift.name};
@@ -97,30 +98,34 @@ for c = 1:length(indShift) % for each condition to plot
         diff2d.(conds{c}) = sqrt(diff1.(conds{c}).^2 + diff2.(conds{c}).^2);
         diff2d_mean.(conds{c}) = sqrt(diff1_mean.(conds{c}).^2 + diff2_mean.(conds{c}).^2);
         
-         % normalize by 25-100 ms after vowel onset, if the vowel is at
-         % least 100 ms long. If vowel shorter than 100 ms, then get the
-         % range from 25ms to the end.
-        if height(diff1.(conds{c})) >= ceil(fs*0.1)
-            onsetMeanf1 = nanmean(diff1.(conds{c})(floor(fs*0.025):ceil(fs*0.1),:),1);
-            normDiff1.(conds{c}) = diff1.(conds{c}) - onsetMeanf1;
-            normDiff1_mean.(conds{c}) = nanmean(normDiff1.(conds{c}),2);
-            onsetMeanf2 = nanmean(diff2.(conds{c})(floor(fs*0.025):ceil(fs*0.1),:),1);
-            normDiff2.(conds{c}) = diff2.(conds{c}) - onsetMeanf2;
-            normDiff2_mean.(conds{c}) = nanmean(normDiff2.(conds{c}),2);
-        elseif height(diff1.(conds{c})) >= floor(fs*0.025)  % if the vowel is less than 100 ms long
-            warning('Trials in condition %s are shorter than 100 ms. normDiff1 and normDiff2 in fmtMtarix and fmtMeans may be unreliable.', conds{c});
-            onsetMeanf1 = nanmean(diff1.(conds{c})(floor(fs*0.025):end,:),1);
-            normDiff1.(conds{c}) = diff1.(conds{c}) - onsetMeanf1;
-            normDiff1_mean.(conds{c}) = nanmean(normDiff1.(conds{c}),2);
-            onsetMeanf2 = nanmean(diff2.(conds{c})(floor(fs*0.025):end,:),1);
-            normDiff2.(conds{c}) = diff2.(conds{c}) - onsetMeanf2;
-            normDiff2_mean.(conds{c}) = nanmean(normDiff2.(conds{c}),2);
-        else
-            warning('Trials in condition %s are shorter than 25 ms. Can''t compute normDiff1 and normDiff2 for fmtMatrix and fmtMeans.', conds{c});
-            normDiff1.(conds{c}) = NaN;
-            normDiff1_mean.(conds{c}) = NaN;
-            normDiff2.(conds{c}) = NaN;
-            normDiff2_mean.(conds{c}) = NaN;
+        % Try to normalize by the 25-100 ms window after vowel onset.
+        % If the vowel is at least 100 ms long, use the 25-100 ms window.
+        % If vowel is more than 25 ms but less than 100 ms, use the
+        % window from 25 ms to the end of the vowel.
+        % If the vowel is less than 25 ms, no evaluation can be performed.
+        if bNormDiff
+            if height(diff1.(conds{c})) >= ceil(fs*0.1)
+                onsetMeanf1 = nanmean(diff1.(conds{c})(floor(fs*0.025):ceil(fs*0.1),:),1);
+                normDiff1.(conds{c}) = diff1.(conds{c}) - onsetMeanf1;
+                normDiff1_mean.(conds{c}) = nanmean(normDiff1.(conds{c}),2);
+                onsetMeanf2 = nanmean(diff2.(conds{c})(floor(fs*0.025):ceil(fs*0.1),:),1);
+                normDiff2.(conds{c}) = diff2.(conds{c}) - onsetMeanf2;
+                normDiff2_mean.(conds{c}) = nanmean(normDiff2.(conds{c}),2);
+            elseif height(diff1.(conds{c})) >= floor(fs*0.025)  % if the vowel is less than 100 ms long
+                warning('Trials in condition %s are shorter than 100 ms. normDiff1 and normDiff2 in fmtMtarix and fmtMeans may be unreliable.', conds{c});
+                onsetMeanf1 = nanmean(diff1.(conds{c})(floor(fs*0.025):end,:),1);
+                normDiff1.(conds{c}) = diff1.(conds{c}) - onsetMeanf1;
+                normDiff1_mean.(conds{c}) = nanmean(normDiff1.(conds{c}),2);
+                onsetMeanf2 = nanmean(diff2.(conds{c})(floor(fs*0.025):end,:),1);
+                normDiff2.(conds{c}) = diff2.(conds{c}) - onsetMeanf2;
+                normDiff2_mean.(conds{c}) = nanmean(normDiff2.(conds{c}),2);
+            else
+                warning('Trials in condition %s are shorter than 25 ms. Can''t compute normDiff1 and normDiff2 for fmtMatrix and fmtMeans.', conds{c});
+                normDiff1.(conds{c}) = NaN;
+                normDiff1_mean.(conds{c}) = NaN;
+                normDiff2.(conds{c}) = NaN;
+                normDiff2_mean.(conds{c}) = NaN;
+            end
         end
         % calculate trial ending points
         percNaN.(conds{c}) = get_percNaN(diff1.(conds{c}));
@@ -225,8 +230,10 @@ fmtMatrix.rawf1 = rawf1; fmtMeans.rawf1 = rawf1_mean;
 fmtMatrix.rawf2 = rawf2; fmtMeans.rawf2 = rawf2_mean;
 fmtMatrix.diff1 = diff1; fmtMeans.diff1 = diff1_mean;
 fmtMatrix.diff2 = diff2; fmtMeans.diff2 = diff2_mean;
-fmtMatrix.normDiff1 = normDiff1; fmtMeans.normDiff1 = normDiff1_mean; 
-fmtMatrix.normDiff2 = normDiff2; fmtMeans.normDiff2 = normDiff2_mean; 
+if bNormDiff
+    fmtMatrix.normDiff1 = normDiff1; fmtMeans.normDiff1 = normDiff1_mean;
+    fmtMatrix.normDiff2 = normDiff2; fmtMeans.normDiff2 = normDiff2_mean;
+end
 fmtMatrix.diff2d = diff2d; fmtMeans.diff2d = diff2d_mean;
 if isfield(indShift,'shiftind')
     fmtMatrix.percdiff1 = percdiff1; fmtMeans.percdiff1 = percdiff1_mean;
