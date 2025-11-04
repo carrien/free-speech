@@ -149,6 +149,17 @@ while ~strcmp(endstate.name, 'end')
             bPraat = 0;
         end
     end
+
+    % notify user if they loaded in an old wave_viewer_params folder that
+    % doesn't have ptrack_method as a field
+    if ~isfield(sigproc_params, 'ptrack_method') && ~exist('ptrack_method_checked','var')
+        ptrack_method_checked = true; %#ok<NASGU> 
+        announcement = sprintf(['\nPreviously, pitch was tracked in this dataset using a custom MATLAB script. ' ...
+            'Now, praat will be used instead. If you want to keep the old method, click the ' ...
+            '''pitch params'' button in audioGUI and enter ''MATLAB'' in the pitch track method field.\n'...
+            'Press ENTER to continue to audioGUI.']);
+        input(announcement);
+    end
     
     %% call wave viewer
     endstate = wave_viewer(y,'fs',fs,'name',sprintf('trial(%d)',trialNum), ...
