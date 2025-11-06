@@ -1,29 +1,37 @@
 function [] = del_metronomeUserEvents(dataPath, trials, nEvents)
-% OVERALL DESCRIPTION:
-% Takes in trial files from trials_signalOut, identifies the user event
-% that is chronologically first, and adds those saved events back into
+% OVERALL DESCRIPTION: Preserves some user events and deletes the others.
+% The default is to delete every event except the (chronologically) first
+% one in every trial.
+%
+% Users may specify (1) how many events to save and (2) which trials
+% undergo user event deletion. Within each trial, events are saved in
+% chronological order.
+%
+%
+% GENERAL METHOD:
+% Takes in trial files, identifies which user events should be saved by
+% name and time, stores these events in an array, and then feeds that array
+% back into the trial information in
 % trialparams.event_params.user_event_times and
-% trialparams.event_params.user_event_names. This effectively deletes all
-% other events.
-% 
-% Users may specify how many events they wish to save. Events are
-% saved in chronological order.
+% trialparams.event_params.userevent_names. All other events are overridden
+% and thus deleted.
 %
 %
 % INPUT VARIABLES:
-% dataPath is the path to the data. This will typically look like
-% nesstlab > experiments > [experimentName] > [participantID] >
-% [experimentalPhase].
+% dataPath: location of the folder with experiment's data. Typically looks
+% like nesstlab > experiments > [experimentName] > acousticdata >
+% [participantID] ( > [experimentalPhase]).
 %
-% trials represents which trials' user events will be sorted and deleted.
-% Users may specify one trial or multiple. If users specify a trial that
-% does not exist, then they will recieve a warning.
+% trials: Which trials' user events will be sorted and deleted. May be a
+% double (e.g., 4) or a vector with doubles (e.g., [1:4], [1,3])
+% If users specify a trial that does not exist, then they will recieve a warning.
 % del_metronomeUserEvents(): alters all trials in the folder
 % del_metronomeUserEvents([], 1): alters trial 1
+% del_metronomeUserEvents([], [1,3]): alters trails 1 and 3 but not trial 2
 % del_metronomeUserEvents([], [3:5]): alters trials 3-5
 %
-% nEvents is the number of events to be saved. The default is to save 1
-% event. All saved events are the chronologically earliest.
+% nEvents: number of events to be saved. The default is to save 1
+% event. All saved events are the chronologically first ones.
 % del_metronomeUserEvents([], [], 1): saves the first events
 % del_metronomeUserEvents([], [], 4): saves the first four events
 % del_metronomeUserEvents([], [], 0): all events are deleted
@@ -31,7 +39,7 @@ function [] = del_metronomeUserEvents(dataPath, trials, nEvents)
 %
 % LIMITATIONS:
 % All saved events occur from the chronologically first event onwards.
-% There is currently no way to, say, save the last event and delete the
+% There is currently no way to, for example, save the last event and delete the
 % others.
 % 
 % Similarly, all events are saved consecutively. There is no way to save
@@ -43,7 +51,7 @@ function [] = del_metronomeUserEvents(dataPath, trials, nEvents)
 % manually.
 %
 %
-% Initiated SRB 2025-11-04
+% Initiated SRB 2025-11-06
 
 dbstop if error
 
