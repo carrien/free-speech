@@ -56,8 +56,8 @@ for c = 1:length(indShift) % for each condition to plot
         [rawf1.(baseconds{c}),rawf2.(baseconds{c})] = get_fmtMatrix(dataVals,indBase(c).inds,bMels,bFilt);
     end
     % get mean baseline
-    rawf1_mean.(baseconds{c}) = nanmean(rawf1.(baseconds{c}),2); % mean formants for shift-specific baseline
-    rawf2_mean.(baseconds{c}) = nanmean(rawf2.(baseconds{c}),2); %
+    rawf1_mean.(baseconds{c}) = mean(rawf1.(baseconds{c}),2, 'omitnan'); % mean formants for shift-specific baseline
+    rawf2_mean.(baseconds{c}) = mean(rawf2.(baseconds{c}),2, 'omitnan'); %
     
     % calculate trial ending points
     percNaN.(baseconds{c}) = get_percNaN(rawf1.(baseconds{c}));
@@ -67,8 +67,8 @@ for c = 1:length(indShift) % for each condition to plot
         % generate matrix for this cond
         [rawf1.(conds{c}),rawf2.(conds{c})] = get_fmtMatrix(dataVals,indShift(c).inds,bMels,bFilt);
         % get mean of this cond
-        rawf1_mean.(conds{c}) = nanmean(rawf1.(conds{c}),2);
-        rawf2_mean.(conds{c}) = nanmean(rawf2.(conds{c}),2);
+        rawf1_mean.(conds{c}) = mean(rawf1.(conds{c}),2, 'omitnan');
+        rawf2_mean.(conds{c}) = mean(rawf2.(conds{c}),2, 'omitnan');
         
         % generate difference matrix for this cond (subtract mean baseline)
         nSamplesLongestTrial = size(rawf1.(conds{c}),1);
@@ -104,12 +104,12 @@ for c = 1:length(indShift) % for each condition to plot
         % If vowel is less than 100 ms long, tell the user that there's not enough data for normalization.
         if bNormDiff
             if height(diff1.(conds{c})) >= ceil(fs*0.1)
-                onsetMeanf1 = nanmean(diff1.(conds{c})(floor(fs*0.025):ceil(fs*0.1),:),1);
+                onsetMeanf1 = mean(diff1.(conds{c})(floor(fs*0.025):ceil(fs*0.1),:),1, 'omitnan');
                 normDiff1.(conds{c}) = diff1.(conds{c}) - onsetMeanf1;
-                normDiff1_mean.(conds{c}) = nanmean(normDiff1.(conds{c}),2);
-                onsetMeanf2 = nanmean(diff2.(conds{c})(floor(fs*0.025):ceil(fs*0.1),:),1);
+                normDiff1_mean.(conds{c}) = mean(normDiff1.(conds{c}),2, 'omitnan');
+                onsetMeanf2 = mean(diff2.(conds{c})(floor(fs*0.025):ceil(fs*0.1),:),1, 'omitnan');
                 normDiff2.(conds{c}) = diff2.(conds{c}) - onsetMeanf2;
-                normDiff2_mean.(conds{c}) = nanmean(normDiff2.(conds{c}),2);
+                normDiff2_mean.(conds{c}) = mean(normDiff2.(conds{c}),2, 'omitnan');
             else
                 warning('Trials in condition %s are shorter than 100 ms. Can''t compute normDiff1 and normDiff2 for fmtMatrix and fmtMeans.', conds{c});
                 normDiff1.(conds{c}) = NaN;
@@ -205,7 +205,7 @@ end
 
 % get tstep from taxis
 goodtrials = find(~[dataVals.bExcl]);
-[~,tstep] = get_fs_from_taxis(dataVals(goodtrials(1)).ftrack_taxis); %#ok<ASGLU>
+[~,tstep] = get_fs_from_taxis(dataVals(goodtrials(1)).ftrack_taxis);
 
 %% save data
 filename = sprintf('fmtMatrix_%s_%s',[indShift.name],basename);
@@ -235,7 +235,7 @@ if isfield(indShift,'shiftind')
     fmtMatrix.proj = proj; fmtMeans.proj = proj_mean;
     fmtMatrix.percproj = percproj; fmtMeans.percproj = percproj_mean;
     fmtMatrix.effproj = effproj; fmtMeans.effproj = effproj_mean;
-    fmtMatrix.effdist = effdist; fmtMeans.effdist = effdist_mean; %#ok<STRNU>
+    fmtMatrix.effdist = effdist; fmtMeans.effdist = effdist_mean;
 end
 
 % save
