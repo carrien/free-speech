@@ -112,7 +112,7 @@ for c = 1:length(indShift) % for each condition to plot
                 normDiff2.(conds{c}) = diff2.(conds{c}) - onsetMeanf2;
                 normDiff2_mean.(conds{c}) = nanmean(normDiff2.(conds{c}),2);
             elseif height(diff1.(conds{c})) >= floor(fs*0.025)  % if the vowel is less than 100 ms long
-                warning('Trials in condition %s are shorter than 100 ms. normDiff1 and normDiff2 in fmtMtarix and fmtMeans may be unreliable.', conds{c});
+                warning('Trials in condition %s are shorter than 100 ms. normDiff1 and normDiff2 in fmtMatrix and fmtMeans may be unreliable.', conds{c});
                 onsetMeanf1 = nanmean(diff1.(conds{c})(floor(fs*0.025):end,:),1);
                 normDiff1.(conds{c}) = diff1.(conds{c}) - onsetMeanf1;
                 normDiff1_mean.(conds{c}) = nanmean(normDiff1.(conds{c}),2);
