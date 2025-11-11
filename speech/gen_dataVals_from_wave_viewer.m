@@ -337,10 +337,13 @@ lowSR_ampl = interp1(sigmat.ampl_taxis, sigmat.ampl, sigmat.ftrack_taxis);
 
 % find the index of ftrack_taxis that's closest to and greater than ampl_taxis's onset index
 [~, onsetIndAmp_ftrack] = find(sigmat.ftrack_taxis - sigmat.ampl_taxis(onsetIndAmp_ampl)>0, 1); 
-
-offsetIndAmp_ftrack = find(lowSR_ampl(onsetIndAmp_ftrack:end) < ampl_thresh4voicing);
+if ~isempty(onsetIndAmp_ftrack)
+    offsetIndAmp_ftrack = find(lowSR_ampl(onsetIndAmp_ftrack:end) < ampl_thresh4voicing);
+else
+    offsetIndAmp_ftrack = [];
+end
 if offsetIndAmp_ftrack
-    offsetIndAmp_ftrack = offsetIndAmp_ftrack(1) + onsetIndAmp_ftrack-2; % correct indexing
+    offsetIndAmp_ftrack = offsetIndAmp_ftrack(1) + onsetIndAmp_ftrack-2; % minus 2 corrects indexing
 
     % convert back to ampl_taxis
     % find the index of ampl_taxis that's closest to and greater than ftrack_taxis's offset index
