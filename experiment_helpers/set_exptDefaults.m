@@ -81,7 +81,7 @@ if ~isempty(expt.vowels)
     end
     if any(expt.allVowels == 0)
         for t=1:expt.ntrials
-            expt.allVowels(t) = find(strcmp(expt.listVowels(t),expt.vowels));
+            expt.allVowels(t) = find(strcmp(expt.listVowels{t},expt.vowels));
         end
     end
 end
