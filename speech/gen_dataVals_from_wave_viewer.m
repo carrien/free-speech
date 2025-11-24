@@ -315,7 +315,7 @@ onset_time = sigmat.ampl_taxis(onsetIndAmp);
 end %EOF
 
 %%
-function [offset_time,offset_type] = get_offset_from_ampl(sigmat,trialparams,sigproc_params,onsetIndAmp_ampl)
+function [offset_time,offset_type] = get_offset_from_ampl(sigmat,trialparams,sigproc_params,onsetIndAmp)
 
 % choose threshold
 if ~isempty(trialparams.sigproc_params) % use trial-specific amplitude threshold
@@ -326,33 +326,37 @@ else                                    % use wave_viewer_params default amplitu
     offset_type = 'default amplitude onset';
 end
 
-% find offset
+%%% find offset
 % Rather than using the amplitude track in sigmat.ampl directly, resample
-% the amplitude to the same sampling rate used when calculating formants.
+% the amplitude to the same sampling rate used when calculating formant values.
 % This lower sampling rate is the actual information the user used when 
-% determining vowel onset and offset. Use this lower sampling rate 
-% to determine approximately where the amplitude drops below the threshold.
-% Then, use the more accurate sigmat.ampl_taxis once again to determine the actual offset.
-lowSR_ampl = interp1(sigmat.ampl_taxis, sigmat.ampl, sigmat.ftrack_taxis);
+% determining vowel onset and offset, and can result in differences in
+% the offset if the sigmat.ampl momentarily dips below ampl_thresh4voicing,
+% but the formant-based amplitude track doesn't.
+%
+% Use the formant-based amplitude track to determine approximately where
+% the amplitude drops below the threshold. Then, use the more accurate
+% sigmat.ampl_taxis to determine the actual offset.
+ampl_FTrack = interp1(sigmat.ampl_taxis, sigmat.ampl, sigmat.ftrack_taxis);
 
 % find the index of ftrack_taxis that's closest to and greater than ampl_taxis's onset index
-[~, onsetIndAmp_ftrack] = find(sigmat.ftrack_taxis - sigmat.ampl_taxis(onsetIndAmp_ampl)>0, 1); 
-if ~isempty(onsetIndAmp_ftrack)
-    offsetIndAmp_ftrack = find(lowSR_ampl(onsetIndAmp_ftrack:end) < ampl_thresh4voicing);
+[~, onsetIndFTrack] = find(sigmat.ftrack_taxis - sigmat.ampl_taxis(onsetIndAmp)>0, 1); 
+if ~isempty(onsetIndFrack)
+    offsetIndFTrack = find(ampl_FTrack(onsetIndFTrack:end) < ampl_thresh4voicing);
 else
-    offsetIndAmp_ftrack = [];
+    offsetIndFTrack = [];
 end
-if offsetIndAmp_ftrack
-    offsetIndAmp_ftrack = offsetIndAmp_ftrack(1) + onsetIndAmp_ftrack-2; % minus 2 corrects indexing
+if offsetIndFTrack
+    offsetIndFTrack = offsetIndFTrack(1) + onsetIndFTrack-2; % minus 2 corrects indexing
 
     % convert back to ampl_taxis
     % find the index of ampl_taxis that's closest to and greater than ftrack_taxis's offset index
-    [~, offsetIndAmp_ampl] = find(sigmat.ampl_taxis - sigmat.ftrack_taxis(offsetIndAmp_ftrack)>0, 1);
+    [~, offsetIndAmp] = find(sigmat.ampl_taxis - sigmat.ftrack_taxis(offsetIndFTrack)>0, 1);
 else % use last index if no offset found
-    offsetIndAmp_ampl = length(sigmat.ampl_taxis);
+    offsetIndAmp = length(sigmat.ampl_taxis);
     offset_type = 'end of trial';
 end
 
-offset_time = sigmat.ampl_taxis(offsetIndAmp_ampl);
+offset_time = sigmat.ampl_taxis(offsetIndAmp);
 
 end %EOF
