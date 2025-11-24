@@ -337,21 +337,21 @@ end
 % Use the formant-based amplitude track to determine approximately where
 % the amplitude drops below the threshold. Then, use the more accurate
 % sigmat.ampl_taxis to determine the actual offset.
-ampl_FTrack = interp1(sigmat.ampl_taxis, sigmat.ampl, sigmat.ftrack_taxis);
+ampl_Ftrack = interp1(sigmat.ampl_taxis, sigmat.ampl, sigmat.ftrack_taxis);
 
 % find the index of ftrack_taxis that's closest to and greater than ampl_taxis's onset index
-[~, onsetIndFTrack] = find(sigmat.ftrack_taxis - sigmat.ampl_taxis(onsetIndAmp)>0, 1); 
+[~, onsetIndFtrack] = find(sigmat.ftrack_taxis - sigmat.ampl_taxis(onsetIndAmp)>0, 1); 
 if ~isempty(onsetIndFrack)
-    offsetIndFTrack = find(ampl_FTrack(onsetIndFTrack:end) < ampl_thresh4voicing);
+    offsetIndFtrack = find(ampl_Ftrack(onsetIndFtrack:end) < ampl_thresh4voicing);
 else
-    offsetIndFTrack = [];
+    offsetIndFtrack = [];
 end
-if offsetIndFTrack
-    offsetIndFTrack = offsetIndFTrack(1) + onsetIndFTrack-2; % minus 2 corrects indexing
+if offsetIndFtrack
+    offsetIndFtrack = offsetIndFtrack(1) + onsetIndFtrack-2; % minus 2 corrects indexing
 
     % convert back to ampl_taxis
     % find the index of ampl_taxis that's closest to and greater than ftrack_taxis's offset index
-    [~, offsetIndAmp] = find(sigmat.ampl_taxis - sigmat.ftrack_taxis(offsetIndFTrack)>0, 1);
+    [~, offsetIndAmp] = find(sigmat.ampl_taxis - sigmat.ftrack_taxis(offsetIndFtrack)>0, 1);
 else % use last index if no offset found
     offsetIndAmp = length(sigmat.ampl_taxis);
     offset_type = 'end of trial';
