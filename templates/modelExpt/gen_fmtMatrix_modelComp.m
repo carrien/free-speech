@@ -33,4 +33,4 @@ for c=1:length(conds)
     end
 end
 
-savefile = gen_fmtMatrixByCond(dataPath,indBase,indShift,dataValsStr,1,1,bSaveCheck);
+savefile = gen_fmtMatrixByCond(dataPath,indBase,indShift,dataValsStr,1,1,bSaveCheck,1);

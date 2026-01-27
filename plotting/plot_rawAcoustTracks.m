@@ -78,10 +78,10 @@ for g = 1:length(groups)
     end
     
     % figure labels
-    if exist('expt','var')
+    try
         groupnames = expt.(sprintf('%ss',grouping));
         titlesuffix = sprintf(': %s',groupnames{groupId});
-    else
+    catch
         titlesuffix = [];
     end
     title(sprintf('%s %d%s',grouping,groupId,titlesuffix))

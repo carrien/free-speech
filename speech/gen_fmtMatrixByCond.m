@@ -1,4 +1,4 @@
-function [filename] = gen_fmtMatrixByCond(dataPath,indBase,indShift,dataValsStr,bMels,bFilt,bSaveCheck)
+function [filename] = gen_fmtMatrixByCond(dataPath,indBase,indShift,dataValsStr,bMels,bFilt,bSaveCheck,bNormDiff)
 %GEN_FMTMATRIXBYCOND  Generate a plottable formant matrix from a davaVals object.
 %   GEN_FMTMATRIXBYCOND(DATAPATH,INDBASE,INDSHIFT,DATAVALSSTR,BMELS,BFILT,BSAVECHECK)
 %   Generates a fmtMatrix suitable for plotting by, e.g., plot_fmtMatrix.
@@ -11,6 +11,7 @@ if nargin < 4 || isempty(dataValsStr), dataValsStr = 'dataVals.mat'; end
 if nargin < 5 || isempty(bMels), bMels = 1; end % binary variable: convert to mels or don't
 if nargin < 6 || isempty(bFilt), bFilt = 1; end % binary variable: filt on or off
 if nargin < 7 || isempty(bSaveCheck), bSaveCheck = 1; end
+if nargin < 8 || isempty(bNormDiff), bNormDiff = 0; end
 
 % match baselines to number of conditions
 conds = {indShift.name};
@@ -55,8 +56,8 @@ for c = 1:length(indShift) % for each condition to plot
         [rawf1.(baseconds{c}),rawf2.(baseconds{c})] = get_fmtMatrix(dataVals,indBase(c).inds,bMels,bFilt);
     end
     % get mean baseline
-    rawf1_mean.(baseconds{c}) = nanmean(rawf1.(baseconds{c}),2); % mean formants for shift-specific baseline
-    rawf2_mean.(baseconds{c}) = nanmean(rawf2.(baseconds{c}),2); %
+    rawf1_mean.(baseconds{c}) = mean(rawf1.(baseconds{c}),2, 'omitnan'); % mean formants for shift-specific baseline
+    rawf2_mean.(baseconds{c}) = mean(rawf2.(baseconds{c}),2, 'omitnan'); %
     
     % calculate trial ending points
     percNaN.(baseconds{c}) = get_percNaN(rawf1.(baseconds{c}));
@@ -66,8 +67,8 @@ for c = 1:length(indShift) % for each condition to plot
         % generate matrix for this cond
         [rawf1.(conds{c}),rawf2.(conds{c})] = get_fmtMatrix(dataVals,indShift(c).inds,bMels,bFilt);
         % get mean of this cond
-        rawf1_mean.(conds{c}) = nanmean(rawf1.(conds{c}),2);
-        rawf2_mean.(conds{c}) = nanmean(rawf2.(conds{c}),2);
+        rawf1_mean.(conds{c}) = mean(rawf1.(conds{c}),2, 'omitnan');
+        rawf2_mean.(conds{c}) = mean(rawf2.(conds{c}),2, 'omitnan');
         
         % generate difference matrix for this cond (subtract mean baseline)
         nSamplesLongestTrial = size(rawf1.(conds{c}),1);
@@ -97,14 +98,26 @@ for c = 1:length(indShift) % for each condition to plot
         diff2d.(conds{c}) = sqrt(diff1.(conds{c}).^2 + diff2.(conds{c}).^2);
         diff2d_mean.(conds{c}) = sqrt(diff1_mean.(conds{c}).^2 + diff2_mean.(conds{c}).^2);
         
-         % normalize by 25-100 ms after vowel onset
-        onsetMeanf1 = nanmean(diff1.(conds{c})(floor(fs*0.025):ceil(fs*0.1),:),1);
-        normDiff1.(conds{c}) = diff1.(conds{c}) - onsetMeanf1;
-        normDiff1_mean.(conds{c}) = nanmean(normDiff1.(conds{c}),2);
-        onsetMeanf2 = nanmean(diff2.(conds{c})(floor(fs*0.025):ceil(fs*0.1),:),1);
-        normDiff2.(conds{c}) = diff2.(conds{c}) - onsetMeanf2;
-        normDiff2_mean.(conds{c}) = nanmean(normDiff2.(conds{c}),2);
-        
+        % Try to normalize by the 25-100 ms window after vowel onset, which is useful if
+        % you want to compare formant values near the very start of a vowel to later in the vowel.
+        % If the vowel is at least 100 ms long, use the 25-100 ms window.
+        % If vowel is less than 100 ms long, tell the user that there's not enough data for normalization.
+        if bNormDiff
+            if height(diff1.(conds{c})) >= ceil(fs*0.1)
+                onsetMeanf1 = mean(diff1.(conds{c})(floor(fs*0.025):ceil(fs*0.1),:),1, 'omitnan');
+                normDiff1.(conds{c}) = diff1.(conds{c}) - onsetMeanf1;
+                normDiff1_mean.(conds{c}) = mean(normDiff1.(conds{c}),2, 'omitnan');
+                onsetMeanf2 = mean(diff2.(conds{c})(floor(fs*0.025):ceil(fs*0.1),:),1, 'omitnan');
+                normDiff2.(conds{c}) = diff2.(conds{c}) - onsetMeanf2;
+                normDiff2_mean.(conds{c}) = mean(normDiff2.(conds{c}),2, 'omitnan');
+            else
+                warning('Trials in condition %s are shorter than 100 ms. Can''t compute normDiff1 and normDiff2 for fmtMatrix and fmtMeans.', conds{c});
+                normDiff1.(conds{c}) = NaN;
+                normDiff1_mean.(conds{c}) = NaN;
+                normDiff2.(conds{c}) = NaN;
+                normDiff2_mean.(conds{c}) = NaN;
+            end
+        end
         % calculate trial ending points
         percNaN.(conds{c}) = get_percNaN(diff1.(conds{c}));
         
@@ -192,7 +205,7 @@ end
 
 % get tstep from taxis
 goodtrials = find(~[dataVals.bExcl]);
-[~,tstep] = get_fs_from_taxis(dataVals(goodtrials(1)).ftrack_taxis); %#ok<ASGLU>
+[~,tstep] = get_fs_from_taxis(dataVals(goodtrials(1)).ftrack_taxis);
 
 %% save data
 filename = sprintf('fmtMatrix_%s_%s',[indShift.name],basename);
@@ -208,8 +221,10 @@ fmtMatrix.rawf1 = rawf1; fmtMeans.rawf1 = rawf1_mean;
 fmtMatrix.rawf2 = rawf2; fmtMeans.rawf2 = rawf2_mean;
 fmtMatrix.diff1 = diff1; fmtMeans.diff1 = diff1_mean;
 fmtMatrix.diff2 = diff2; fmtMeans.diff2 = diff2_mean;
-fmtMatrix.normDiff1 = normDiff1; fmtMeans.normDiff1 = normDiff1_mean; 
-fmtMatrix.normDiff2 = normDiff2; fmtMeans.normDiff2 = normDiff2_mean; 
+if bNormDiff
+    fmtMatrix.normDiff1 = normDiff1; fmtMeans.normDiff1 = normDiff1_mean;
+    fmtMatrix.normDiff2 = normDiff2; fmtMeans.normDiff2 = normDiff2_mean;
+end
 fmtMatrix.diff2d = diff2d; fmtMeans.diff2d = diff2d_mean;
 if isfield(indShift,'shiftind')
     fmtMatrix.percdiff1 = percdiff1; fmtMeans.percdiff1 = percdiff1_mean;
@@ -220,7 +235,7 @@ if isfield(indShift,'shiftind')
     fmtMatrix.proj = proj; fmtMeans.proj = proj_mean;
     fmtMatrix.percproj = percproj; fmtMeans.percproj = percproj_mean;
     fmtMatrix.effproj = effproj; fmtMeans.effproj = effproj_mean;
-    fmtMatrix.effdist = effdist; fmtMeans.effdist = effdist_mean; %#ok<STRNU>
+    fmtMatrix.effdist = effdist; fmtMeans.effdist = effdist_mean;
 end
 
 % save
