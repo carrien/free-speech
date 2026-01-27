@@ -341,7 +341,7 @@ ampl_Ftrack = interp1(sigmat.ampl_taxis, sigmat.ampl, sigmat.ftrack_taxis);
 
 % find the index of ftrack_taxis that's closest to and greater than ampl_taxis's onset index
 [~, onsetIndFtrack] = find(sigmat.ftrack_taxis - sigmat.ampl_taxis(onsetIndAmp)>0, 1); 
-if ~isempty(onsetIndFrack)
+if ~isempty(onsetIndFtrack)
     offsetIndFtrack = find(ampl_Ftrack(onsetIndFtrack:end) < ampl_thresh4voicing);
 else
     offsetIndFtrack = [];
