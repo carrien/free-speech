@@ -1,9 +1,9 @@
-function [exptPath] = get_exptLoadPath(exptName,varargin)
+ function [exptPath] = get_exptLoadPath(exptName,varargin)
 
 if nargin < 1, exptName = []; end
 
 nesstComputers = {'WHITTAKER', 'PERTWEE', 'TENNANT', 'DAVISON', 'BAKER', 'MCCOY', 'MCGANN', 'CHLPR-CSJZ3M3' 'CHLPR-GMVD6J3'}; 
-bjorndahlComputers = {'P-CBJORN-L'}; 
+bjorndahlComputers = {'P-CBJORN'}; 
 
 if ispc
     % Adjustment for using at NeSST Lab
