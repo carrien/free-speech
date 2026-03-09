@@ -302,10 +302,15 @@ else                                    % use wave_viewer_params default amplitu
     onset_type = 'default amplitude onset';
 end
 
+% find boundaries for onset detection. Only consider samples that could 
+%  have formants, ie, that exist in ftrack_taxis
+startIx = find(sigmat.ampl_taxis > sigmat.ftrack_taxis(1), 1);
+endIx = find(sigmat.ampl_taxis > sigmat.ftrack_taxis(end), 1) - 1; % subtracting 1 so endIx is inside the ftrack_taxis range
+
 % find onset
-onsetIndAmp = find(sigmat.ampl > ampl_thresh4voicing);
+onsetIndAmp = find(sigmat.ampl(startIx:endIx) > ampl_thresh4voicing);
 if onsetIndAmp
-    onsetIndAmp = onsetIndAmp(1) + 1;
+    onsetIndAmp = onsetIndAmp(1) + startIx;
 else
     onsetIndAmp = 1;
     onset_type = 'no amplitude onset found';
