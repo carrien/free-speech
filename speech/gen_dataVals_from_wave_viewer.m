@@ -304,7 +304,7 @@ end
 
 % find boundaries for onset detection. Only consider samples that could 
 %  have formants, ie, that exist in ftrack_taxis
-startIx = find(sigmat.ampl_taxis > sigmat.ftrack_taxis(1), 1);
+startIx = find(sigmat.ampl_taxis >= sigmat.ftrack_taxis(1), 1);
 endIx = find(sigmat.ampl_taxis > sigmat.ftrack_taxis(end), 1) - 1; % subtracting 1 so endIx is inside the ftrack_taxis range
 
 % find onset
