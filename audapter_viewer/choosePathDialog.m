@@ -7,7 +7,7 @@ function pathChoice = choosePathDialog(possiblePaths, bServer)
 % Basic use of this is server version vs. experiment computer version of paths. 
 % 
 % Inputs: 
-% 1. possiblePaths: cell array of possible paths, e.g.
+% 1. possiblePaths: cell array containing char arrays of possible paths, e.g.
 % {'\\wcs-cifs.waisman.wisc.edu\wc\smng\experiments\timeAdapt\sp001\capper'
 % 'C:\Users\Public\Documents\experiments\timeAdapt\sp001\capper'}
 % --- defaults to current working directory 
@@ -28,6 +28,15 @@ pathChoice = 0; % default is 0, functioning essentially as cancel
 % If you have only one path for some reason, make sure it is a cell 
 if ~iscell(possiblePaths)
     possiblePaths = {possiblePaths}; 
+end
+
+% if any cells in possiblePaths aren't a character array (e.g., maybe it's 
+% a string array instead), make it a character array. The `contains`
+% operation below requires they all be the same type.
+for i = 1:length(possiblePaths)
+    if ~ischar(possiblePaths{i})
+        possiblePaths(i) = {char(possiblePaths{i})};
+    end
 end
 
 if nargin < 2 || isempty(bServer) || ~bServer
