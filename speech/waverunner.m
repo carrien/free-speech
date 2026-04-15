@@ -73,7 +73,7 @@ for itrial = trials2track
     % if trial data exists, load it
     savefile = fullfile(dataPath,trialfolder,sprintf('%d.mat',itrial));
     if (exist(savefile,'file') == 2)
-        bCopyParams = 0;
+        bCopyEventParams = 0;
         saveddata = load(savefile);
         trialparams = saveddata.trialparams;        % load saved trial params
         if isfield(trialparams,'sigproc_params')      % if sigproc_params exists, use existing values
@@ -86,7 +86,6 @@ for itrial = trials2track
         end
     elseif ~strcmp(buffertype,'signalIn')
         if exist(fullfile(dataPath,trialfolderSigIn,sprintf('%d.mat',itrial)),'file') && ~exist(fullfile(dataPath,trialfolder,sprintf('%d.mat',itrial)),'file')
-            bCopyParams = 1;
             copyfile = fullfile(dataPath,trialfolderSigIn,sprintf('%d.mat',itrial));
             saveddata = load(copyfile);
             trialparams = saveddata.trialparams;        % load saved trial params
@@ -111,6 +110,7 @@ for itrial = trials2track
             offsetMs = lags(imax)/data(itrial).params.sr;
             
             if isfield(trialparams,'event_params')      % if event_params exists, copy them
+                bCopyEventParams = 1;
                 fieldns = fieldnames(trialparams.event_params);
                 for i=1:length(fieldns)                     % use previously saved params
                     if ~sum(strcmp(fieldns{i},params2overwrite))
@@ -120,9 +120,9 @@ for itrial = trials2track
                         end
                     end
                 end
+            else
+                bCopyEventParams = 0;
             end
-        else
-            bCopyParams = 0;
         end
     else clear sigmat trialparams
     end
@@ -173,7 +173,7 @@ for itrial = trials2track
         end
         trialparams.sigproc_params = sigproc_params;    % only overwrite sigproc_params (leave event/plot_params if they exist)
         
-        if exist('bCopyParams','var') && bCopyParams == 1 %overwrite event_params if copying from signalIn to signalOut
+        if exist('bCopyEventParams','var') && bCopyEventParams == 1 %overwrite event_params if copying from signalIn to signalOut
             trialparams.event_params = event_params;
         end
         
