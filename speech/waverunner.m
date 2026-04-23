@@ -31,11 +31,12 @@ if isempty(folderSuffix)
         trialfolder = 'trials';
     else
         trialfolder = sprintf('trials_%s',buffertype);
-        trialfolderSigIn = 'trials';
     end
+    trialfolderSigIn = 'trials';
 else
     if strcmp(buffertype,'signalIn')
         trialfolder = sprintf('trials_%s',folderSuffix);
+        trialfolderSigIn = 'trials';
     else
         trialfolder = sprintf('trials_%s_%s',folderSuffix,buffertype);
         trialfolderSigIn = sprintf('trials_%s',folderSuffix);
@@ -72,6 +73,7 @@ for itrial = trials2track
     
     % if trial data exists, load it
     savefile = fullfile(dataPath,trialfolder,sprintf('%d.mat',itrial));
+    savefileSigIn = fullfile(dataPath,trialfolderSigIn,sprintf('%d.mat',itrial));
     if (exist(savefile,'file') == 2)
         bCopyEventParams = 0;
         saveddata = load(savefile);
@@ -84,19 +86,24 @@ for itrial = trials2track
                 end
             end
         end
-    elseif ~strcmp(buffertype,'signalIn')
-        if exist(fullfile(dataPath,trialfolderSigIn,sprintf('%d.mat',itrial)),'file') && ~exist(fullfile(dataPath,trialfolder,sprintf('%d.mat',itrial)),'file')
-            copyfile = fullfile(dataPath,trialfolderSigIn,sprintf('%d.mat',itrial));
-            saveddata = load(copyfile);
-            trialparams = saveddata.trialparams;        % load saved trial params
-            if isfield(trialparams,'sigproc_params')      % if sigproc_params exists, use existing values
-                fieldns = fieldnames(trialparams.sigproc_params);
-                for i=1:length(fieldns)                     % use previously saved params
-                    if ~sum(strcmp(fieldns{i},params2overwrite))
-                        sigproc_params.(fieldns{i}) = trialparams.sigproc_params.(fieldns{i});
-                    end
+    % if file exists in "source" (savefileSigIn) but not "destination" (savefile), 
+    % save trialparams from source
+    elseif (exist(savefileSigIn,'file')) && (~exist(savefile,'file'))
+        copyfile = fullfile(dataPath,trialfolderSigIn,sprintf('%d.mat',itrial));
+        saveddata = load(copyfile);
+        trialparams = saveddata.trialparams;        % load saved trial params
+        if isfield(trialparams,'sigproc_params')      % if sigproc_params exists, use existing values
+            fieldns = fieldnames(trialparams.sigproc_params);
+            for i=1:length(fieldns)                     % use previously saved params
+                if ~sum(strcmp(fieldns{i},params2overwrite))
+                    sigproc_params.(fieldns{i}) = trialparams.sigproc_params.(fieldns{i});
                 end
             end
+        end
+
+        % for signalOut, need to compensate for lag between input vs output
+        %  signal and shift timestamps on event_params events
+        if ~strcmp(buffertype,'signalIn')
             
             %calculate lag between input and output signals
             cutoffSamp1 = find(isnan(data(itrial).signalOut), 1 );
