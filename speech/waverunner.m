@@ -26,20 +26,22 @@ else
 end
 
 % set trial folder
+  % `trialfolder` is where the data will ultimately be saved.
+  % `trialfolder_source` is where we will try to load data from.
 if isempty(folderSuffix)
     if strcmp(buffertype,'signalIn')
         trialfolder = 'trials';
     else
         trialfolder = sprintf('trials_%s',buffertype);
     end
-    trialfolderSigIn = 'trials';
+    trialfolder_source = 'trials';
 else
     if strcmp(buffertype,'signalIn')
         trialfolder = sprintf('trials_%s',folderSuffix);
-        trialfolderSigIn = 'trials';
+        trialfolder_source = 'trials';
     else
         trialfolder = sprintf('trials_%s_%s',folderSuffix,buffertype);
-        trialfolderSigIn = sprintf('trials_%s',folderSuffix);
+        trialfolder_source = sprintf('trials_%s',folderSuffix);
     end
 end
 if ~exist(fullfile(dataPath,trialfolder),'dir')
@@ -67,13 +69,19 @@ end
 %% loop through trials
 fprintf('Processing trial: ');
 counter = 0;
+bSavepathDifference = 0;
 for itrial = trials2track
     %% prepare inputs
     y = data(itrial).(buffertype);
     
-    % if trial data exists, load it
     savefile = fullfile(dataPath,trialfolder,sprintf('%d.mat',itrial));
-    savefileSigIn = fullfile(dataPath,trialfolderSigIn,sprintf('%d.mat',itrial));
+    loadfile_source = fullfile(dataPath,trialfolder_source,sprintf('%d.mat',itrial));
+
+    % if trial data already exists in trialfolder, which is where you are
+    % ultimately going to save the output data, load it from there.
+    % This might happen either because you've previously ran waverunner and
+    % generated files in the output data folder, or because only one folder
+    % exists anyway (eg, you're loading from and saving to 'trials')
     if (exist(savefile,'file') == 2)
         bCopyEventParams = 0;
         saveddata = load(savefile);
@@ -86,10 +94,10 @@ for itrial = trials2track
                 end
             end
         end
-    % if file exists in "source" (savefileSigIn) but not "destination" (savefile), 
-    % save trialparams from source
-    elseif (exist(savefileSigIn,'file')) && (~exist(savefile,'file'))
-        copyfile = fullfile(dataPath,trialfolderSigIn,sprintf('%d.mat',itrial));
+    % if file doesn't exist at trialfolder (savefile) but instead exists
+    % in trialfolder_source (loadfile_source), load and use that data
+    elseif (exist(loadfile_source,'file')) && (~exist(savefile,'file'))
+        copyfile = fullfile(dataPath,trialfolder_source,sprintf('%d.mat',itrial));
         saveddata = load(copyfile);
         trialparams = saveddata.trialparams;        % load saved trial params
         if isfield(trialparams,'sigproc_params')      % if sigproc_params exists, use existing values
@@ -99,6 +107,15 @@ for itrial = trials2track
                     sigproc_params.(fieldns{i}) = trialparams.sigproc_params.(fieldns{i});
                 end
             end
+        end
+
+        % Notify user that you're loading data from a different folder than
+        % where you're saving it. Only do this once.
+        if bSavepathDifference == 0
+            fprintf(['\n\nFYI: On trial %d and possibly other trials after this one, ' ...
+                'loading data from folder named ''%s'' and saving to folder named ''%s''\n'], ...
+                itrial, trialfolder_source, trialfolder);
+            bSavepathDifference = 1;
         end
 
         % for signalOut, need to compensate for lag between input vs output
