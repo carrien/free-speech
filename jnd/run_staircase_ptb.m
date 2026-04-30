@@ -8,10 +8,14 @@ save(fullfile(expt.dataPath, 'expt.mat'), 'expt');
 
 %% Set up peripherals (screens, audio device) 
 
-% Choose display (highest dislay number is a good guess)
 Screen('Preference', 'SkipSyncTests', 1);
 screens=Screen('Screens');
-screenNumber=max(screens);
+% determine screen number (default to highest available value)
+if isfield(expt, 'ptb_screenNum') && ~isempty(expt.ptb_screenNum)
+    screenNumber = expt.ptb_screenNum;
+else
+    screenNumber = max(screens);
+end
 if ~isfield(expt, 'win') % Should also check that the window actually exists
     win = Screen('OpenWindow', screenNumber);
     expt.win = win; 
@@ -26,6 +30,13 @@ deviceNames = {wasapiDevices.DeviceName};
 scarletts = find(contains(deviceNames, 'Focusrite')); 
 outputDevs = find([wasapiDevices.NrOutputChannels] > 0); 
 outputScarlett = intersect(outputDevs, scarletts); 
+
+if length(outputScarlett) > 1
+    outputScarlett = outputScarlett(1);
+    fprintf(['When deciding what output device to use, multiple plausible ' ...
+        'output devices were identified. I''ll pick the first one: %s'], ...
+        wasapiDevices(outputScarlett).DeviceName);
+end
 
 % Parameters for audio output 
 paMode = 1;              % only audio playback
