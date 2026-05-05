@@ -190,6 +190,7 @@ function saveData(src,evt)
     for i = 1:length(dataVals) %save individual files
         if UserData.statusChange(i)
             for j = 1:length(trialfolder)
+                % TODO consolidate this try/catch statement to not duplicate code in each statement
                 try load(fullfile(UserData.dataPath,trialfolder{j},sprintf('%d.mat',i)));
                     if UserData.dataVals(i).bExcl
                         trialparams.event_params.is_good_trial = 0;
