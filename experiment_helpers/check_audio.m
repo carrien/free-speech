@@ -1,4 +1,4 @@
-function check_audio(dataPath,trialinds,bSort,nTrials,stringType)
+function check_audio(dataPath,trialinds,bSort,nTrials,stringType,folderSuffix)
 % DATA = CHECK_AUDIO(dataPath,trialinds)
 % Function cycles through trials to check that participant said correct
 % word. Inputs:
@@ -8,18 +8,34 @@ function check_audio(dataPath,trialinds,bSort,nTrials,stringType)
 %   bSort: sort trials by word (1) or don't (0). Default is 0. (currently
 %   not implemented)
 %   nTrials: how many trials to analyze at a time. Default is 10
+%   stringType: which field in expt to use as the stimulus to display above
+%   each trial
+%   folderSuffix: if supplied, data will be saved to folders called
+%   'trials_(folderSuffix)' and 'trials_(folderSuffix)_signalOut'. Data
+%   will also be loaded from a dataVals file called
+%   'dataVals_(folderSuffix).mat' if one exists
 
 if nargin < 1 || isempty(dataPath), dataPath = cd; end
 if nargin < 2, trialinds = []; end
 if nargin < 3 || isempty(bSort), bSort = 0; end
 if nargin < 4 || isempty(nTrials), nTrials = 10; end
 if nargin < 5 || isempty(stringType), stringType = 'listWords'; end
+if nargin < 6, folderSuffix = []; end
 
 %% create GUI
 f = figure('Visible','off','Units','Normalized','Position',[.1 .1 .8 .8]);
 set(f, 'WindowKeyPressFcn', @KeyPress)
 
 UserData = guihandles(f);
+
+if ~isempty(folderSuffix)
+    folderSuffix = ['_' folderSuffix]; %prepend underscore
+end
+
+UserData.trialsFolderName = ['trials' folderSuffix];
+UserData.trials_signalOutFolderName = ['trials' folderSuffix '_signalOut'];
+UserData.dataValsFileName = ['dataVals' folderSuffix '.mat'];
+UserData.dataVals_signalOutFileName = ['dataVals' folderSuffix '_signalOut' '.mat'];
 
 UserData.f =f;
 UserData.nTrials = nTrials;
@@ -43,19 +59,19 @@ if ~exist('expt','var')
     eval(strcat('expt =', vars{expLoc},';'))
 end
 UserData.expt = expt;
-if exist(fullfile(dataPath,'dataVals.mat'),'file')
+if exist(fullfile(dataPath,UserData.dataValsFileName),'file')
     UserData.bDataVals = 1;
-    load(fullfile(dataPath,'dataVals.mat'),'dataVals');
+    load(fullfile(dataPath,UserData.dataValsFileName),'dataVals');
     UserData.dataVals = dataVals;
 else
     UserData.bDataVals = 0;
     for i = 1:UserData.expt.ntrials
         UserData.dataVals(i).bExcl = 0;
     end
-    if exist(fullfile(dataPath,'trials'),'dir')
-        [~,sortedFilenames] = get_sortedTrials(fullfile(dataPath,'trials'));
+    if exist(fullfile(dataPath,UserData.trialsFolderName),'dir')
+        [~,sortedFilenames] = get_sortedTrials(fullfile(dataPath,UserData.trialsFolderName));
         for i = 1:length(sortedFilenames)
-            load(fullfile(dataPath,'trials',sortedFilenames{i}))
+            load(fullfile(dataPath,UserData.trialsFolderName,sortedFilenames{i}))
             fileNameParts = strsplit(sortedFilenames{i},'.');
             trialIndex = str2double(fileNameParts{1});
             if ~isfield(trialparams,'event_params') || ~isfield(trialparams.event_params, 'is_good_trial') || trialparams.event_params.is_good_trial
@@ -157,11 +173,11 @@ end
 function saveData(src,evt)
     UserData = guidata(src);
     dataVals = UserData.dataVals;
-    trialfolder = {'trials', 'trials_signalOut'};
+    trialfolder = {UserData.trialsFolderName, UserData.trials_signalOutFolderName};
     
     if UserData.bDataVals
-        save(fullfile(UserData.dataPath,'dataVals.mat'),'dataVals'); %save dataVals structure, signalIn
-        save(fullfile(UserData.dataPath,'dataVals_signalOut.mat'),'dataVals'); %save dataVals structure, signalOut
+        save(fullfile(UserData.dataPath,UserData.dataValsFileName),'dataVals'); %save dataVals structure, signalIn
+        save(fullfile(UserData.dataPath,UserData.dataVals_signalOutFileName),'dataVals'); %save dataVals structure, signalOut
     end
     
     % make trials and trials_signalOut folders if needed
@@ -174,6 +190,7 @@ function saveData(src,evt)
     for i = 1:length(dataVals) %save individual files
         if UserData.statusChange(i)
             for j = 1:length(trialfolder)
+                % TODO consolidate this try/catch statement to not duplicate code in each statement
                 try load(fullfile(UserData.dataPath,trialfolder{j},sprintf('%d.mat',i)));
                     if UserData.dataVals(i).bExcl
                         trialparams.event_params.is_good_trial = 0;
