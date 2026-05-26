@@ -93,10 +93,20 @@ if bSort
     [~,UserData.trials2Track] = sort(UserData.expt.allWords);
     disp('Sorting by word. Using all trials.')
 elseif isempty(trialinds)
+    bGoodTrials2Track = 0;
+    while ~bGoodTrials2Track
         reply = input('Start trial? [1]: ','s');
         if isempty(reply), reply = '1'; end
         startTrial = sscanf(reply,'%d');
-        UserData.trials2Track = startTrial:length(data);
+
+        %validate input
+        if isempty(startTrial) || startTrial < 1 || startTrial > length(data)
+            fprintf('\nInvalid input. Enter trial number to start on. Must be between 1 and %d\n', length(data));
+        else
+            bGoodTrials2Track = 1;
+        end
+    end
+    UserData.trials2Track = startTrial:length(data);
 else
     UserData.trials2Track = trialinds;
 end
