@@ -100,10 +100,8 @@ elseif isempty(trialinds)
         startTrial = sscanf(reply,'%d');
 
         %validate input
-        if isempty(startTrial)
-            disp('Invalid input. Enter a number.')
-        elseif startTrial < 1 || startTrial > length(data)
-            fprintf('\nStart trial must be between 1 and %d\n', length(data));
+        if isempty(startTrial) || startTrial < 1 || startTrial > length(data)
+            fprintf('\nInvalid input. Enter trial number to start on. Must be between 1 and %d\n', length(data));
         else
             bGoodTrials2Track = 1;
         end
