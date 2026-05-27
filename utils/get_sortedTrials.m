@@ -12,6 +12,10 @@ for i = 1:length(matFiles)
 end
 [sortedTrialnums,idx] = sort(filenums);
 
+% remove NaNs
+idx = idx(~isnan(sortedTrialnums));
+sortedTrialnums = sortedTrialnums(~isnan(sortedTrialnums));
+
 % Sort filenames in the same order
 sortedFilenames = matFiles(idx);
 
