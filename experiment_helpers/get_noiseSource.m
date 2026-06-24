@@ -7,7 +7,7 @@ function [w] = get_noiseSource(p)
 audapterDir = fileparts(which('AudapterIO'));
 noiseWavFN = fullfile(audapterDir,'mtbabble48k.wav');
 check_file(noiseWavFN);
-[w, fs] = read_audio(noiseWavFN);
+[w, fs] = audioread(noiseWavFN);
 if fs ~= p.sr * p.downFact    % resample noise to recording rate
     w = resample(w, p.sr * p.downFact, fs);              
 end
