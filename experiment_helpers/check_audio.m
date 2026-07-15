@@ -329,6 +329,7 @@ function plotTrials(src)
         plot(currSig,'k')
         xlim([0 signalInLength]);
         set(UserData.haxes(iBg),'XTick',[],'YTick',[])
+        UserData.haxes(iBg).Toolbar.Visible = 'off'; % hide three dots menu in Matlab 2025a onward
         if max(abs(currSig)) < 0.4
             ylim([-.4 .4])
         else
@@ -342,6 +343,7 @@ function plotTrials(src)
             plot(currSig,'k')
             xlim([0 signalInLength]);
             set(UserData.haxesOut(iBg),'XTick',[],'YTick',[])
+            UserData.haxesOut(iBg).Toolbar.Visible = 'off'; % hide three dots menu in Matlab 2025a onward
             if max(abs(currSig)) < 0.4
                 ylim([-.4 .4])
             else
