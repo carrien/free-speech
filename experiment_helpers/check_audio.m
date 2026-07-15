@@ -23,7 +23,7 @@ if nargin < 5 || isempty(stringType), stringType = 'listWords'; end
 if nargin < 6, folderSuffix = []; end
 
 %% create GUI
-f = figure('Visible','off','Units','Normalized','Position',[.1 .1 .8 .8]);
+f = figure('Visible','off','Units','Normalized','Position',[.1 .1 .8 .8], 'Color',[0.9 0.9 0.9]);
 set(f, 'WindowKeyPressFcn', @KeyPress)
 
 UserData = guihandles(f);
@@ -296,7 +296,8 @@ function plotTrials(src)
         UserData.bg(iBg) = uipanel('Units','Normalized','Position',...
             [xPos,yPos,xSpan,ySpan],'Title',num2str(UserData.currTrials(iBg)),...
             'Tag',num2str(iBg),'TitlePosition','CenterTop',...
-            'FontSize',0.02,'FontUnits','Normalized','Visible','off');
+            'FontSize',0.02,'FontUnits','Normalized','Visible','off',...
+            'BackgroundColor',[0.9 0.9 0.9]);
     end
 
     fontDispSize = 0.3;
