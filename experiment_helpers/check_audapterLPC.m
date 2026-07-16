@@ -14,7 +14,8 @@ defaultParams.defaultPointSelected = 'far';
 params = set_missingFields(params, defaultParams, 0);
 
 %% create GUI
-f = figure('Visible','off','Units','Normalized','Position',[.05 .1 .9 .8]);
+bgColor_fig = [0.9 0.9 0.9];
+f = figure('Visible','off','Units','Normalized','Position',[.05 .1 .9 .8],'Color', bgColor_fig);
 set(f,'Tag', 'check_LPC','HandleVisibility','on');
 
 UserData = guihandles(f);
@@ -59,7 +60,7 @@ plotPanelYPos = UserData.xPosMax - plotPanelYSpan;
 plotPanelPos = [plotPanelXPos plotPanelYPos plotPanelXSpan plotPanelYSpan];
 UserData.plotPanelF1F2 = uipanel(UserData.f,'Units','Normalized','Position',...
             plotPanelPos,...
-            'Tag','formant_plots','Visible','on');
+            'Tag','formant_plots','Visible','on','BackgroundColor', bgColor_fig);
 vowels = fields(UserData.expt.inds.vowels);
 for i = 1:UserData.nVowels
     vow = vowels{i};
@@ -75,7 +76,7 @@ plotPanelYPos = UserData.xPosMax - plotPanelYSpan;
 plotPanelPos = [plotPanelXPos plotPanelYPos plotPanelXSpan plotPanelYSpan];
 UserData.plotPanelTracks = uipanel(UserData.f,'Units','Normalized','Position',...
             plotPanelPos,...
-            'Tag','formant_plots','Visible','on');
+            'Tag','formant_plots','Visible','on','BackgroundColor', bgColor_fig);
 UserData.nRowsTracks = ceil(UserData.nVowels/2);
 for i = 1:UserData.nVowels
     UserData.hsubTracks(i) = subplot(UserData.nRowsTracks,2,i,'Parent',UserData.plotPanelTracks);
@@ -90,7 +91,7 @@ plotPanelYPos = 0.78 - plotMargin/2 - plotPanelYSpan;
 plotPanelPos = [plotPanelXPos plotPanelYPos plotPanelXSpan plotPanelYSpan];
 UserData.lpcPanel = uipanel(UserData.f,'Units','Normalized','Position',...
             plotPanelPos,...
-            'Tag','lpc_info','Visible','on');
+            'Tag','lpc_info','Visible','on','BackgroundColor', bgColor_fig);
 
 
 %create LPC order drop down menu
@@ -116,7 +117,7 @@ UserData.LPCtext = uicontrol(UserData.lpcPanel,...
     'Units','Normalized',...
     'Position',[xPos,yPos,xSpan,ySpan],...
     'String','LPC order:',...
-    'FontUnits','Normalized','FontSize',0.75);
+    'FontUnits','Normalized','FontSize',0.75,'BackgroundColor', bgColor_fig);
 
 %create panel for displaying warnings
 xPos = 0.8+plotMargin;
@@ -125,12 +126,12 @@ yPos = 0.8+plotMargin/2;
 ySpan = UserData.xPosMax-yPos;
 UserData.warnPanel = uipanel(UserData.f,'Units','Normalized','Position',...
             [xPos,yPos,xSpan,ySpan],...
-            'Tag','warn_panel','Visible','on');
+            'Tag','warn_panel','Visible','on','BackgroundColor', bgColor_fig);
 
 UserData.warnText = uicontrol(UserData.warnPanel,'style','text',...
             'String',[],...
             'Units','Normalized','Position',[.1 .1 .8 .8],...
-            'FontUnits','Normalized','FontSize',.3);
+            'FontUnits','Normalized','FontSize',.3,'BackgroundColor', bgColor_fig);
 
 %create panel for displaying reference point (mean vs median)
 xPos = 0.8+plotMargin;
@@ -139,11 +140,11 @@ yPos = 0.4;
 ySpan = 0.15;
 UserData.refPointPanel = uipanel(UserData.f,'Units','Normalized','Position',...
             [xPos,yPos,xSpan,ySpan],...
-            'Tag','refPointPanel','Visible','on');
+            'Tag','refPointPanel','Visible','on','BackgroundColor', bgColor_fig);
 
 UserData.refPointTextCtr = uicontrol(UserData.refPointPanel,'style','text',...
             'String','Reference point',...
-            'Units','Normalized','Position',[.1 .65 .8 .25],...
+            'Units','Normalized','Position',[.1 .65 .8 .25],'BackgroundColor', bgColor_fig,...
             'FontUnits','Normalized','FontSize',.75);
 
 refPointOptions = {'mean' 'median'};
