@@ -274,7 +274,7 @@ function changeLPC(src,evt)
     updatePlots(src)
     
     set(UserData.warnText,'String',[])
-    set(UserData.warnPanel,'HighlightColor',[1 1 1])
+    set(UserData.warnPanel,'HighlightColor',[0.5 0.5 0.5])
     drawnow;
 
 end
