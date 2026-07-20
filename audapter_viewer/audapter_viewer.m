@@ -1361,7 +1361,9 @@ htoggle.ostRef = uicontrol(p.guidata.buttonPanel,'Style','togglebutton',...
     'Units','Normalized','Position',ostRefTogglePos,...
     'FontUnits','Normalized','FontSize',editFontSize,...
     'Callback',@toggle_ref);
+setButtonFontWeight(htoggle.ostRef);
     function toggle_ref(hObject,eventdata)
+        setButtonFontWeight(htoggle.ostRef);
         if hObject.Value 
             for traxix = 1:length(h_ostref)
                 axes(trial_axes(traxix));
@@ -1384,7 +1386,9 @@ htoggle.editOstRef = uicontrol(p.guidata.buttonPanel,'Style','togglebutton',...
     'Units','Normalized','Position',editOstRefTogglePos,...
     'FontUnits','Normalized','FontSize',editFontSize,...
     'Callback',@toggle_editref);
+setButtonFontWeight(htoggle.editOstRef);
     function toggle_editref(hObject,eventdata)
+        setButtonFontWeight(htoggle.editOstRef);
         if hObject.Value 
             for traxix = 1:length(h_editost_ref)
                 axes(trial_axes(traxix));
@@ -1409,7 +1413,9 @@ htoggle.ost = uicontrol(p.guidata.buttonPanel,'Style','togglebutton',...
     'Units','Normalized','Position',ostTogglePos,...
     'FontUnits','Normalized','FontSize',editFontSize,...
     'Callback',@toggle_ost);
+setButtonFontWeight(htoggle.ost);
     function toggle_ost(hObject,eventdata)
+        setButtonFontWeight(htoggle.ost);
         if hObject.Value 
             for traxix = 1:length(h_ost)
                 axes(trial_axes(traxix));
@@ -1434,7 +1440,9 @@ htoggle.dRms = uicontrol(p.guidata.buttonPanel,'Style','togglebutton',...
     'Units','Normalized','Position',dRmsTogglePos,...
     'FontUnits','Normalized','FontSize',editFontSize,...
     'Callback',@toggle_dRms);
+setButtonFontWeight(htoggle.dRms);
     function toggle_dRms(hObject,eventdata)
+        setButtonFontWeight(htoggle.dRms);
         if hObject.Value 
             for traxix = 1:length(h_dRms)
                 axes(trial_axes(traxix));
@@ -1456,15 +1464,19 @@ htoggle.dRms_rat = uicontrol(p.guidata.buttonPanel,'Style','togglebutton',...
     'Value',strcmp(h_dRms_rat(1).Visible,'on'),...
     'BackgroundColor',p.plot_params.line_colors.dRms_rat,...
     'Units','Normalized','Position',dRmsRatTogglePos,...
-    'FontUnits','Normalized','FontSize',editFontSize,...
+    'FontUnits','Normalized','FontSize',editFontSize*0.99,...
     'Callback',@toggle_dRmsRat);
+setButtonFontWeight(htoggle.dRms_rat);
+
     function toggle_dRmsRat(hObject,eventdata)
-        if hObject.Value 
+        setButtonFontWeight(htoggle.dRms_rat);
+        if hObject.Value
+            set(hObject,'FontWeight','bold');
             for traxix = 1:length(h_dRms_rat)
                 axes(trial_axes(traxix));
                 set(h_dRms_rat(traxix),'visible','on')
             end
-        else 
+        else
             for traxix = 1:length(h_dRms_rat)
                 axes(trial_axes(traxix));
                 set(h_dRms_rat(traxix),'visible','off')
@@ -1486,7 +1498,9 @@ htoggle.rms = uicontrol(p.guidata.buttonPanel,'Style','togglebutton',...
     'Units','Normalized','Position',rmsTogglePos,...
     'FontUnits','Normalized','FontSize',editFontSize,...
     'Callback',@toggle_rms);
+setButtonFontWeight(htoggle.rms);
     function toggle_rms(hObject,eventdata)
+        setButtonFontWeight(htoggle.rms);
         if hObject.Value 
             for traxix = 1:length(h_rms)
                 axes(trial_axes(traxix));
@@ -1510,7 +1524,9 @@ htoggle.rmsRatio = uicontrol(p.guidata.buttonPanel,'Style','togglebutton',...
     'Units','Normalized','Position',rmsRatioTogglePos,...
     'FontUnits','Normalized','FontSize',editFontSize,...
     'Callback',@toggle_rmsRatio);
+setButtonFontWeight(htoggle.rmsRatio);
     function toggle_rmsRatio(hObject,eventdata)
+        setButtonFontWeight(htoggle.rmsRatio);
         if hObject.Value 
             for traxix = 1:length(h_rms_rat)
                 axes(trial_axes(traxix));
@@ -2424,7 +2440,9 @@ htoggle.formantsIn = uicontrol(p.guidata.pcf_buttonPanel,'Style','togglebutton',
     'Units','Normalized','Position',formantsInTogglePos,...
     'FontUnits','Normalized','FontSize',editFontSize,...
     'Callback',@toggle_formantsIn);
+setButtonFontWeight(htoggle.formantsIn);
     function toggle_formantsIn(hObject,eventdata)
+        setButtonFontWeight(htoggle.formantsIn);
         if hObject.Value 
             for traxix = 1:length(h_formantsIn_1)
                 axes(output_trial_axes(traxix));
@@ -2449,7 +2467,9 @@ htoggle.formantsOut = uicontrol(p.guidata.pcf_buttonPanel,'Style','togglebutton'
     'Units','Normalized','Position',formantsOutTogglePos,...
     'FontUnits','Normalized','FontSize',editFontSize,...
     'Callback',@toggle_formantsOut);
+setButtonFontWeight(htoggle.formantsOut);
     function toggle_formantsOut(hObject,eventdata)
+        setButtonFontWeight(htoggle.formantsOut);
         if hObject.Value 
             for traxix = 1:length(h_formantsOut_1)
                 axes(output_trial_axes(traxix));
@@ -3894,5 +3914,18 @@ fig_params.formant_marker_width = 4;
 
 fig_params.title_pos = [0.01 0.8 0];
 fig_params.figpos_default = [.01 .045 .98 .85]; % fullscreen-ish, in normalized units
+
+end
+
+function setButtonFontWeight(h)
+% Set font weight to 'bold' if the button is pushed ("on"), or
+% set font weight to 'normal' if the button is not pushed ("off").
+% Designed to work with uicontrol elements with 'Style' of 'togglebutton'
+
+if h.Value
+    set(h, 'FontWeight', 'bold');
+else
+    set(h, 'FontWeight', 'normal');
+end
 
 end
