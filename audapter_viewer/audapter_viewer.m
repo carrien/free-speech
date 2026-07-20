@@ -2547,7 +2547,7 @@ htext.playingTrialNumber = uicontrol(p.guidata.pcf_buttonPanel, 'Style','text',.
 
 %% Trial playback buttons
 horiz_orig = padL; 
-vert_orig = 0.31; 
+vert_orig = 0.312; 
 
 % Trial 7
 pcfTrial7InButtonPos = [horiz_orig vert_orig playbackButtonWidth playbackButtonHeight]; 
