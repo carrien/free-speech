@@ -137,9 +137,9 @@ for f=1:length(fx)
             %hasquart_s(c) = find(hasquart.(cnd), 1, 'last')*tstep; %#ok<AGROW>            
             
         end
-        hline(0,'k');
+        yline(0,'Color','k');
 
-        %vline(mean(hashalf_s),'k','--');
+        %xline(mean(hashalf_s),'Color','k','LineStyle','--');
         legend(hlin, conds, 'Location','NorthWest'); legend boxoff;
         xlabel(plotParams.xlab, 'FontSize', 20);
         ylabel(ylabs{fn}, 'FontSize', 20);

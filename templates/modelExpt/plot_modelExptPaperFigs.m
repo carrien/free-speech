@@ -52,7 +52,7 @@ if bPlot
     plot(Weight, 'Marker', p.Marker);
     
     % plot other info
-    hline(3000, 'k')
+    yline(3000, 'Color', 'k')
     ylabel('Weight (lbs)')
     title('Car weight')
     makeFig4Screen;
@@ -78,8 +78,8 @@ if bPlot
     %%
     plot(MPG, 'Color', p.LineColor, 'Marker', p.Marker);
     hold on;
-    hline(20, 'k', ':')
-    hline(35, 'k', ':')
+    yline(20, 'Color', 'k', 'LineStyle', ':');
+    yline(35, 'Color', 'k', 'LineStyle', ':');
     
     % plot other info
     ylabel('Miles per gallon')

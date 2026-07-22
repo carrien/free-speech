@@ -476,7 +476,7 @@ function update_plots(src,evt)
             xTicks = get(gca,'XTick');
             xTicks = unique(sort([xTicks .04]));
             set(gca,'XTick',xTicks)
-            vline(0.040,'k',':'); 
+            xline(0.040,'Color','k','LineStyle',':'); 
         end
         set(UserData.warnText,'String',[])
         set(UserData.warnPanel,'HighlightColor',[1 1 1])
