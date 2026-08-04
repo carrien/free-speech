@@ -27,10 +27,10 @@ end
 
 % get expt phase info
 load(fullfile(dataPath,'expt.mat'),'expt'); % load from last subject
-vlines(1) = expt.nBaseline;
-vlines(2) = vlines(1) + expt.nRamp;
-vlines(3) = vlines(2) + expt.nHold;
-vlines(4) = vlines(3) + expt.nPost;
+xlines(1) = expt.nBaseline;
+xlines(2) = xlines(1) + expt.nRamp;
+xlines(3) = xlines(2) + expt.nHold;
+xlines(4) = xlines(3) + expt.nPost;
 
 toBin = fieldnames(normavg); % different bin sizes
 for b = 1:length(toBin)
@@ -48,10 +48,10 @@ for i=1:length(toPlot)
     figure('Name',sprintf('%s all',figname))
     plot(allSubjNorm.allTrials.(figname),'.','Color',plotcolor)
     % draw lines to separate experiment phases
-    for v=1:length(vlines)
-        vline(vlines(v));
+    for v=1:length(xlines)
+        xline(xlines(v));
     end
-    hline(0);
+    yline(0);
     axis tight
     title(figname)
     
@@ -61,10 +61,10 @@ for i=1:length(toPlot)
         figure('Name',binfigname)
         plot(allSubjNorm.bins.(figname),'o','Color',plotcolor)
         % draw lines to separate experiment phases
-        for v=1:length(vlines)
-            vline(vlines(v)/binsize);
+        for v=1:length(xlines)
+            xline(xlines(v)/binsize);
         end
-        hline(0);
+        yline(0);
         axis tight
         title(binfigname)
     end

@@ -28,7 +28,7 @@ for i=1:nplots
     subplot(nrows,nplots,i:nplots:(nrows-2)*nplots+i)
     imagesc(chdata(trialinds,:));
     title(fns{i})
-    vline(100,'w','--');
+    xline(100,'Color','w','LineStyle','--');
     subplot(nrows,nplots,(nrows-1)*nplots+i)
     % plot center
     sig = chdata(trialinds(1:ceil(length(trialinds)/3)),1:300);
@@ -41,7 +41,7 @@ for i=1:nplots
     plot(nanmean(sig),'color',red,'LineWidth',2);
     err = get_errorbars(sig','se');
     plot_filled_err([],nanmean(sig),err',red);
-    vline(100,'k');
+    xline(100,'Color','k');
 end
 set(gcf,'MenuBar','none')
 set(gcf,'Position',pos)

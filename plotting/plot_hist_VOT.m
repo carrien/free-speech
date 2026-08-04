@@ -52,7 +52,7 @@ for w=wordinds
 end
 
 for w=wordinds
-    vline(nanmean(vots{w}),plotcolor{w});
+    xline(mean(vots{w},'omitnan'),'Color',plotcolor{w});
 end
 
 title(sprintf('%s',color))

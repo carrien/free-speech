@@ -79,10 +79,10 @@ for c = 1:length(conds)
     end
 end
 if ~strncmp(toPlot,'raw',3)
-    hline(0,'k');  % draw y = 0 line (if not plotting raw formants)
+    yline(0,'Color','k');  % draw y = 0 line (if not plotting raw formants)
 end
-vline(mean(hashalf_s),'k','--'); % median survival time
-vline(mean(hasquart_s),'k',':'); % 25% survival time
+xline(mean(hashalf_s),'Color','k','LineStyle','--'); % median survival time
+xline(mean(hasquart_s),'Color','k','LineStyle',':'); % 25% survival time
 legend(htracks, conds, 'Location','SouthEast'); legend boxoff;
 xlabel(xlab, 'FontWeight', 'bold', 'FontSize', 11);
 ylabel(ylab, 'FontWeight', 'bold', 'FontSize', 11);

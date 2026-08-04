@@ -464,12 +464,10 @@ function updatePlots(src)
             vowLength = length(vowelFrames);
             vowMidOns = floor(vowMidPoint-vowLength/4);
             vowMidOffs = floor(vowMidPoint+vowLength/4);
-            UserData.vowelBounds.(vow)(1) = vline(vowelFrames(1)*framedur,'k');
-            UserData.vowelBounds.(vow)(2) = vline(vowelFrames(end)*framedur,'k');
-            UserData.vowelBounds.(vow)(3) = vline(vowMidOns*framedur,'c');
-            UserData.vowelBounds.(vow)(4) = vline(vowMidOffs*framedur,'c');
-            set(UserData.vowelBounds.(vow)(3),'LineWidth',2)
-            set(UserData.vowelBounds.(vow)(4),'LineWidth',2)
+            UserData.vowelBounds.(vow)(1) = xline(vowelFrames(1)*framedur,'Color','k');
+            UserData.vowelBounds.(vow)(2) = xline(vowelFrames(end)*framedur,'Color','k');
+            UserData.vowelBounds.(vow)(3) = xline(vowMidOns*framedur,'Color','c','LineWidth',2);
+            UserData.vowelBounds.(vow)(4) = xline(vowMidOffs*framedur,'Color','c','LineWidth',2);
             set(UserData.vowelBounds.(vow),'Visible',UserData.vowelBoundsVisibility);
         else    
             set(UserData.warnPanel,'HighlightColor','yellow');

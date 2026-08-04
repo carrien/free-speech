@@ -48,7 +48,7 @@ for i=1:nplots
         set(gca,'XTickLabel',[]);
         title(num2str(chnums(i)))
     end
-    vline(.475,'k');
+    xline(.475,'Color','k');
 end
 
 set(gcf,'MenuBar','none')
@@ -66,7 +66,7 @@ for j=1:ngroups
     plot(t,sig,'Color',colors{j});
     %set(gca,'XTickLabel',[]);
     title(inputname(3))
-    %vline(0,'k');
+    %xline(0,'Color','k');
     box off;
     xlabel('time (s)')
 end

@@ -80,7 +80,7 @@ for s=1:ss
         thisUttPlus = utt_samp(s)/dsfact+sampleOffset/dsfact-preUttBuffer_samp/dsfact:utt_samp(s)/dsfact+dur_samp(s)/dsfact+sampleOffset/dsfact+postUttBuffer_samp/dsfact;
         plot_filled_err(thisUttPlus,zeros(1,length(thisUttPlus)),max(abs(y_ksamps(1:hksamps2plot))),[],.2);
     else
-        vline(stim_samp(s)/dsfact+sampleOffset/dsfact,'r');
+        xline(stim_samp(s)/dsfact+sampleOffset/dsfact,'Color','r');
     end
 end
 

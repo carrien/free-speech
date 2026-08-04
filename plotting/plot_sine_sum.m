@@ -42,7 +42,7 @@ h_sum = plot(t,sum(sinewaves),'Color','k','LineWidth',4);
 strs = arrayfun(@num2str, freqs, 'Uniform', false);
 strs{end+1} = 'sum';
 legend(strs,'AutoUpdate','off');
-hline(0,'k');
+yline(0,'Color','k');
 xlabel(sprintf('time (%s)',timeUnits))
 ylabel('amplitude')
 %uistack(h_sum,'bottom');
@@ -65,7 +65,7 @@ if bPlotSep
         ax = nexttile;
         plot(t,sinewaves(s,:),'Color',color,'LineWidth',linewidth,'LineStyle',linestyle);
         hold on;
-        hline(0,'k');
+        yline(0,'Color','k');
         ylabel('amplitude')
         
         ylim(ylims);
@@ -79,7 +79,7 @@ if bPlotSep
     linestyle = h_sum.LineStyle;
     plot(t,sum(sinewaves),'Color',color,'LineWidth',linewidth,'LineStyle',linestyle);
     hold on;
-    hline(0,'k');
+    yline(0,'Color','k');
     xlabel('time (s)')
     ylabel('amplitude')
     box off
@@ -110,7 +110,7 @@ end
 %     linestyle = h_sin(s).LineStyle;
 %     plot(t,sinewaves(s,:),'Color',color,'LineWidth',linewidth,'LineStyle',linestyle);
 %     hold on;
-%     hline(0,'k');
+%     yline(0,'Color','k');
 %     ylabel('amplitude')
 %     %ax(c).XAxis.Visible = 'off';
 %     ax(s).YLim = ylim;
@@ -127,7 +127,7 @@ end
 % linestyle = h_sum.LineStyle;
 % plot(t,sum(sinewaves),'Color',color,'LineWidth',linewidth,'LineStyle',linestyle);
 % hold on;
-% hline(0,'k');
+% yline(0,'Color','k');
 % xlabel('time (s)')
 % ylabel('amplitude')
 % box off

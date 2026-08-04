@@ -34,13 +34,13 @@ for i=1:nplots
     title(fns{i})
     colormap(cmaps{i});
     freezeColors
-    vline(100,'w','--');
+    xline(100,'Color','w','LineStyle','--');
     %subplot(nrows,nplots,(nrows-1)*nplots+i)
     subplot(nrows,nplots,(nrows-1)*nplots+1:nrows*nplots)
     plot(nanmean(chdata(trialinds,1:300)),'color',colors{i});
     hold on;
 end
-vline(100,'k');
+xline(100,'Color','k');
 set(gcf,'MenuBar','none')
 set(gcf,'Position',pos)
 

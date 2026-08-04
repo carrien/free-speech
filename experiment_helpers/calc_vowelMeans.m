@@ -59,8 +59,8 @@ for itrial = trials2analyze
     end
     if bTest
         plot(data(itrial).fmts)
-        vline(vowelFrames(1),'k');
-        vline(vowelFrames(end),'k');
+        xline(vowelFrames(1),'Color','k');
+        xline(vowelFrames(end),'Color','k');
         pause
     end
 end

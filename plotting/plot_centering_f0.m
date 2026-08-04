@@ -48,9 +48,11 @@ for s=1:length(svec)
             subplot(1,2,1)
             hold on;
             plot(initf0norm(pph),'ro')
-            hline(dinit.pph,'k','--'); hline(-dinit.pph,'k','--');
+            yline(dinit.pph,'Color','k','LineStyle','--');
+            yline(-dinit.pph,'Color','k','LineStyle','--');
             plot(midf0norm(pph),'k.')
-            hline(dmid.pph,'k'); hline(-dmid.pph,'k');
+            yline(dmid.pph,'Color','k');
+            yline(-dmid.pph,'Color','k');
             
             for i=1:length(fpph)
                 plot([i i],[initf0norm(fpph(i)) midf0norm(fpph(i))], 'r-')
@@ -60,14 +62,16 @@ for s=1:length(svec)
             box off
             axis square
             ax = axis;
-            hline(0,'r');
+            yline(0,'Color','r');
             
             subplot(1,2,2)
             hold on;
             plot(initf0norm(cen),'go')
-            hline(dinit.cen,'k','--'); hline(-dinit.cen,'k','--');
+            yline(dinit.cen,'Color','k','LineStyle','--');
+            yline(-dinit.cen,'Color','k','LineStyle','--');
             plot(midf0norm(cen),'k.')
-            hline(dmid.cen,'k'); hline(-dmid.cen,'k');
+            yline(dmid.cen,'Color','k');
+            yline(-dmid.cen,'Color','k');
             
             for i=1:length(fcen)
                 plot([i i],[initf0norm(fcen(i)) midf0norm(fcen(i))], 'g-')
@@ -77,7 +81,7 @@ for s=1:length(svec)
             box off
             axis square
             axis(ax);
-            hline(0,'g');
+            yline(0,'Color','g');
             
             set(gcf,'Position',[265 355 820 299],'Name',sprintf('subj %d %s %d (%s)',snum,condtype,v,conds{v}))
         end
@@ -97,9 +101,11 @@ for s=1:length(svec)
             subplot(1,2,1)
             hold on;
             plot(initf0norm_pph_sorted,'ro')
-            hline(dinit.pph,'k','--'); hline(-dinit.pph,'k','--');
+            yline(dinit.pph,'Color','k','LineStyle','--');
+            yline(-dinit.pph,'Color','k','LineStyle','--');
             plot(midf0norm_pph_sorted,'k.')
-            hline(dmid.pph,'k'); hline(-dmid.pph,'k');
+            yline(dmid.pph,'Color','k');
+            yline(-dmid.pph,'Color','k');
             
             for i=1:length(initf0norm_pph_sorted)
                 plot([i i],[initf0norm_pph_sorted(i) midf0norm_pph_sorted(i)], 'r-')
@@ -109,14 +115,16 @@ for s=1:length(svec)
             box off
             axis square
             ax = axis;
-            hline(0,'r');
+            yline(0,'Color','r');
             
             subplot(1,2,2)
             hold on;
             plot(initf0norm_cen_sorted,'go')
-            hline(dinit.cen,'k','--'); hline(-dinit.cen,'k','--');
+            yline(dinit.cen,'Color','k','LineStyle','--');
+            yline(-dinit.cen,'Color','k','LineStyle','--');
             plot(midf0norm_cen_sorted,'k.')
-            hline(dmid.cen,'k'); hline(-dmid.cen,'k');
+            yline(dmid.cen,'Color','k');
+            yline(-dmid.cen,'Color','k');
             
             for i=1:length(initf0norm_cen_sorted)
                 plot([i i],[initf0norm_cen_sorted(i) midf0norm_cen_sorted(i)], 'g-')
@@ -126,7 +134,7 @@ for s=1:length(svec)
             box off
             axis square
             axis(ax);
-            hline(0,'g');
+            yline(0,'Color','g');
             
             set(gcf,'Position',[265 355 820 299],'Name',sprintf('subj %d %s %d (%s)',snum,condtype,v,conds{v}))
         end
