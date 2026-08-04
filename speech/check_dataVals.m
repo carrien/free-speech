@@ -62,7 +62,8 @@ errorParams = set_missingFields(errorParams, defaultParams, 0);
 
 
 %% create GUI
-f = figure('Visible','on','Units','Normalized','Position',[.1 .1 .8 .8]);
+bgColor_fig = [0.9 0.9 0.9];
+f = figure('Visible','on','Units','Normalized','Position',[.1 .1 .8 .8],'Color',bgColor_fig);
 
 UserData = guihandles(f);
 UserData.dataPath = dataPath;
@@ -78,6 +79,7 @@ UserData.nSigs = length(UserData.sigs2plot);
 
 %% create warning field in GUI
 UserData.xPosMax = 0.975;
+bgColor_panel = [0.9 0.9 0.9]; % currently same as bgColor_fig
 
 % create warning text area
 warnPanelXPos = 0.575;
@@ -86,14 +88,14 @@ warnPanelYSpan = 0.11;
 warnPanelYPos = UserData.xPosMax-warnPanelYSpan;
 warnPanelPos = [warnPanelXPos warnPanelYPos warnPanelXSpan warnPanelYSpan];
 UserData.warnPanel= uipanel(UserData.f,'Units','Normalized','Position',...
-            warnPanelPos,'Title',' alerts ',...
-            'Tag','warn_panel','TitlePosition','CenterTop',...
-            'FontSize',0.02,'FontUnits','Normalized','Visible','on');
+            warnPanelPos,'Title','alerts',...
+            'Tag','warn_panel','TitlePosition','CenterTop','BackgroundColor',bgColor_panel,...
+            'FontSize',16,'FontUnits','points','Visible','on');
 
 UserData.warnText = uicontrol(UserData.warnPanel,'style','text',...
-            'String',[],...
+            'String',[],'BackgroundColor',bgColor_panel,...
             'Units','Normalized','Position',[.1 .1 .8 .8],...
-            'FontUnits','Normalized','FontSize',.3);
+            'FontUnits','points','FontSize',12);
         
 %% load data if needed
 if nargin < 4 || isempty(dataVals)
@@ -113,8 +115,8 @@ plotPanelXSpan = 1 - 0.025 - plotPanelXPos;
 plotPanelYPos = UserData.xPosMax - 0.95;
 plotPanelYSpan = 0.815;
 plotPanelPos = [plotPanelXPos plotPanelYPos plotPanelXSpan plotPanelYSpan];
-UserData.plotPanel = uipanel(UserData.f,'Units','Normalized','Position',...
-            plotPanelPos,...
+UserData.plotPanel = uipanel(UserData.f,'Units','Normalized',...
+            'Position',plotPanelPos,'BackgroundColor',bgColor_panel,...
             'Tag','formant_plots','Visible','on');
  % create action buttons
 actionPanelXPos = 0.725;
@@ -123,9 +125,9 @@ actionPanelYSpan = 0.11;
 actionPanelYPos = UserData.xPosMax-actionPanelYSpan;
 actionPanelPos = [actionPanelXPos actionPanelYPos actionPanelXSpan actionPanelYSpan]; 
 UserData.actionPanel = uipanel(UserData.f,'Units','Normalized','Position',...
-            actionPanelPos,'Title',' actions ',...
-            'Tag','trial_sel','TitlePosition','CenterTop',...
-            'FontSize',0.02,'FontUnits','Normalized','Visible','on');
+            actionPanelPos,'Title','actions',...
+            'Tag','trial_sel','TitlePosition','CenterTop','BackgroundColor',bgColor_panel,...
+            'FontSize',16,'FontUnits','points','Visible','on');
 
 trialTypes = {'launch_GUI', 'reload_dataVals'};
 nActionTypes = length(trialTypes);
@@ -320,6 +322,7 @@ function [dataVals,expt] = load_dataVals(UserData,dataPath,bCalc)
 end
 
 function UserData = generate_menus(UserData)
+    bgColor_menus = [0.9 0.9 0.9]; % currently same as bgColor_fig
     % create error type buttons
     errorPanelXPos = 0.025;
     errorPanelXSpan = 0.125;
@@ -327,9 +330,9 @@ function UserData = generate_menus(UserData)
     errorPanelYPos = UserData.xPosMax - errorPanelYSpan;
     errorPanelPos = [errorPanelXPos errorPanelYPos errorPanelXSpan errorPanelYSpan]; 
     UserData.errorPanel = uibuttongroup(UserData.f,'Units','Normalized','Position',...
-                errorPanelPos,'Title',' error types ',...
+                errorPanelPos,'Title','error types',...
                 'Tag','error_types','TitlePosition','CenterTop',...
-                'FontSize',0.02,'FontUnits','Normalized','Visible','on',...
+                'FontSize',16,'FontUnits','points','Visible','on','BackgroundColor',bgColor_menus,...
                 'SelectedObject',[],'SelectionChangedFcn',@update_plots);
 
     errorTypes = fieldnames(UserData.errors);
@@ -365,9 +368,9 @@ function UserData = generate_menus(UserData)
 
     groupPanelPos = [groupPanelXPos groupPanelYPos groupPanelXSpan groupPanelYSpan]; 
     UserData.groupPanel = uipanel(UserData.f,'Units','Normalized','Position',...
-                groupPanelPos,'Title',' group by: ',...
-                'Tag','group_by','TitlePosition','CenterTop',...
-                'FontSize',0.02,'FontUnits','Normalized','Visible','on');
+                groupPanelPos,'Title','group by:',...
+                'Tag','group_by','TitlePosition','CenterTop','BackgroundColor',bgColor_menus,...
+                'FontSize',16,'FontUnits','points','Visible','on');
     groupTypes = fields(UserData.dataVals);
     %remove known fields to get grouping types
         groupTypes(strcmp(groupTypes,'f0')) = [];
@@ -421,9 +424,9 @@ function UserData = generate_menus(UserData)
     trialPanelYPos = UserData.xPosMax-trialPanelYSpan;
     trialPanelPos = [trialPanelXPos trialPanelYPos trialPanelXSpan trialPanelYSpan]; 
     UserData.trialPanel = uibuttongroup(UserData.f,'Units','Normalized','Position',...
-                trialPanelPos,'Title',' trial selection ',...
-                'Tag','trial_sel','TitlePosition','CenterTop',...
-                'FontSize',0.02,'FontUnits','Normalized','Visible','on');
+                trialPanelPos,'Title','trial selection',...
+                'Tag','trial_sel','TitlePosition','CenterTop','BackgroundColor',bgColor_menus,...
+                'FontSize',16,'FontUnits','points','Visible','on');
 
     trialTypes = {'all_trials', 'select_trial'};
     nTrialTypes = length(trialTypes);
@@ -448,6 +451,7 @@ function UserData = generate_menus(UserData)
 end
 
 function update_plots(src,evt)
+    bgColor_plots = [0.9 0.9 0.9]; %currently same as bgColor_fig
     UserData = guidata(src);
     errorField = UserData.errorPanel.SelectedObject.String{1};
     UserData.trialset = UserData.errors.(errorField);
@@ -465,12 +469,12 @@ function update_plots(src,evt)
         UserData.noPlotMessage = uicontrol(UserData.plotPanel,'style','text',...
             'String','No data to plot',...
             'Units','Normalized','Position',[.1 .4 .8 .2],...
-            'FontUnits','Normalized','FontSize',0.3);
+            'FontUnits','Normalized','FontSize',0.3,'BackgroundColor',bgColor_plots);
     else
         outstring = textwrap(UserData.warnText,{'Plotting data'});
         set(UserData.warnPanel,'HighlightColor','yellow')
         set(UserData.warnText,'String',outstring)
-        pause(0.0001)
+        drawnow;
         [UserData.htracks,UserData.hsub] = plot_rawAcoustTracks(UserData.dataVals,grouping,UserData.trialset,UserData.plotPanel,UserData.expt,UserData.sigs2plot);
         if any(strcmp(UserData.sigs2plot,'f0')) %plot line at 40 ms if there's any f0 data
             xTicks = get(gca,'XTick');
@@ -479,7 +483,7 @@ function update_plots(src,evt)
             vline(0.040,'k',':'); 
         end
         set(UserData.warnText,'String',[])
-        set(UserData.warnPanel,'HighlightColor',[1 1 1])
+        set(UserData.warnPanel,'HighlightColor',[0.5 0.5 0.5]);
         for iPlot = 1:length(UserData.htracks)
             for s = 1:UserData.nSigs
                 for iLine = 1:length(UserData.htracks(iPlot).(UserData.sigs2plot{s}))
