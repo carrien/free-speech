@@ -47,7 +47,9 @@ end
 function index =  fsic(theCell, theString, varargin)
 % findStringInCell: Find indices to all instances of a string in a cell array
 %
-% Author: Shanqing Cai (shanqing.cai@gmail.com, https://github.com/shanqing-cai/commonmcode)
+% Author: Shanqing Cai (shanqing.cai@gmail.com,
+% https://github.com/shanqing-cai/commonmcode). Also in the
+% blab-lab/audapter_matlab repo
 index = [];
 
 inverse=0;
