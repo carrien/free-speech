@@ -168,7 +168,7 @@ while nReversals < expt.maxReversals && itrial <= expt.maxTrials
             [audiodata, ~] = psychwavread(fullfile(expt.soundfileDir, stimSoundFN{i}));
             dontskip = 1;
         catch
-            fprintf('Failed to read and add file %s. Skipped.\n', stimSoundFN{i});
+            warning('Failed to read and add file %s. Skipped.\n', stimSoundFN{i});
             dontskip = 0;
             psychlasterror
             psychlasterror('reset');
