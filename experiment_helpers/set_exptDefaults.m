@@ -76,7 +76,7 @@ expt = set_missingField(expt,'listWords',expt.words(expt.allWords));
 if ~isempty(expt.vowels)
     if expt.bIgnoreVowels
         expt.listVowels = repmat(expt.vowels, [1 expt.ntrials]);
-    else
+    elseif ~isfield(expt,'listVowels')
         expt = set_missingField(expt,'listVowels',txt2arpabet(expt.listWords));
     end
     if any(expt.allVowels == 0)
