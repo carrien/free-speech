@@ -75,9 +75,9 @@ expt = set_missingField(expt,'listConds',expt.conds(expt.allConds));
 expt = set_missingField(expt,'listWords',expt.words(expt.allWords));
 if ~isempty(expt.vowels)
     if expt.bIgnoreVowels
-        expt.listVowels = repmat(expt.vowels, [1 expt.ntrials]);
-    else
-        expt = set_missingField(expt,'listVowels',txt2arpabet(expt.listWords));
+        expt.listVowels = repmat(expt.vowels, [1 expt.ntrials]); %set all to 'null'
+    elseif ~isfield(expt,'listVowels')
+        expt.listVowels = txt2arpabet(expt.listWords);
     end
     if any(expt.allVowels == 0)
         for t=1:expt.ntrials
