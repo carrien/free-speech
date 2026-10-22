@@ -207,9 +207,14 @@ for i = 1:length(sortedTrialnums)
     dataVals(i).cond = expt.allConds(trialnum); 
     dataVals(i).trial = trialnum; % Trial number
     dataVals(i).token = find(trialnum == ix.(expt.listWords{trialnum})); % repetition of that specific word 
-    if expt.pertMag(trialnum) > 0
-        dataVals(i).bPerturb = 1;
+    if isfield(expt, 'pertMag')
+        if expt.pertMag(trialnum) > 0
+            dataVals(i).bPerturb = 1;
+        else
+            dataVals(i).bPerturb = 0; 
+        end
     else
+        % Not all experiments have this 
         dataVals(i).bPerturb = 0; 
     end
     
