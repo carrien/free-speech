@@ -41,8 +41,19 @@ if exist(savefile, ftype)
     messg = sprintf('%sThere is already a %s named %s here:\n\n%s\n\nDo you want to overwrite %s?', ...
         '\fontsize{10}', ftype, colored_nameExt, path, colored_nameExt);
 
-    % present the question box
+    % present the question box, then reset focus to original figure
+    if ~isempty(findobj('type', 'figure')) % 
+        drawnow;
+        h_currentFig = gcf;
+        bFigureExists = 1;
+    else
+        bFigureExists = 0;
+    end
     response = questdlg(messg,'File exists','Overwrite','Cancel', dlgOpts);
+    if bFigureExists && ishandle(h_currentFig) % make sure fig still exists
+        figure(h_currentFig); % reset window focus
+        drawnow;
+    end
 
     switch response
         case 'Overwrite'
