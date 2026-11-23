@@ -75,8 +75,10 @@ end
 
 %% plot
 if isgraphics(subAxis)
+    figure(ancestor(subAxis, 'Figure', 'toplevel')); % make subAxis's parent figure the current figure, if subAxis has a parent below root level
+    subplot(subAxis); % set subAxis as current axis
+
     % plot Good and Warn shaded regions
-    subplot(subAxis)
     tAxis = 0 : data.params.frameLen : data.params.frameLen * (size(data.fmts, 1) - 1);
     yyaxis left
     plot(tAxis/data.params.sr,data.rms(:,1));
