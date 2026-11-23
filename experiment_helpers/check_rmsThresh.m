@@ -75,8 +75,8 @@ end
 
 %% plot
 if isgraphics(subAxis)
-    % plot Good and Warn shaded regions
-    subplot(subAxis)
+    figure(ancestor(subAxis, 'Figure', 'toplevel'));
+    subplot(subAxis);
     tAxis = 0 : data.params.frameLen : data.params.frameLen * (size(data.fmts, 1) - 1);
     yyaxis left
     plot(tAxis/data.params.sr,data.rms(:,1));
